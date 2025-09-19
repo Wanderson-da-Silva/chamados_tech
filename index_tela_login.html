@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TechService</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            padding-left: 45px;
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .login-footer p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .login-error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .login-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                margin: 20px;
+                padding: 30px;
+            }
+            
+            .login-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>TechService</h1>
+                <p>Sistema de Gerenciamento de Chamados</p>
+            </div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-control" id="username" placeholder="Digite seu usuário" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password" placeholder="Digite sua senha" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-login" id="login-btn">
+                    <span id="login-text">Entrar</span>
+                    <i id="login-spinner" class="fas fa-spinner fa-spin" style="display: none;"></i>
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <p>© 2025 TechService - Todos os direitos reservados</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para simular chamada da API de login
+        async function login_api(username, password) {
+            // Simula delay da requisição
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Simula validação (aceita qualquer usuário/senha para demonstração)
+            if (username.trim() && password.trim()) {
+                return {
+                    success: true,
+                    message: "Login realizado com sucesso",
+                    user: {
+                        id: 1,
+                        username: username,
+                        name: "Usuário Teste",
+                        role: "Técnico"
+                    },
+                    token: "fake_jwt_token_12345"
+                };
+            } else {
+                return {
+                    success: false,
+                    message: "Usuário ou senha inválidos"
+                };
+            }
+        }
+
+        // Função para lidar com o login
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            const loginText = document.getElementById('login-text');
+            const loginSpinner = document.getElementById('login-spinner');
+            
+            // Remove mensagens anteriores
+            const existingMessage = document.querySelector('.login-error, .login-success');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // Desabilita o botão e mostra loading
+            loginBtn.disabled = true;
+            loginText.style.display = 'none';
+            loginSpinner.style.display = 'inline-block';
+            
+            try {
+                const result = await login_api(username, password);
+                
+                if (result.success) {
+                    // Armazena dados do usuário
+                    sessionStorage.setItem('user', JSON.stringify(result.user));
+                    sessionStorage.setItem('token', result.token);
+                    
+                    // Mostra mensagem de sucesso
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'login-success';
+                    successDiv.textContent = result.message;
+                    document.getElementById('login-form').insertBefore(successDiv, document.getElementById('login-form').firstChild);
+                    
+                    // Animação de sucesso no botão
+                    loginBtn.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                    loginText.textContent = 'Entrando...';
+                    loginText.style.display = 'inline-block';
+                    loginSpinner.style.display = 'none';
+                    
+                    // Simula redirecionamento (em produção, usar window.location.href)
+                    setTimeout(() => {
+                        alert('Login realizado com sucesso! Redirecionando para o sistema...');
+                        // window.location.href = 'sistema.html';
+                    }, 1000);
+                    
+                } else {
+                    // Mostra mensagem de erro
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'login-error';
+                    errorDiv.textContent = result.message;
+                    document.getElementById('login-form').insertBefore(errorDiv, document.getElementById('login-form').firstChild);
+                    
+                    // Restaura o botão
+                    resetButton();
+                }
+                
+            } catch (error) {
+                console.error('Erro no login:', error);
+                
+                // Mostra mensagem de erro genérica
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'login-error';
+                errorDiv.textContent = 'Erro de conexão. Tente novamente.';
+                document.getElementById('login-form').insertBefore(errorDiv, document.getElementById('login-form').firstChild);
+                
+                // Restaura o botão
+                resetButton();
+            }
+        }
+
+        // Função para resetar o estado do botão
+        function resetButton() {
+            const loginBtn = document.getElementById('login-btn');
+            const loginText = document.getElementById('login-text');
+            const loginSpinner = document.getElementById('login-spinner');
+            
+            loginBtn.disabled = false;
+            loginBtn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+            loginText.textContent = 'Entrar';
+            loginText.style.display = 'inline-block';
+            loginSpinner.style.display = 'none';
+        }
+
+        // Adiciona evento para pressionar Enter
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('username').focus();
+        });
+    </script>
+</body>
+</html>
