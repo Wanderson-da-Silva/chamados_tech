@@ -343,6 +343,94 @@
             background: #ffcdd2;
             color: #d32f2f;
         }
+/* lista usuario */
+
+/* --- Estilo do Card Principal --- */
+.usuario-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaço entre as seções */
+}
+
+/* --- Seção do Cabeçalho --- */
+.usuario-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nome-completo {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.perfil-info {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 0.9rem;
+}
+
+.perfil-info i {
+    margin-right: 5px;
+}
+
+/* --- Seção de Detalhes (lado a lado) --- */
+.usuario-detalhes {
+    display: flex;
+    flex-wrap: wrap; /* Permite que os itens quebrem para a linha de baixo em telas pequenas */
+    justify-content: space-between;
+    gap: 15px; /* Espaçamento entre os itens */
+    border-top: 1px solid #f0f0f0;
+    padding-top: 15px;
+}
+
+.usuario-detalhes p {
+    margin: 0;
+    color: #555;
+}
+
+/*sinebar-configurações*/
+
+.submenu-config{
+    
+    background: rgba(255, 255, 255, 0.05);
+    margin-left: 7px;
+}
+
+/* --- Seção dos Botões --- */
+.usuario-acoes {
+    
+    display: flex;
+
+}
+
+.btn_opcoes {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+
+.btn_opcoes i {
+    margin-right: 5px;
+}
+
+.btn-editar { background-color: #2196F3; }
+.btn-senha  { background-color: #FF9800; }
+.btn-excluir { background-color: #f44336; }
+
+
 
         /* Modal */
         .modal {
@@ -590,9 +678,26 @@
                     <i class="fas fa-clipboard-list"></i>
                     <span>Relatórios</span>
                 </div>
-                <div class="menu-item">
+                <div class="menu-item" onclick="toggleConfiguracao()">
                     <i class="fas fa-cog"></i>
                     <span>Configurações</span>
+                    <i class="fas fa-chevron-right" id="config-arrow" style="margin-left: auto; transition: transform 0.3s ease;"></i>
+                </div>
+                
+                <!-- Submenu de Configurações -->
+                <div id="submenu-config" style="display: none;">
+                    <div class="menu-item" style="padding-left: 40px;" onclick="showPage('lojas')">
+                        <i class="fas fa-store"></i>
+                        <span>Lojas</span>
+                    </div>
+                    <div class="menu-item" style="padding-left: 40px;" onclick="showPage('maquinas')">
+                        <i class="fas fa-desktop"></i>
+                        <span>Máquinas</span>
+                    </div>
+                    <div class="menu-item" style="padding-left: 40px;" onclick="showPage('usuarios')">
+                        <i class="fas fa-users"></i>
+                        <span>Usuários</span>
+                    </div>
                 </div>
             </nav>
 
@@ -677,6 +782,72 @@
                     <h3>Máquinas Próximas da Preventiva</h3>
                     <div class="filiais-grid" id="filiais-grid">
                         <!-- Dados serão carregados via API -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Página de Lojas -->
+            <div id="lojas-page" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">Gerenciar Lojas</h1>
+                    <p class="page-subtitle">Cadastre e gerencie as filiais do sistema</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openModal('nova-loja')">
+                        <i class="fas fa-plus"></i>
+                        Nova Loja
+                    </button>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <p style="text-align: center; color: #666;">Lista de lojas será implementada aqui...</p>
+                </div>
+            </div>
+
+            <!-- Página de Máquinas -->
+            <div id="maquinas-page" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">Gerenciar Máquinas</h1>
+                    <p class="page-subtitle">Cadastre e gerencie os equipamentos por filial</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openModal('nova-maquina')">
+                        <i class="fas fa-plus"></i>
+                        Nova Máquina
+                    </button>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <p style="text-align: center; color: #666;">Lista de máquinas será implementada aqui...</p>
+                </div>
+            </div>
+
+            <!-- Página de Usuários -->
+            <div id="usuarios-page" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">Gerenciar Usuários</h1>
+                    <p class="page-subtitle">Cadastre e gerencie usuários do sistema</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openModal('novo-usuario')">
+                        <i class="fas fa-plus"></i>
+                        Novo Usuário
+                    </button>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <!-- Lista de Usuários -->
+                    <div class="usuarios-container" >
+                        <div class="usuarios-header">
+                            <h3>Lista de Usuários</h3>
+                        </div>
+                        
+                        <!-- Loading para usuários -->
+                        <div id="usuarios-loading" class="loading hidden">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-right: 15px;"></i>
+                            Carregando usuários...
+                        </div>
+
+                        <div id="usuarios-list" class="usuarios-list">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -767,6 +938,74 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Novo Usuário -->
+    <div id="novo-usuario" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Cadastrar Novo Usuário</h2>
+                <button class="close" onclick="closeModal('novo-usuario')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-novo-usuario" onsubmit="handleNovoUsuario(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="user-nome">Nome Completo *</label>
+                        <input type="text" class="form-control" id="user-nome" placeholder="Ex: João Silva Santos" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-username">Nome de Usuário *</label>
+                        <input type="text" class="form-control" id="user-username" placeholder="Ex: joao.silva" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="user-email">E-mail *</label>
+                        <input type="email" class="form-control" id="user-email" placeholder="joao@empresa.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-telefone">Telefone</label>
+                        <input type="text" class="form-control" id="user-telefone" placeholder="(11) 99999-9999">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="user-senha">Senha *</label>
+                        <input type="password" class="form-control" id="user-senha" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-confirma-senha">Confirmar Senha *</label>
+                        <input type="password" class="form-control" id="user-confirma-senha" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="user-perfil">Perfil *</label>
+                    <select class="form-control" id="user-perfil" required>
+                        <option value="">Selecione o perfil</option>
+                        <option value="admin">Administrador</option>
+                        <option value="tecnico">Técnico</option>
+                        <option value="operador">Operador</option>
+                        <option value="visualizador">Visualizador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="user-ativo" checked> Usuário Ativo
+                    </label>
+                </div>
+                <div style="text-align: right; margin-top: 25px;">
+                    <button type="button" class="btn" style="background: #ccc; color: #666; margin-right: 10px;" onclick="closeModal('novo-usuario')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Usuário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
 
     <script>
         // ========================================
@@ -1245,20 +1484,39 @@
             sidebar.classList.toggle('collapsed');
         }
 
+        // Função para alternar submenu de configurações
+        function toggleConfiguracao() {
+            const submenu = document.getElementById('submenu-config');
+            const arrow = document.getElementById('config-arrow');
+            
+            if (submenu.style.display === 'none' || submenu.style.display === '') {
+                submenu.style.display = 'block';
+                arrow.style.transform = 'rotate(90deg)';
+            } else {
+                submenu.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
         // Função para mostrar páginas
         function showPage(page) {
             // Esconder todas as páginas
             document.getElementById('chamados-page').classList.add('hidden');
             document.getElementById('preventivas-page').classList.add('hidden');
+            document.getElementById('lojas-page').classList.add('hidden');
+            document.getElementById('maquinas-page').classList.add('hidden');
+            document.getElementById('usuarios-page').classList.add('hidden');
             
             // Mostrar a página selecionada
             document.getElementById(page + '-page').classList.remove('hidden');
             
-            // Atualizar menu ativo
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
+            // Atualizar menu ativo (apenas para itens principais)
+            if (['chamados', 'preventivas'].includes(page)) {
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                event.currentTarget.classList.add('active');
+            }
             
             // Carregar dados específicos da página
             if (page === 'preventivas') {
@@ -1270,6 +1528,16 @@
                         loadingElement.classList.add('hidden');
                     }, 1000);
                 }
+            }
+            if (page === 'usuarios') {
+                loadUsuarios();
+            } 
+            if (page === 'lojas'){
+                loadLojas();
+            }
+            if(page === 'maquinas')
+             {
+            loadMaquinas();    
             }
         }
 
@@ -1465,6 +1733,203 @@
                 }
             });
         });
+
+        // Função para buscar usuários
+        async function fetchUsuarios() {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/usuarios', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            */
+            
+            // Simular delay da API
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            return {
+                success: true,
+                data: [
+                    { id: 1, username: "admin", nome_completo: "Administrador Sistema", email: "admin@techservice.com", perfil: "admin", ativo: true, ultimo_login: "2025-09-22 08:30:00" },
+                    { id: 2, username: "joao.tech", nome_completo: "João Silva Santos", email: "joao@techservice.com", perfil: "tecnico", ativo: true, ultimo_login: "2025-09-21 16:45:00" },
+                    { id: 3, username: "maria.op", nome_completo: "Maria Oliveira", email: "maria@techservice.com", perfil: "operador", ativo: true, ultimo_login: "2025-09-20 14:20:00" },
+                    { id: 4, username: "carlos.view", nome_completo: "Carlos Pereira", email: "carlos@techservice.com", perfil: "visualizador", ativo: false, ultimo_login: "2025-09-15 10:15:00" }
+                ]
+            };
+        }
+
+        // Função para criar usuário
+        async function createUsuario(formData) {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/usuarios', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            return await response.json();
+            */
+            
+            // Simular delay da API
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            return {
+                success: true,
+                message: `Usuário "${formData.username}" criado com sucesso!`,
+                data: { id: Date.now() }
+            };
+        }
+
+        // ========================================
+        // CARREGAMENTO E RENDERIZAÇÃO
+        // ========================================
+        
+        // Função para carregar lista de usuários
+        async function loadUsuarios() {
+            const loadingElement = document.getElementById('usuarios-loading');
+            const listContainer = document.getElementById('usuarios-list');
+            
+            try {
+                loadingElement.classList.remove('hidden');
+                
+                const result = await fetchUsuarios();
+                
+                if (result.success) {
+                    renderUsuariosList(result.data);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                showError('Erro ao carregar lista de usuários');
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        }
+
+        // Função para renderizar lista de usuários
+        function renderUsuariosList(usuarios) {
+            const container = document.getElementById('usuarios-list');
+            
+            if (usuarios.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Nenhum usuário encontrado.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            usuarios.forEach(usuario => {
+                const perfilMap = {
+                    'admin': { icon: 'fa-user-shield', color: '#f44336', text: 'Administrador' },
+                    'tecnico': { icon: 'fa-tools', color: '#FF9800', text: 'Técnico' },
+                    'operador': { icon: 'fa-user', color: '#2196F3', text: 'Operador' },
+                    'visualizador': { icon: 'fa-eye', color: '#4CAF50', text: 'Visualizador' }
+                };
+                
+                const perfil = perfilMap[usuario.perfil] || { icon: 'fa-user', color: '#666', text: 'Desconhecido' };
+                const statusClass = usuario.ativo ? 'status-concluido' : 'status-pendente';
+                const statusText = usuario.ativo ? 'Ativo' : 'Inativo';
+                const ultimoLogin = usuario.ultimo_login ? new Date(usuario.ultimo_login).toLocaleString('pt-BR') : 'Nunca';
+                
+                html += `
+                    <div class="usuario-item">
+                        <div class="usuario-cabecalho">
+                            <div class="usuario-identificacao">
+                                <strong class="nome-completo">${usuario.nome_completo}</strong>
+                                <div class="perfil-info">
+                                    <i class="fas ${perfil.icon}" style="color: ${perfil.color};"></i>
+                                    <span style="color: ${perfil.color};">${perfil.text}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+
+                        <div class="usuario-detalhes">
+                            <p><strong>Usuário:</strong> ${usuario.username}</p>
+                            <p><strong>E-mail:</strong> ${usuario.email}</p>
+                            <p><strong>Último Login:</strong> ${ultimoLogin}</p>
+                        </div>
+                        
+                        <div class="usuario-acoes">
+                            <button class="btn_opcoes btn-editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn_opcoes btn-senha">
+                                <i class="fas fa-key"></i> Senha
+                            </button>
+                            <button class="btn_opcoes btn-excluir">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // ========================================
+        // HANDLER DO FORMULÁRIO
+        // ========================================
+        
+        // Função para criar novo usuário
+        async function handleNovoUsuario(event) {
+            event.preventDefault();
+            
+            const senha = document.getElementById('user-senha').value;
+            const confirmaSenha = document.getElementById('user-confirma-senha').value;
+            
+            // Validar se as senhas coincidem
+            if (senha !== confirmaSenha) {
+                showError('As senhas não coincidem!');
+                return;
+            }
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    nome_completo: document.getElementById('user-nome').value,
+                    username: document.getElementById('user-username').value,
+                    email: document.getElementById('user-email').value,
+                    telefone: document.getElementById('user-telefone').value,
+                    senha: senha,
+                    perfil: document.getElementById('user-perfil').value,
+                    ativo: document.getElementById('user-ativo').checked
+                };
+                
+                // Chamar API para criar usuário
+                const result = await createUsuario(formData);
+                
+                if (result.success) {
+                    showSuccess(result.message);
+                    closeModal();
+                    loadUsuarios(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao criar usuário');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao criar usuário:', error);
+                showError('Erro ao criar usuário. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
 
         // ========================================
         // INICIALIZAÇÃO
