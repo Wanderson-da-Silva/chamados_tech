@@ -380,7 +380,229 @@
 .perfil-info i {
     margin-right: 5px;
 }
+/* Lista de máquinas */
+        .maquinas-container {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
 
+        .maquinas-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+        }
+
+        .maquinas-header h3 {
+            color: white;
+            margin: 0;
+        }
+
+        .maquinas-list {
+            padding: 20px;
+        }
+
+        .maquina-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+     
+        .maquina-item:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: translateY(-2px);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-concluido {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-pendente {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-andamento {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* --- Estilo do Card Principal --- */
+
+
+/* --- Cabeçalho --- */
+.maquina-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+
+
+.maquina-patrimonio {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.maquina-status {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.maquina-status i {
+    margin-right: 5px;
+}
+
+/* --- Detalhes em Grid Responsivo --- */
+.maquina-detalhes {
+    display: grid;
+    /* Cria colunas automáticas de no mínimo 220px */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.maquina-detalhes p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* Classe para o item ocupar a linha toda */
+.detalhe-full {
+    grid-column: 1 / -1;
+    font-weight: 500;
+}
+/* Lista de lojas */
+        .lojas-container {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .lojas-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+        }
+
+        .lojas-header h3 {
+            color: white;
+            margin: 0;
+        }
+
+        .lojas-list {
+            padding: 20px;
+        }
+
+        .loja-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .loja-item:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .loja-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .loja-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loja-title h4 {
+            color: #333;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .codigo-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .loja-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .info-item i {
+            color: #667eea;
+            width: 16px;
+            text-align: center;
+        }
+
+
+
+
+ /*filtro lojas - maquinas*/       
+  .filter-container {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
 /* --- Seção de Detalhes (lado a lado) --- */
 .usuario-detalhes {
     display: flex;
@@ -405,7 +627,7 @@
 }
 
 /* --- Seção dos Botões --- */
-.usuario-acoes {
+.usuario-acoes, .maquina-acoes, .loja-acoes {
     
     display: flex;
 
@@ -427,9 +649,14 @@
 }
 
 .btn-editar { background-color: #2196F3; }
-.btn-senha  { background-color: #FF9800; }
+.btn-senha, .btn-preventiva, .btn-relatorio  { background-color: #FF9800; }
 .btn-excluir { background-color: #f44336; }
+.btn-chamado, .btn-maquina { background-color: #4CAF50; }
+.btn-cancelar{
+    background: #ccc; color: #666; 
+    margin-right: 10px;
 
+}
 
 
         /* Modal */
@@ -799,7 +1026,22 @@
                     </button>
                 </div>
                 <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
-                    <p style="text-align: center; color: #666;">Lista de lojas será implementada aqui...</p>
+                    <!-- Lista de Lojas -->
+                    <div class="lojas-container">
+                        <div class="lojas-header">
+                            <h3><i class="fas fa-store" style="margin-right: 10px;"></i>Lista de Lojas</h3>
+                        </div>
+                        
+                        <!-- Loading para lojas -->
+                        <div id="lojas-loading" class="loading hidden">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-right: 15px;"></i>
+                            Carregando lojas...
+                        </div>
+
+                        <div id="lojas-list" class="lojas-list">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -816,7 +1058,31 @@
                     </button>
                 </div>
                 <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
-                    <p style="text-align: center; color: #666;">Lista de máquinas será implementada aqui...</p>
+                    <!-- Filtro por loja -->
+                    <div class="filter-container">
+                        <select id="filtro-loja-maquinas" class="form-control" style="width: 300px;" onchange="filterMaquinas()">
+                            <option value="">Todas as Lojas</option>
+                            <!-- Opções carregadas via API -->
+                        </select>
+                    </div>
+
+                        <!-- Lista de Máquinas -->
+                    <div class="maquinas-container">
+                        <div class="maquinas-header">
+                            <h3>Lista de Máquinas</h3>
+                        </div>
+                        
+                        <!-- Loading para máquinas -->
+                        <div id="maquinas-loading" class="loading hidden">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-right: 15px;"></i>
+                            Carregando máquinas...
+                        </div>
+
+                        <div id="maquinas-list" class="maquinas-list">
+                            <!-- Lista será carregada via JavaScript -->
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -900,7 +1166,7 @@
                     </div>
                 </div>
                 <div style="text-align: right; margin-top: 25px;">
-                    <button type="button" class="btn" style="background: #ccc; color: #666; margin-right: 10px;" onclick="closeModal('novo-chamado')">Cancelar</button>
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('novo-chamado')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i>
                         Abrir Chamado
@@ -994,11 +1260,208 @@
                         <input type="checkbox" id="user-ativo" checked> Usuário Ativo
                     </label>
                 </div>
-                <div style="text-align: right; margin-top: 25px;">
-                    <button type="button" class="btn" style="background: #ccc; color: #666; margin-right: 10px;" onclick="closeModal('novo-usuario')">Cancelar</button>
+                <div style=" margin-top: 25px;" class="usuario-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('novo-usuario')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i>
                         Salvar Usuário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal Nova Máquina -->
+    <div id="nova-maquina" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Cadastrar Nova Máquina</h2>
+                <button class="close" onclick="closeModal('nova-maquina')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-nova-maquina" onsubmit="handleNovaMaquina(event)">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="maq-loja">Loja *</label>
+                        <select class="form-control" id="maq-loja" required>
+                            <option value="">Selecione a loja</option>
+                            <!-- Carregado via API -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="maq-patrimonio">Patrimônio *</label>
+                        <input type="text" class="form-control" id="maq-patrimonio" placeholder="Ex: MAQ-001" required>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="maq-serie">Número de Série *</label>
+                        <input type="text" class="form-control" id="maq-serie" placeholder="Ex: SER123456" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="maq-tipo">Tipo de Equipamento</label>
+                        <select class="form-control" id="maq-tipo">
+                            <option value="">Selecione</option>
+                            <option value="Computador">Computador</option>
+                            <option value="Impressora">Impressora</option>
+                            <option value="Scanner">Scanner</option>
+                            <option value="Roteador">Roteador</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Notebook">Notebook</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Projetor">Projetor</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="maq-marca">Marca</label>
+                        <input type="text" class="form-control" id="maq-marca" placeholder="Ex: HP, Dell, Canon">
+                    </div>
+                    <div class="form-group">
+                        <label for="maq-modelo">Modelo</label>
+                        <input type="text" class="form-control" id="maq-modelo" placeholder="Ex: LaserJet Pro">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="maq-data-aquisicao">Data de Aquisição</label>
+                        <input type="date" class="form-control" id="maq-data-aquisicao">
+                    </div>
+                    <div class="form-group">
+                        <label for="maq-valor">Valor de Aquisição (R$)</label>
+                        <input type="number" class="form-control" id="maq-valor" step="0.01" placeholder="0,00">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="maq-status">Status Operacional</label>
+                        <select class="form-control" id="maq-status">
+                            <option value="ativo">Ativo</option>
+                            <option value="inativo">Inativo</option>
+                            <option value="manutencao">Em Manutenção</option>
+                            <option value="descartado">Descartado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="maq-periodicidade">Periodicidade Preventiva (dias)</label>
+                        <input type="number" class="form-control" id="maq-periodicidade" placeholder="90">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="maq-localizacao">Localização</label>
+                    <input type="text" class="form-control" id="maq-localizacao" placeholder="Ex: Recepção, Sala 1, Depósito">
+                </div>
+                <div class="form-group">
+                    <label for="maq-observacoes">Observações</label>
+                    <textarea class="form-control" id="maq-observacoes" rows="3" placeholder="Observações adicionais sobre o equipamento"></textarea>
+                </div>
+                <div style=" margin-top: 25px;" class="maquina-acoes">
+                    <button type="button" class="btn btn-cancelar" onclick="closeModal('nova-maquina')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Máquina
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nova Loja -->
+    <div id="nova-loja" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Cadastrar Nova Loja</h2>
+                <button class="close" onclick="closeModal('nova-loja')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-nova-loja" onsubmit="handleNovaLoja(event)">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="loja-nome">Nome da Loja *</label>
+                        <input type="text" class="form-control" id="loja-nome" placeholder="Ex: Filial Centro" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loja-codigo">Código *</label>
+                        <input type="text" class="form-control" id="loja-codigo" placeholder="Ex: CENTRO" required style="text-transform: uppercase;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="loja-endereco">Endereço Completo</label>
+                    <textarea class="form-control" id="loja-endereco" rows="2" placeholder="Rua, número, complemento, bairro"></textarea>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="loja-cidade">Cidade</label>
+                        <input type="text" class="form-control" id="loja-cidade" placeholder="Ex: São Paulo">
+                    </div>
+                    <div class="form-group">
+                        <label for="loja-estado">Estado</label>
+                        <select class="form-control" id="loja-estado">
+                            <option value="">Selecione</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="loja-cep">CEP</label>
+                        <input type="text" class="form-control" id="loja-cep" placeholder="00000-000" maxlength="9">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="loja-telefone">Telefone</label>
+                        <input type="text" class="form-control" id="loja-telefone" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="form-group">
+                        <label for="loja-email">E-mail</label>
+                        <input type="email" class="form-control" id="loja-email" placeholder="loja@empresa.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="loja-responsavel">Responsável/Gerente</label>
+                    <input type="text" class="form-control" id="loja-responsavel" placeholder="Nome do responsável pela loja">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="loja-ativa" checked>
+                        <label for="loja-ativa">Loja Ativa (operacional)</label>
+                    </div>
+                </div>
+                <div style="text-align: right; margin-top: 25px;">
+                    <button type="button" class="btn" style="background: #ccc; color: #666; margin-right: 10px;" onclick="closeModal('nova-loja')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Loja
                     </button>
                 </div>
             </form>
@@ -1930,6 +2393,664 @@
                 submitBtn.innerHTML = originalText;
             }
         }
+
+        // Função para buscar máquinas
+        async function fetchMaquinas() {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/maquinas', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            */
+            
+            // Simular delay da API
+            await new Promise(resolve => setTimeout(resolve, 600));
+            
+            return {
+                success: true,
+                data: [
+                    { 
+                        id: 1, 
+                        patrimonio: "MAQ-001", 
+                        numero_serie: "SER123001", 
+                        modelo: "HP LaserJet Pro", 
+                        marca: "HP", 
+                        tipo_equipamento: "Impressora", 
+                        loja_nome: "Filial Centro", 
+                        status_operacional: "ativo", 
+                        data_proxima_preventiva: "2025-10-15",
+                        localizacao: "Recepção",
+                        valor_aquisicao: 1200.00
+                    },
+                    { 
+                        id: 2, 
+                        patrimonio: "MAQ-015", 
+                        numero_serie: "SER123015", 
+                        modelo: "Dell OptiPlex 3090", 
+                        marca: "Dell", 
+                        tipo_equipamento: "Computador", 
+                        loja_nome: "Filial Centro", 
+                        status_operacional: "ativo", 
+                        data_proxima_preventiva: "2025-11-20",
+                        localizacao: "Sala 1",
+                        valor_aquisicao: 2500.00
+                    },
+                    { 
+                        id: 3, 
+                        patrimonio: "MAQ-045", 
+                        numero_serie: "SER123045", 
+                        modelo: "Canon ImageRunner 2625i", 
+                        marca: "Canon", 
+                        tipo_equipamento: "Impressora", 
+                        loja_nome: "Filial Norte", 
+                        status_operacional: "manutencao", 
+                        data_proxima_preventiva: "2025-10-10",
+                        localizacao: "Almoxarifado",
+                        valor_aquisicao: 3200.00
+                    },
+                    { 
+                        id: 4, 
+                        patrimonio: "MAQ-123", 
+                        numero_serie: "SER123123", 
+                        modelo: "Lenovo ThinkCentre M70q", 
+                        marca: "Lenovo", 
+                        tipo_equipamento: "Computador", 
+                        loja_nome: "Filial Sul", 
+                        status_operacional: "ativo", 
+                        data_proxima_preventiva: "2025-12-01",
+                        localizacao: "Gerência",
+                        valor_aquisicao: 2800.00
+                    },
+                    { 
+                        id: 5, 
+                        patrimonio: "MAQ-067", 
+                        numero_serie: "SER123067", 
+                        modelo: "Samsung ML-2010", 
+                        marca: "Samsung", 
+                        tipo_equipamento: "Impressora", 
+                        loja_nome: "Filial Oeste", 
+                        status_operacional: "inativo", 
+                        data_proxima_preventiva: "2025-09-30",
+                        localizacao: "Depósito",
+                        valor_aquisicao: 400.00
+                    }
+                ]
+            };
+        }
+
+        // Função para buscar filiais/lojas
+        async function fetchFiliais() {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/lojas', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            */
+            
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            return {
+                success: true,
+                data: [
+                    { id: 1, nome: "Filial Centro" },
+                    { id: 2, nome: "Filial Norte" },
+                    { id: 3, nome: "Filial Sul" },
+                    { id: 4, nome: "Filial Oeste" }
+                ]
+            };
+        }
+
+        // Função para criar máquina
+        async function createMaquina(formData) {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/maquinas', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            return await response.json();
+            */
+            
+            // Simular delay da API
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            return {
+                success: true,
+                message: `Máquina "${formData.patrimonio}" cadastrada com sucesso!`,
+                data: { id: Date.now() }
+            };
+        }
+
+        // ========================================
+        // CARREGAMENTO E RENDERIZAÇÃO
+        // ========================================
+        
+        // Função para carregar lista de máquinas
+        async function loadMaquinas() {
+            const loadingElement = document.getElementById('maquinas-loading');
+            const listContainer = document.getElementById('maquinas-list');
+            
+            try {
+                loadingElement.classList.remove('hidden');
+                
+                const result = await fetchMaquinas();
+                
+                if (result.success) {
+                    renderMaquinasList(result.data);
+                }
+                
+                // Carregar filtro de lojas
+                const filiaisResult = await fetchFiliais();
+                if (filiaisResult.success) {
+                    populateSelect('filtro-loja-maquinas', filiaisResult.data, 'nome');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar máquinas:', error);
+                showError('Erro ao carregar lista de máquinas');
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        }
+
+        // Função para carregar opções dos selects
+        async function loadFormOptions() {
+            try {
+                const filiaisResult = await fetchFiliais();
+                if (filiaisResult.success) {
+                    populateSelect('maq-loja', filiaisResult.data, 'nome');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar opções:', error);
+            }
+        }
+
+        // Função para renderizar lista de máquinas
+        function renderMaquinasList(maquinas) {
+            const container = document.getElementById('maquinas-list');
+            
+            if (maquinas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Nenhuma máquina encontrada.</p>';
+                return;
+            }
+            
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px;">
+            `;
+            
+            maquinas.forEach(maquina => {
+                const statusMap = {
+                    'ativo': { class: 'status-concluido', text: 'Ativo', icon: 'fa-check-circle' },
+                    'inativo': { class: 'status-pendente', text: 'Inativo', icon: 'fa-times-circle' },
+                    'manutencao': { class: 'status-andamento', text: 'Manutenção', icon: 'fa-tools' },
+                    'descartado': { class: 'status-pendente', text: 'Descartado', icon: 'fa-trash' }
+                };
+                
+                const status = statusMap[maquina.status_operacional] || { class: 'status-pendente', text: 'Desconhecido', icon: 'fa-question' };
+                const proximaPreventiva = new Date(maquina.data_proxima_preventiva).toLocaleDateString('pt-BR');
+                const valorFormatado = maquina.valor_aquisicao ? `R$ ${maquina.valor_aquisicao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Não informado';
+                
+                // Calcular dias até preventiva
+                const diasRestantes = Math.ceil((new Date(maquina.data_proxima_preventiva) - new Date()) / (1000 * 60 * 60 * 24));
+                let urgenciaClass = '';
+                let urgenciaText = '';
+                
+                if (diasRestantes <= 0) {
+                    urgenciaClass = 'status-pendente';
+                    urgenciaText = 'Vencida';
+                } else if (diasRestantes <= 7) {
+                    urgenciaClass = 'status-pendente';
+                    urgenciaText = 'Urgente';
+                } else if (diasRestantes <= 15) {
+                    urgenciaClass = 'status-andamento';
+                    urgenciaText = 'Próxima';
+                } else {
+                    urgenciaClass = 'status-concluido';
+                    urgenciaText = 'Normal';
+                }
+                
+                html += `
+                    <div class="maquina-item">
+                        <div class="maquina-cabecalho">
+                            <div>
+                                <strong class="maquina-patrimonio">${maquina.patrimonio}</strong>
+                                <div class="maquina-status">
+                                    <i class="fas ${status.icon}" style="color: ${status.class === 'status-concluido' ? '#2e7d32' : status.class === 'status-andamento' ? '#ef6c00' : '#c62828'};"></i>
+                                    <span class="status-badge ${status.class}">${status.text}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge ${urgenciaClass}">${urgenciaText}</span>
+                        </div>
+
+                        <div class="maquina-detalhes">
+                            <p class="detalhe-full"><strong>Tipo:</strong> ${maquina.tipo_equipamento}</p>
+                            <p><strong>Série:</strong> ${maquina.numero_serie}</p>
+                            <p><strong>Modelo:</strong> ${maquina.marca} ${maquina.modelo}</p>
+                            <p><strong>Loja:</strong> ${maquina.loja_nome}</p>
+                            <p><strong>Localização:</strong> ${maquina.localizacao}</p>
+                            <p class="detalhe-full"><strong>Próxima Preventiva:</strong> ${proximaPreventiva} (${diasRestantes > 0 ? diasRestantes + ' dias' : 'Vencida'})</p>
+                        </div>
+
+                        <div class="maquina-acoes">
+                            <button class="btn_opcoes btn-editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn_opcoes btn-preventiva">
+                                <i class="fas fa-wrench"></i> Preventiva
+                            </button>
+                            <button class="btn_opcoes btn-chamado">
+                                <i class="fas fa-plus"></i> Chamado
+                            </button>
+                            <button class="btn_opcoes btn-excluir">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ========================================
+        // HANDLER DO FORMULÁRIO
+        // ========================================
+        
+        // Função para criar nova máquina
+        async function handleNovaMaquina(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    loja_id: document.getElementById('maq-loja').value,
+                    patrimonio: document.getElementById('maq-patrimonio').value,
+                    numero_serie: document.getElementById('maq-serie').value,
+                    tipo_equipamento: document.getElementById('maq-tipo').value,
+                    marca: document.getElementById('maq-marca').value,
+                    modelo: document.getElementById('maq-modelo').value,
+                    data_aquisicao: document.getElementById('maq-data-aquisicao').value,
+                    valor_aquisicao: document.getElementById('maq-valor').value,
+                    status_operacional: document.getElementById('maq-status').value,
+                    periodicidade_preventiva: document.getElementById('maq-periodicidade').value,
+                    localizacao: document.getElementById('maq-localizacao').value,
+                    observacoes: document.getElementById('maq-observacoes').value
+                };
+                
+                // Chamar API para criar máquina
+                const result = await createMaquina(formData);
+                
+                if (result.success) {
+                    showSuccess(result.message);
+                    closeModal();
+                    loadMaquinas(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao criar máquina');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao criar máquina:', error);
+                showError('Erro ao criar máquina. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        // ========================================
+        // FILTROS E UTILIDADES
+        // ========================================
+        
+        // Função para filtrar máquinas por loja
+        function filterMaquinas() {
+            const lojaFiltro = document.getElementById('filtro-loja-maquinas').value;
+            console.log('Filtrar máquinas por loja:', lojaFiltro);
+            // Em produção, fazer nova requisição à API com filtro
+            loadMaquinas();
+        }
+
+        // Função para popular select genérico
+        function populateSelect(selectId, options, textField, valueField = 'id') {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            
+            // Manter primeira opção
+            const firstOption = select.children[0];
+            select.innerHTML = '';
+            if (firstOption) select.appendChild(firstOption);
+            
+            // Adicionar opções
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option[valueField];
+                optionElement.textContent = option[textField];
+                select.appendChild(optionElement);
+            });
+        }
+  // Função para buscar lojas
+        async function fetchLojas() {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/lojas', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            */
+            
+            // Simular delay da API
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            return {
+                success: true,
+                data: [
+                    { 
+                        id: 1, 
+                        nome: "Filial Centro", 
+                        codigo: "CENTRO", 
+                        endereco: "Av. Paulista, 1000 - Bela Vista", 
+                        cidade: "São Paulo", 
+                        estado: "SP", 
+                        cep: "01310-100",
+                        telefone: "(11) 3333-4444", 
+                        email: "centro@empresa.com",
+                        responsavel: "Maria Silva",
+                        ativa: true,
+                        data_criacao: "2024-01-15T10:30:00Z"
+                    },
+                    { 
+                        id: 2, 
+                        nome: "Filial Norte", 
+                        codigo: "NORTE", 
+                        endereco: "Rua das Flores, 500 - Vila Madalena", 
+                        cidade: "São Paulo", 
+                        estado: "SP", 
+                        cep: "05435-020",
+                        telefone: "(11) 2222-3333", 
+                        email: "norte@empresa.com",
+                        responsavel: "João Santos",
+                        ativa: true,
+                        data_criacao: "2024-02-20T14:15:00Z"
+                    },
+                    { 
+                        id: 3, 
+                        nome: "Filial Sul", 
+                        codigo: "SUL", 
+                        endereco: "Rua Augusta, 250 - Consolação", 
+                        cidade: "São Paulo", 
+                        estado: "SP", 
+                        cep: "01305-000",
+                        telefone: "(11) 4444-5555", 
+                        email: "sul@empresa.com",
+                        responsavel: "Ana Costa",
+                        ativa: true,
+                        data_criacao: "2024-03-10T09:20:00Z"
+                    },
+                    { 
+                        id: 4, 
+                        nome: "Filial Oeste", 
+                        codigo: "OESTE", 
+                        endereco: "Av. Faria Lima, 1500 - Itaim Bibi", 
+                        cidade: "São Paulo", 
+                        estado: "SP", 
+                        cep: "04538-132",
+                        telefone: "(11) 5555-6666", 
+                        email: "oeste@empresa.com",
+                        responsavel: "Carlos Oliveira",
+                        ativa: false,
+                        data_criacao: "2023-12-05T16:45:00Z"
+                    },
+                    { 
+                        id: 5, 
+                        nome: "Filial Leste", 
+                        codigo: "LESTE", 
+                        endereco: "Rua do Comércio, 800 - Mooca", 
+                        cidade: "São Paulo", 
+                        estado: "SP", 
+                        cep: "03164-000",
+                        telefone: "(11) 6666-7777", 
+                        email: "leste@empresa.com",
+                        responsavel: "Fernanda Lima",
+                        ativa: true,
+                        data_criacao: "2024-04-18T11:30:00Z"
+                    }
+                ]
+            };
+        }
+
+        // Função para criar loja
+        async function createLoja(formData) {
+            /*
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/lojas', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            return await response.json();
+            */
+            
+            // Simular delay da API
+            await new Promise(resolve => setTimeout(resolve, 1200));
+            
+            return {
+                success: true,
+                message: `Loja "${formData.nome}" criada com sucesso!`,
+                data: { id: Date.now() }
+            };
+        }
+
+        // ========================================
+        // CARREGAMENTO E RENDERIZAÇÃO
+        // ========================================
+        
+        // Função para carregar lista de lojas
+        async function loadLojas() {
+            const loadingElement = document.getElementById('lojas-loading');
+            const listContainer = document.getElementById('lojas-list');
+            
+            try {
+                loadingElement.classList.remove('hidden');
+                
+                const result = await fetchLojas();
+                
+                if (result.success) {
+                    renderLojasList(result.data);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar lojas:', error);
+                showError('Erro ao carregar lista de lojas');
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        }
+
+        // Função para renderizar lista de lojas
+        function renderLojasList(lojas) {
+            const container = document.getElementById('lojas-list');
+            
+            if (lojas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Nenhuma loja encontrada.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            lojas.forEach(loja => {
+                const statusClass = loja.ativa ? 'status-ativa' : 'status-inativa';
+                const statusText = loja.ativa ? 'Ativa' : 'Inativa';
+                const statusIcon = loja.ativa ? 'fa-check-circle' : 'fa-times-circle';
+                const dataCriacao = new Date(loja.data_criacao).toLocaleDateString('pt-BR');
+                
+                html += `
+                    <div class="loja-item">
+                        <div class="loja-header">
+                            <div class="loja-title">
+                                <h4>${loja.nome}</h4>
+                                <span class="codigo-badge">${loja.codigo}</span>
+                            </div>
+                            <span class="status-badge ${statusClass}">
+                                <i class="fas ${statusIcon}"></i>
+                                ${statusText}
+                            </span>
+                        </div>
+                        
+                        <div class="loja-info">
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${loja.endereco || 'Endereço não informado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-city"></i>
+                                <span>${loja.cidade}/${loja.estado}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-phone"></i>
+                                <span>${loja.telefone || 'Telefone não informado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>${loja.email || 'E-mail não informado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-user-tie"></i>
+                                <span>${loja.responsavel || 'Responsável não informado'}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Criada em ${dataCriacao}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="loja-acoes">
+                            <button class="btn_opcoes btn-editar" >
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn_opcoes btn-maquina" ">
+                                <i class="fas fa-desktop"></i> Máquinas
+                            </button>
+                            <button class="btn_opcoes btn-relatorio" >
+                                <i class="fas fa-chart-bar"></i> Relatórios
+                            </button>
+                            <button class="btn_opcoes" style="background: ${loja.ativa ? '#f44336' : '#4CAF50'}; ">
+                                <i class="fas ${loja.ativa ? 'fa-pause' : 'fa-play'}"></i> ${loja.ativa ? 'Desativar' : 'Ativar'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // ========================================
+        // HANDLER DO FORMULÁRIO
+        // ========================================
+        
+        // Função para criar nova loja
+        async function handleNovaLoja(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    nome: document.getElementById('loja-nome').value,
+                    codigo: document.getElementById('loja-codigo').value.toUpperCase(),
+                    endereco: document.getElementById('loja-endereco').value,
+                    cidade: document.getElementById('loja-cidade').value,
+                    estado: document.getElementById('loja-estado').value,
+                    cep: document.getElementById('loja-cep').value,
+                    telefone: document.getElementById('loja-telefone').value,
+                    email: document.getElementById('loja-email').value,
+                    responsavel: document.getElementById('loja-responsavel').value,
+                    ativa: document.getElementById('loja-ativa').checked
+                };
+                
+                // Chamar API para criar loja
+                const result = await createLoja(formData);
+                
+                if (result.success) {
+                    showSuccess(result.message);
+                    closeModal();
+                    loadLojas(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao criar loja');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao criar loja:', error);
+                showError('Erro ao criar loja. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+// ========================================
+        // FORMATAÇÃO DE CAMPOS
+        // ========================================
+        
+        // Formatação do CEP
+        document.getElementById('loja-cep').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            }
+            e.target.value = value;
+        });
+
+        // Formatação do telefone
+        document.getElementById('loja-telefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                if (value.length <= 2) {
+                    value = value.replace(/^(\d{0,2})/, '($1');
+                } else if (value.length <= 7) {
+                    value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+                } else {
+                    value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+                }
+            }
+            e.target.value = value;
+        });
+
 
         // ========================================
         // INICIALIZAÇÃO
