@@ -841,7 +841,7 @@
         }
 
         .unauthorized {
-            display: flex;
+            
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -864,8 +864,8 @@
 </head>
 <body>
     <!-- Verificação de Autorização (Comentado para teste) -->
-    <!--
-    <div id="unauthorized" class="unauthorized">
+    
+    <div id="unauthorized" class="unauthorized" style="display: none;">
         <h1><i class="fas fa-lock"></i></h1>
         <h1>Acesso Negado</h1>
         <p>Você precisa estar logado para acessar o sistema</p>
@@ -874,7 +874,7 @@
             Fazer Login
         </button>
     </div>
-    -->
+    
 
     <div class="container" id="main-system">
         <!-- Menu Lateral -->
@@ -1475,7 +1475,7 @@
         // VERIFICAÇÃO DE AUTENTICAÇÃO
         // ========================================
         
-        /*
+        
         // Função para verificar se o usuário está logado
         function checkAuthentication() {
             const token = sessionStorage.getItem('token');
@@ -1485,11 +1485,13 @@
                 // Usuário não está logado
                 document.getElementById('main-system').style.display = 'none';
                 document.getElementById('unauthorized').style.display = 'flex';
+                //alert('sem token e user. token:' + token +' . user:' + user +' .');
                 return false;
             }
             
             // Verifica se o token ainda é válido (simulação)
             if (isTokenExpired(token)) {
+                
                 sessionStorage.clear();
                 redirectToLogin();
                 return false;
@@ -1507,9 +1509,9 @@
         
         // Função para redirecionar para login
         function redirectToLogin() {
-            window.location.href = 'login.html';
+            window.location.href = 'index_tela_login.html';
         }
-        */
+        
 
         // ========================================
         // INICIALIZAÇÃO DO SISTEMA
@@ -1517,12 +1519,12 @@
         
         // Função para inicializar o sistema
         function initializeSystem() {
-            /*
+            
             // Verificar autenticação primeiro
             if (!checkAuthentication()) {
                 return;
             }
-            */
+            
             
             // Carregar dados do usuário
             loadUserInfo();
@@ -1574,7 +1576,7 @@
                 
                 // Redirecionar para login
                 alert('Logout realizado com sucesso!');
-                // window.location.href = 'login.html';
+                window.location.href = 'index_tela_login.html';
             }
         }
 
@@ -2846,28 +2848,28 @@
 
         // Função para criar loja
         async function createLoja(formData) {
-            /*
+            
             // Versão para API real:
-            const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/lojas', {
+            //const token = sessionStorage.getItem('token');
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/lojas', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                   'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
             });
             return await response.json();
-            */
+            
             
             // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 1200));
+           /* await new Promise(resolve => setTimeout(resolve, 1200));
             
             return {
                 success: true,
                 message: `Loja "${formData.nome}" criada com sucesso!`,
                 data: { id: Date.now() }
-            };
+            };*/
         }
 
         // ========================================
@@ -3011,11 +3013,12 @@
                     closeModal();
                     loadLojas(); // Recarregar lista
                 } else {
-                    showError(result.message || 'Erro ao criar loja');
+                    showError(result.error || 'Erro ao criar loja, sucesso');
                 }
                 
             } catch (error) {
-                console.error('Erro ao criar loja:', error);
+                console.error('Erro ao criar loja 1:', error);
+                //console.error('Erro ao criar loja msg:', result.message);
                 showError('Erro ao criar loja. Tente novamente.');
             } finally {
                 // Restaurar botão

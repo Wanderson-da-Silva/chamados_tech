@@ -229,11 +229,12 @@
 
     <script>
         // Função para simular chamada da API de login
-        async function login_api(username, password) {
+        async function login_api() {
             // Simula delay da requisição
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            //await new Promise(resolve => setTimeout(resolve, 1500));
             
             // Simula validação (aceita qualquer usuário/senha para demonstração)
+            /*
             if (username.trim() && password.trim()) {
                 return {
                     success: true,
@@ -252,14 +253,40 @@
                     message: "Usuário ou senha inválidos"
                 };
             }
+            */
+
+
+            
+            const formData = {
+                    username: document.getElementById('username').value,
+                    senha: document.getElementById('password').value
+                    
+                };
+
+
+            
+            
+        const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/authlogin', {
+          method: 'POST',
+          headers: {
+                //    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        
+         return await data;
+             
         }
 
         // Função para lidar com o login
         async function handleLogin(event) {
             event.preventDefault();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            
             const loginBtn = document.getElementById('login-btn');
             const loginText = document.getElementById('login-text');
             const loginSpinner = document.getElementById('login-spinner');
@@ -276,7 +303,7 @@
             loginSpinner.style.display = 'inline-block';
             
             try {
-                const result = await login_api(username, password);
+                const result = await login_api();
                 
                 if (result.success) {
                     // Armazena dados do usuário
@@ -297,15 +324,15 @@
                     
                     // Simula redirecionamento (em produção, usar window.location.href)
                     setTimeout(() => {
-                        alert('Login realizado com sucesso! Redirecionando para o sistema...');
-                        // window.location.href = 'sistema.html';
+                        //alert('Login realizado com sucesso! Redirecionando para o sistema...');
+                        window.location.href = 'techservice_app.html';
                     }, 1000);
                     
                 } else {
                     // Mostra mensagem de erro
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'login-error';
-                    errorDiv.textContent = result.message;
+                    errorDiv.textContent = result.error;
                     document.getElementById('login-form').insertBefore(errorDiv, document.getElementById('login-form').firstChild);
                     
                     // Restaura o botão
