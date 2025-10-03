@@ -277,13 +277,7 @@ class LojaController extends BaseController {
     
     private function getAll() {
         $stmt = $this->db->query("
-            SELECT l.*, 
-                   COUNT(m.id) as total_maquinas,
-                   COUNT(CASE WHEN m.status_operacional = 'ativo' THEN 1 END) as maquinas_ativas
-            FROM loja l
-            LEFT JOIN maquina m ON l.id = m.loja_id
-            GROUP BY l.id
-            ORDER BY l.nome ASC
+            SELECT * FROM loja ORDER BY nome ASC
         ");
         
         $this->sendResponse(200, [

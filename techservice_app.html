@@ -1121,7 +1121,7 @@
     </div>
 
     <!-- Modal Novo Chamado -->
-    <div id="novo-chamado" class="modal">
+    <div id="novo-chamado" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Abrir Novo Chamado</h2>
@@ -1177,7 +1177,7 @@
     </div>
 
     <!-- Modal Acompanhar Chamados -->
-    <div id="acompanhar-chamados" class="modal">
+    <div id="acompanhar-chamados" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Acompanhar Chamados</h2>
@@ -2201,18 +2201,18 @@
 
         // Função para buscar usuários
         async function fetchUsuarios() {
-            /*
+            
             // Versão para API real:
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/usuarios', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/usuarios', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             return await response.json();
-            */
             
+            /*
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 500));
             
@@ -2224,15 +2224,15 @@
                     { id: 3, username: "maria.op", nome_completo: "Maria Oliveira", email: "maria@techservice.com", perfil: "operador", ativo: true, ultimo_login: "2025-09-20 14:20:00" },
                     { id: 4, username: "carlos.view", nome_completo: "Carlos Pereira", email: "carlos@techservice.com", perfil: "visualizador", ativo: false, ultimo_login: "2025-09-15 10:15:00" }
                 ]
-            };
+            };*/
         }
 
         // Função para criar usuário
         async function createUsuario(formData) {
-            /*
+            
             // Versão para API real:
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/usuarios', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/usuarios', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -2241,8 +2241,7 @@
                 body: JSON.stringify(formData)
             });
             return await response.json();
-            */
-            
+          /*              
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 1000));
             
@@ -2250,7 +2249,8 @@
                 success: true,
                 message: `Usuário "${formData.username}" criado com sucesso!`,
                 data: { id: Date.now() }
-            };
+            };*/
+
         }
 
         // ========================================
@@ -2380,7 +2380,7 @@
                 
                 if (result.success) {
                     showSuccess(result.message);
-                    closeModal();
+                    closeModal('novo-usuario');
                     loadUsuarios(); // Recarregar lista
                 } else {
                     showError(result.message || 'Erro ao criar usuário');
@@ -2706,7 +2706,7 @@
                 
                 if (result.success) {
                     showSuccess(result.message);
-                    closeModal();
+                    closeModal('nova-maquina');
                     loadMaquinas(); // Recarregar lista
                 } else {
                     showError(result.message || 'Erro ao criar máquina');
@@ -2754,21 +2754,21 @@
         }
   // Função para buscar lojas
         async function fetchLojas() {
-            /*
+            
             // Versão para API real:
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/lojas', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/lojas', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             return await response.json();
-            */
+            
             
             // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 800));
-            
+            //await new Promise(resolve => setTimeout(resolve, 800));
+            /*
             return {
                 success: true,
                 data: [
@@ -2781,7 +2781,7 @@
                         estado: "SP", 
                         cep: "01310-100",
                         telefone: "(11) 3333-4444", 
-                        email: "centro@empresa.com",
+                        email: "centro@empresa.com.br",
                         responsavel: "Maria Silva",
                         ativa: true,
                         data_criacao: "2024-01-15T10:30:00Z"
@@ -2843,14 +2843,14 @@
                         data_criacao: "2024-04-18T11:30:00Z"
                     }
                 ]
-            };
+            };*/
         }
 
         // Função para criar loja
         async function createLoja(formData) {
             
             // Versão para API real:
-            //const token = sessionStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/lojas', {
                 method: 'POST',
                 headers: {
@@ -3010,7 +3010,7 @@
                 
                 if (result.success) {
                     showSuccess(result.message);
-                    closeModal();
+                    closeModal('nova-loja');
                     loadLojas(); // Recarregar lista
                 } else {
                     showError(result.error || 'Erro ao criar loja, sucesso');
