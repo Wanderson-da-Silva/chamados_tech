@@ -1271,6 +1271,81 @@
         </div>
     </div>
 
+    <!-- Modal Editar Usuário -->
+    <div id="editar-usuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Usuário</h2>
+                <button class="close" onclick="closeModal('editar-usuario')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-editar-usuario" onsubmit="handleUpdateUsuario(event)">
+                <input type="hidden" id="edit-user-id">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="edit-user-nome">Nome Completo *</label>
+                        <input type="text" class="form-control" id="edit-user-nome" placeholder="Ex: João Silva Santos" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-username">Usuário *</label>
+                        <input type="text" class="form-control" id="edit-user-username" placeholder="Ex: joao.silva" required>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="edit-user-email">E-mail *</label>
+                        <input type="email" class="form-control" id="edit-user-email" placeholder="joao@empresa.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-telefone">Telefone</label>
+                        <input type="tel" class="form-control" id="edit-user-telefone" placeholder="(11) 99999-9999">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="edit-user-senha">Nova Senha (branco para manter)</label>
+                        <input type="password" class="form-control" id="edit-user-senha" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-confirma-senha">Confirmar Nova Senha</label>
+                        <input type="password" class="form-control" id="edit-user-confirma-senha" placeholder="••••••••" required>
+                    </div>
+                </div>
+                                
+                <div class="form-group">
+                    <label for="edit-user-perfil">Perfil *</label>
+                    <select id="edit-user-perfil" class="form-control"  required>
+                        <option value="">Selecione o perfil</option>
+                        <option value="admin">Administrador</option>
+                        <option value="tecnico">Técnico</option>
+                        <option value="operador">Operador</option>
+                        <option value="visualizador">Visualizador</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="edit-user-ativo" checked>
+                        Usuário Ativo
+                    </label>
+                </div>
+                <div style=" margin-top: 25px;" class="usuario-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('editar-usuario')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Atualizar
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+
+
 
     <!-- Modal Nova Máquina -->
     <div id="nova-maquina" class="modal" style="display: none;">
@@ -1586,17 +1661,17 @@
         
         // Função para buscar dados do dashboard
         async function fetchDashboardData() {
-            /*
+            
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/dashboard', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/dashboard', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             return await response.json();
-            */
             
+            /*
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 1000));
             
@@ -1608,21 +1683,22 @@
                     concluidos: 156
                 }
             };
+            */
         }
 
         // Função para buscar dados das preventivas
         async function fetchPreventivesData() {
-            /*
+            
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/preventivas', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/preventivas', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             return await response.json();
-            */
             
+            /*
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 800));
             
@@ -1665,21 +1741,22 @@
                     ]
                 }
             };
+            */
         }
 
         // Função para buscar chamados
         async function fetchChamados() {
-            /*
+            
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/chamados', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             return await response.json();
-            */
             
+            /*
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 600));
             
@@ -1715,21 +1792,22 @@
                     }
                 ]
             };
+            */
         }
 
         // Função para buscar filiais
         async function fetchFiliais() {
-            /*
+            
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/filiais', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/filiais', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             return await response.json();
-            */
             
+            /*
             return {
                 success: true,
                 data: [
@@ -1739,13 +1817,14 @@
                     { id: 4, nome: "Filial Oeste" }
                 ]
             };
+            */
         }
 
         // Função para criar novo chamado
         async function createChamado(formData) {
-            /*
+            
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/chamados', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1754,8 +1833,8 @@
                 body: JSON.stringify(formData)
             });
             return await response.json();
-            */
             
+            /*
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 1500));
             
@@ -1766,7 +1845,7 @@
                     id: Date.now(),
                     numero: `CH-${String(Date.now()).slice(-3)}`
                 }
-            };
+            };*/
         }
 
         // ========================================
@@ -2322,7 +2401,7 @@
                         </div>
                         
                         <div class="usuario-acoes">
-                            <button class="btn_opcoes btn-editar">
+                            <button class="btn_opcoes btn-editar" onclick="editarUsuario(${usuario.id})"  >
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button class="btn_opcoes btn-senha">
@@ -2401,7 +2480,7 @@
             /*
             // Versão para API real:
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/maquinas', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -2490,7 +2569,7 @@
             /*
             // Versão para API real:
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/lojas', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/lojas', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -2517,7 +2596,7 @@
             /*
             // Versão para API real:
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/maquinas', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -2648,7 +2727,7 @@
                         </div>
 
                         <div class="maquina-acoes">
-                            <button class="btn_opcoes btn-editar">
+                            <button class="btn_opcoes btn-editar" onclick="editarMaquina(${maquina.id})" >
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button class="btn_opcoes btn-preventiva">
@@ -2955,7 +3034,7 @@
                         </div>
                         
                         <div class="loja-acoes">
-                            <button class="btn_opcoes btn-editar" >
+                            <button class="btn_opcoes btn-editar" onclick="editarLoja(${loja.id})">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button class="btn_opcoes btn-maquina" ">
@@ -3026,6 +3105,161 @@
                 submitBtn.innerHTML = originalText;
             }
         }
+
+        // Função para buscar dados do usuário e preencher formulário de edição
+        async function editarUsuario(userId) {
+            try {
+                // Mostrar loading
+                //showLoading('Carregando dados do usuário...');
+                
+                // Buscar dados do usuário na API
+                const usuario = await getUsuarioById(userId);
+                
+                if (usuario.success) {
+                    const dados = usuario.data;
+                    
+                    // Preencher formulário de edição
+                    document.getElementById('edit-user-id').value = dados.id;
+                    document.getElementById('edit-user-nome').value = dados.nome_completo;
+                    document.getElementById('edit-user-username').value = dados.username;
+                    document.getElementById('edit-user-email').value = dados.email;
+                    document.getElementById('edit-user-telefone').value = dados.telefone || '';
+                    document.getElementById('edit-user-perfil').value = dados.perfil;
+                    document.getElementById('edit-user-ativo').checked = dados.ativo;
+                    
+                    // Limpar campos de senha
+                    document.getElementById('edit-user-senha').value = '';
+                    document.getElementById('edit-user-confirma-senha').value = '';
+                    
+                    // Abrir modal de edição
+                    openModal('editar-usuario');
+                    
+                } else {
+                    showError(usuario.message || 'Erro ao buscar dados do usuário');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao buscar usuário:', error);
+                showError('Erro ao carregar dados do usuário. Tente novamente.');
+            } 
+        }
+
+        // Função para atualizar usuário
+        async function handleUpdateUsuario(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('edit-user-id').value;
+            const senha = document.getElementById('edit-user-senha').value;
+            const confirmaSenha = document.getElementById('edit-user-confirma-senha').value;
+            
+            // Validar senhas apenas se foram preenchidas
+            if (senha || confirmaSenha) {
+                if (senha !== confirmaSenha) {
+                    showError('As senhas não coincidem!');
+                    return;
+                }
+                
+                if (senha.length < 6) {
+                    showError('A senha deve ter no mínimo 6 caracteres!');
+                    return;
+                }
+            }
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    id: userId,
+                    nome_completo: document.getElementById('edit-user-nome').value,
+                    username: document.getElementById('edit-user-username').value,
+                    email: document.getElementById('edit-user-email').value,
+                    telefone: document.getElementById('edit-user-telefone').value,
+                    perfil: document.getElementById('edit-user-perfil').value,
+                    ativo: document.getElementById('edit-user-ativo').checked
+                };
+                
+                // Adicionar senha apenas se foi alterada
+                if (senha) {
+                    formData.senha = senha;
+                }
+                
+                // Chamar API para atualizar usuário
+                const result = await updateUsuario(userId, formData);
+                
+                if (result.success) {
+                    showSuccess(result.message || 'Usuário atualizado com sucesso!');
+                    closeModal('editar-usuario');
+                    loadUsuarios(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao atualizar usuário');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar usuário:', error);
+                showError('Erro ao atualizar usuário. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        // Funções de API (adicionar ao seu arquivo de serviços/API)
+
+        // Buscar usuário por ID
+        async function getUsuarioById(userId) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/usuarios/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                   'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                    }
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+
+        // Atualizar usuário
+        async function updateUsuario(userId, formData) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/usuarios/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                   'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+
+
+
+
+
+
 // ========================================
         // FORMATAÇÃO DE CAMPOS
         // ========================================

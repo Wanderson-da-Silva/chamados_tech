@@ -1098,7 +1098,39 @@ class UsuarioController extends BaseController {
                 $this->sendResponse(405, ['error' => 'Método não permitido']);
         }
     }
-    private function getById($id) {}
+    private function getById($id) {
+
+         if ($this->user->perfil !== 'admin') {
+            $this->sendResponse(403, ['error' => 'Acesso negado']);
+        }
+        
+        $stmt = $this->db->prepare("
+            SELECT id, username, nome_completo, email, telefone, perfil, ativo, ultimo_login,
+                   data_criacao
+            FROM usuario WHERE id = ? ");
+        $result = $stmt->execute([$id]);
+
+        try{
+            
+            if ($result) {
+
+                $this->sendResponse(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+
+            }else{
+                    $this->sendResponse(401, ['error' => 'Usuario não encontrado']);
+
+            }
+        }catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao encontrar usuario: ' . $e->getMessage()]);
+        }
+
+
+        
+
+    }
     private function update($params) {}
     private function getAll() {
         // Apenas admins podem listar todos os usuários
