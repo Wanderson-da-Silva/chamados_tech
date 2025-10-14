@@ -1132,42 +1132,100 @@ class UsuarioController extends BaseController {
         
 
     }
+// private function update($params) {
+//     // 1️⃣ Extrai o ID do array de params
+//     $id = $params[0];
+    
+//     // 2️⃣ Captura os dados do body (JSON)
+//     $data = json_decode(file_get_contents('php://input'), true);
+    
+//     // 3️⃣ Valida se há dados
+//     if (empty($data)) {
+//         $this->sendResponse(400, ['error' => 'Nenhum dado foi enviado']);
+//         return;
+//     }
+    
+//     // 4️⃣ Campos permitidos para atualização
+//     $allowedFields = ['username', 'nome_completo', 'email', 'telefone', 'perfil', 'ativo', 'senha'];
+//     $updateData = [];
+    
+//     foreach ($data as $key => $value) {
+//         if (in_array($key, $allowedFields) && !empty($value)) {
+//             $updateData[$key] = $value;
+//         }
+//     }
+    
+//     if (empty($updateData)) {
+//         $this->sendResponse(400, ['error' => 'Nenhum campo válido para atualizar']);
+//         return;
+//     }
+    
+//     // 5️⃣ Hash da senha se foi enviada
+//     if (isset($updateData['senha'])) {
+//         $updateData['senha_hash'] = password_hash($updateData['senha'], PASSWORD_BCRYPT);
+//         unset($updateData['senha']); // Remove 'senha' e usa 'senha_hash'
+//     }
+    
+//     try {
+//         // 6️⃣ Monta a query dinamicamente
+//         $fields = [];
+//         $values = [];
+        
+//         foreach ($updateData as $key => $value) {
+//             $fields[] = "$key = ?";
+//             $values[] = $value;
+//         }
+        
+//         $values[] = $id; // Adiciona o ID no final
+        
+//         $sql = "UPDATE usuario SET " . implode(', ', $fields) . " WHERE id = ?";
+        
+//         $stmt = $this->db->prepare($sql);
+//         $stmt->execute($values);
+        
+//         // 7️⃣ Retorna sucesso
+//         $this->sendResponse(200, [
+//             'success' => true,
+//             'message' => 'Usuário atualizado com sucesso',
+//             'id' => $id
+//         ]);
+        
+//     } catch (PDOException $e) {
+//         $this->sendResponse(500, ['error' => 'Erro ao atualizar usuário: ' . $e->getMessage()]);
+//     }
+// }
+
 private function update($params) {
-    // 1️⃣ Extrai o ID do array de params
+    // 1️⃣ ID vem da URL (via Router)
     $id = $params[0];
     
-    // 2️⃣ Captura os dados do body (JSON)
-    $data = json_decode(file_get_contents('php://input'), true);
+    // 2️⃣ Dados vêm do body (mesma forma que o create)
+    $data = $this->getJsonInput();  // ← Igual ao create!
     
-    // 3️⃣ Valida se há dados
+    // 3️⃣ Valida
     if (empty($data)) {
         $this->sendResponse(400, ['error' => 'Nenhum dado foi enviado']);
         return;
     }
     
-    // 4️⃣ Campos permitidos para atualização
+    // 4️⃣ Campos permitidos
     $allowedFields = ['username', 'nome_completo', 'email', 'telefone', 'perfil', 'ativo', 'senha'];
     $updateData = [];
     
     foreach ($data as $key => $value) {
-        if (in_array($key, $allowedFields) && !empty($value)) {
+        if (in_array($key, $allowedFields)) {
             $updateData[$key] = $value;
         }
     }
     
-    if (empty($updateData)) {
-        $this->sendResponse(400, ['error' => 'Nenhum campo válido para atualizar']);
-        return;
-    }
-    
-    // 5️⃣ Hash da senha se foi enviada
+    // 5️⃣ Hash senha se fornecida
     if (isset($updateData['senha'])) {
         $updateData['senha_hash'] = password_hash($updateData['senha'], PASSWORD_BCRYPT);
-        unset($updateData['senha']); // Remove 'senha' e usa 'senha_hash'
+        unset($updateData['senha']);
     }
     
     try {
-        // 6️⃣ Monta a query dinamicamente
+        // 6️⃣ Monta query
         $fields = [];
         $values = [];
         
@@ -1176,24 +1234,25 @@ private function update($params) {
             $values[] = $value;
         }
         
-        $values[] = $id; // Adiciona o ID no final
+        $values[] = $id;
         
         $sql = "UPDATE usuario SET " . implode(', ', $fields) . " WHERE id = ?";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute($values);
         
-        // 7️⃣ Retorna sucesso
         $this->sendResponse(200, [
             'success' => true,
-            'message' => 'Usuário atualizado com sucesso',
-            'id' => $id
+            'message' => 'Usuário atualizado com sucesso'
         ]);
         
     } catch (PDOException $e) {
         $this->sendResponse(500, ['error' => 'Erro ao atualizar usuário: ' . $e->getMessage()]);
     }
 }
+
+
+
     private function getAll() {
         // Apenas admins podem listar todos os usuários
         if ($this->user->perfil !== 'admin') {
