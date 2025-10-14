@@ -1300,17 +1300,17 @@
                     </div>
                     <div class="form-group">
                         <label for="edit-user-telefone">Telefone</label>
-                        <input type="tel" class="form-control" id="edit-user-telefone" placeholder="(11) 99999-9999">
+                        <input type="tel" class="form-control" id="edit-user-telefone" placeholder="(11) 99999-9999" maxlength="15">
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
                         <label for="edit-user-senha">Nova Senha (branco para manter)</label>
-                        <input type="password" class="form-control" id="edit-user-senha" placeholder="••••••••" required>
+                        <input type="password" class="form-control" id="edit-user-senha" placeholder="••••••••" >
                     </div>
                     <div class="form-group">
                         <label for="edit-user-confirma-senha">Confirmar Nova Senha</label>
-                        <input type="password" class="form-control" id="edit-user-confirma-senha" placeholder="••••••••" required>
+                        <input type="password" class="form-control" id="edit-user-confirma-senha" placeholder="••••••••" >
                     </div>
                 </div>
                                 
@@ -1658,7 +1658,14 @@
         // ========================================
         // CHAMADAS DE API (SIMULADAS)
         // ========================================
-        
+    
+    
+            const inputTelefone = document.getElementById('edit-user-telefone');
+    
+    
+
+
+
         // Função para buscar dados do dashboard
         async function fetchDashboardData() {
             
@@ -3117,6 +3124,7 @@
                 
                 if (usuario.success) {
                     const dados = usuario.data;
+                    // console.log(dados);
                     
                     // Preencher formulário de edição
                     document.getElementById('edit-user-id').value = dados.id;
@@ -3131,6 +3139,11 @@
                     document.getElementById('edit-user-senha').value = '';
                     document.getElementById('edit-user-confirma-senha').value = '';
                     
+                    const inputTelefone = document.getElementById('edit-user-telefone');
+                    if (inputTelefone.value) {
+                    inputTelefone.value = formatarTelefone(inputTelefone.value);
+}
+
                     // Abrir modal de edição
                     openModal('editar-usuario');
                     
@@ -3188,7 +3201,8 @@
                 if (senha) {
                     formData.senha = senha;
                 }
-                
+                // console.log('o userId: '+userId);
+                // console.log(' o dado: '+formData.telefone);
                 // Chamar API para atualizar usuário
                 const result = await updateUsuario(userId, formData);
                 
@@ -3287,7 +3301,24 @@
             }
             e.target.value = value;
         });
-
+        // Função de formatação reutilizável
+function formatarTelefone(valor) {
+    let value = valor.replace(/\D/g, '');
+    if (value.length <= 11) {
+        if (value.length <= 2) {
+            value = value.replace(/^(\d{0,2})/, '($1');
+        } else if (value.length <= 7) {
+            value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        } else {
+            value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+        }
+    }
+    return value;
+}
+// Formatar enquanto o usuário digita
+inputTelefone.addEventListener('input', function(e) {
+    e.target.value = formatarTelefone(e.target.value);
+});
 
         // ========================================
         // INICIALIZAÇÃO
