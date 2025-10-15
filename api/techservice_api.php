@@ -966,8 +966,86 @@ class PreventivaController extends BaseController {
                 $this->sendResponse(405, ['error' => 'Método não permitido']);
         }
     }
-    private function getById($id) {}
-    private function update($params) {}
+    private function getById($id) {
+        
+        $stmt = $this->db->prepare("
+            SELECT id, maquina_id, usuario_tecnico_id, tipo, data_programada, data_realizada, status, checklist,
+                   observacoes, pecas_substituidas, custos, tempo_execucao
+            FROM preventiva WHERE id = ? ");
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+
+        try{
+            
+            if ($result) {
+
+                $this->sendResponse(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+
+            }else{
+                    $this->sendResponse(401, ['error' => 'Preventiva não encontrada']);
+
+            }
+        }catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao encontrar preventiva: ' . $e->getMessage()]);
+        }
+
+    }
+    private function update($params) {
+
+                // 1️⃣ ID vem da URL (via Router)
+            $id = $params[0];
+            
+            // 2️⃣ Dados vêm do body (mesma forma que o create)
+            $data = $this->getJsonInput();  // ← Igual ao create!
+            
+            // 3️⃣ Valida
+            if (empty($data)) {
+                $this->sendResponse(400, ['error' => 'Nenhum dado foi enviado']);
+                return;
+            }
+            
+            // 4️⃣ Campos permitidos
+                   
+
+            $allowedFields = ['maquina_id', 'usuario_tecnico_id', 'tipo', 'data_programada', 'data_realizada', 'status', 'checklist','observacoes', 'pecas_substituidas', 'custos', 'tempo_execucao'];
+            $updateData = [];
+            
+            foreach ($data as $key => $value) {
+                if (in_array($key, $allowedFields)) {
+                    $updateData[$key] = $value;
+                }
+            }
+                        
+            try {
+                // 6️⃣ Monta query
+                $fields = [];
+                $values = [];
+                
+                foreach ($updateData as $key => $value) {
+                    $fields[] = "$key = ?";
+                    $values[] = $value;
+                }
+                
+                $values[] = $id;
+                
+                $sql = "UPDATE preventiva SET " . implode(', ', $fields) . " WHERE id = ?";
+                
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute($values);
+                
+                $this->sendResponse(200, [
+                    'success' => true,
+                    'message' => 'Preventiva atualizada com sucesso'
+                ]);
+                
+            } catch (PDOException $e) {
+                $this->sendResponse(500, ['error' => 'Erro ao atualizar preventiva: ' . $e->getMessage()]);
+            }
+
+    }
     private function getProximas() {
         $stmt = $this->db->query("
             SELECT l.nome as loja_nome,
@@ -1023,6 +1101,7 @@ class PreventivaController extends BaseController {
             $params[] = $_GET['status'];
         }
         
+        try {
         $stmt = $this->db->prepare("
             SELECT p.*, m.patrimonio, l.nome as loja_nome,
                    u.nome_completo as tecnico_nome
@@ -1039,6 +1118,10 @@ class PreventivaController extends BaseController {
             'success' => true,
             'data' => $stmt->fetchAll()
         ]);
+    } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao buscar preventiva: ' . $e->getMessage()]);
+        }
+
     }
     
     private function create() {

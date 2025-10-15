@@ -955,15 +955,15 @@
                 <!-- Cards de Resumo -->
                 <div class="summary-cards" id="summary-section">
                     <div class="summary-card">
-                        <h3 class="pendente" id="pendentes-count">24</h3>
+                        <h3 class="pendente" id="pendentes-count"></h3>
                         <p>Pendentes</p>
                     </div>
                     <div class="summary-card">
-                        <h3 class="andamento" id="andamento-count">8</h3>
+                        <h3 class="andamento" id="andamento-count"></h3>
                         <p>Em Andamento</p>
                     </div>
                     <div class="summary-card">
-                        <h3 class="concluido" id="concluidos-count">156</h3>
+                        <h3 class="concluido" id="concluidos-count"></h3>
                         <p>Concluídos</p>
                     </div>
                 </div>
@@ -1543,6 +1543,107 @@
         </div>
     </div>
 
+    <!-- Modal Editar Máquina -->
+        <div id="editar-maquina" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Editar Máquina</h2>
+                    <button class="close" onclick="closeModal('editar-maquina')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="form-editar-maquina" onsubmit="handleEditarMaquina(event)">
+                    <!-- ID oculto da máquina -->
+                    <input type="hidden" id="edit-maq-id">
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-maq-loja">Loja *</label>
+                            <select class="form-control" id="edit-maq-loja" required>
+                                <option value="">Selecione a loja</option>
+                                <!-- Carregado via API -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-maq-patrimonio">Patrimônio *</label>
+                            <input type="text" class="form-control" id="edit-maq-patrimonio" placeholder="Ex: MAQ-001" required>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-maq-serie">Número de Série *</label>
+                            <input type="text" class="form-control" id="edit-maq-serie" placeholder="Ex: SER123456" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-maq-tipo">Tipo de Equipamento</label>
+                            <select class="form-control" id="edit-maq-tipo">
+                                <option value="">Selecione</option>
+                                <option value="Computador">Computador</option>
+                                <option value="Impressora">Impressora</option>
+                                <option value="Scanner">Scanner</option>
+                                <option value="Roteador">Roteador</option>
+                                <option value="Monitor">Monitor</option>
+                                <option value="Notebook">Notebook</option>
+                                <option value="Tablet">Tablet</option>
+                                <option value="Projetor">Projetor</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-maq-marca">Marca</label>
+                            <input type="text" class="form-control" id="edit-maq-marca" placeholder="Ex: HP, Dell, Canon">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-maq-modelo">Modelo</label>
+                            <input type="text" class="form-control" id="edit-maq-modelo" placeholder="Ex: LaserJet Pro">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-maq-data-aquisicao">Data de Aquisição</label>
+                            <input type="date" class="form-control" id="edit-maq-data-aquisicao">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-maq-valor">Valor de Aquisição (R$)</label>
+                            <input type="number" class="form-control" id="edit-maq-valor" step="0.01" placeholder="0,00">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-maq-status">Status Operacional</label>
+                            <select class="form-control" id="edit-maq-status">
+                                <option value="ativo">Ativo</option>
+                                <option value="inativo">Inativo</option>
+                                <option value="manutencao">Em Manutenção</option>
+                                <option value="descartado">Descartado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-maq-periodicidade">Periodicidade Preventiva (dias)</label>
+                            <input type="number" class="form-control" id="edit-maq-periodicidade" placeholder="90">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-maq-localizacao">Localização</label>
+                        <input type="text" class="form-control" id="edit-maq-localizacao" placeholder="Ex: Recepção, Sala 1, Depósito">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-maq-observacoes">Observações</label>
+                        <textarea class="form-control" id="edit-maq-observacoes" rows="3" placeholder="Observações adicionais sobre o equipamento"></textarea>
+                    </div>
+                    <div style="margin-top: 25px;" class="maquina-acoes">
+                        <button type="button" class="btn btn-cancelar" onclick="closeModal('editar-maquina')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Atualizar Máquina
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
 
 
     <script>
@@ -1874,7 +1975,7 @@
                 if (result.success) {
                     // Atualizar os números
                     document.getElementById('pendentes-count').textContent = result.data.pendentes;
-                    document.getElementById('andamento-count').textContent = result.data.andamento;
+                    document.getElementById('andamento-count').textContent = result.data.em_andamento;
                     document.getElementById('concluidos-count').textContent = result.data.concluidos;
                     
                     // Animar os cards
@@ -1955,7 +2056,7 @@
 
         // Função para popular selects de filiais
         function populateFilialSelects(filiais) {
-            const selects = ['filial', 'filter-filial'];
+            const selects = ['filial', 'filter-filial','maq-loja','edit-maq-loja','filtro-loja-maquinas'];
             
             selects.forEach(selectId => {
                 const select = document.getElementById(selectId);
@@ -2484,7 +2585,7 @@
 
         // Função para buscar máquinas
         async function fetchMaquinas() {
-            /*
+            
             // Versão para API real:
             const token = sessionStorage.getItem('token');
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas', {
@@ -2494,8 +2595,8 @@
                 }
             });
             return await response.json();
-            */
             
+            /*
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 600));
             
@@ -2569,11 +2670,12 @@
                     }
                 ]
             };
+            */
         }
 
         // Função para buscar filiais/lojas
         async function fetchFiliais() {
-            /*
+            
             // Versão para API real:
             const token = sessionStorage.getItem('token');
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/lojas', {
@@ -2583,8 +2685,8 @@
                 }
             });
             return await response.json();
-            */
             
+            /*
             await new Promise(resolve => setTimeout(resolve, 300));
             
             return {
@@ -2596,11 +2698,12 @@
                     { id: 4, nome: "Filial Oeste" }
                 ]
             };
+            */
         }
 
         // Função para criar máquina
         async function createMaquina(formData) {
-            /*
+            
             // Versão para API real:
             const token = sessionStorage.getItem('token');
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas', {
@@ -2612,7 +2715,7 @@
                 body: JSON.stringify(formData)
             });
             return await response.json();
-            */
+            /*
             
             // Simular delay da API
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -2622,6 +2725,7 @@
                 message: `Máquina "${formData.patrimonio}" cadastrada com sucesso!`,
                 data: { id: Date.now() }
             };
+            */
         }
 
         // ========================================
@@ -2643,10 +2747,8 @@
                 }
                 
                 // Carregar filtro de lojas
-                const filiaisResult = await fetchFiliais();
-                if (filiaisResult.success) {
-                    populateSelect('filtro-loja-maquinas', filiaisResult.data, 'nome');
-                }
+                loadFormOptions();
+                
             } catch (error) {
                 console.error('Erro ao carregar máquinas:', error);
                 showError('Erro ao carregar lista de máquinas');
@@ -2655,17 +2757,7 @@
             }
         }
 
-        // Função para carregar opções dos selects
-        async function loadFormOptions() {
-            try {
-                const filiaisResult = await fetchFiliais();
-                if (filiaisResult.success) {
-                    populateSelect('maq-loja', filiaisResult.data, 'nome');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar opções:', error);
-            }
-        }
+        
 
         // Função para renderizar lista de máquinas
         function renderMaquinasList(maquinas) {
@@ -2820,25 +2912,7 @@
             loadMaquinas();
         }
 
-        // Função para popular select genérico
-        function populateSelect(selectId, options, textField, valueField = 'id') {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-            
-            // Manter primeira opção
-            const firstOption = select.children[0];
-            select.innerHTML = '';
-            if (firstOption) select.appendChild(firstOption);
-            
-            // Adicionar opções
-            options.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option[valueField];
-                optionElement.textContent = option[textField];
-                select.appendChild(optionElement);
-            });
-        }
-  // Função para buscar lojas
+         // Função para buscar lojas
         async function fetchLojas() {
             
             // Versão para API real:
@@ -3270,6 +3344,68 @@
         }
 
 
+async function getMaquinaById(maquinaId){
+    try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/maquinas/${maquinaId}`, {
+                    method: 'GET',
+                    headers: {
+                   'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                    }
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+
+}
+
+async function editarMaquina(maquinaId) {
+    try {
+        // Buscar dados da máquina
+        const maquina = await getMaquinaById(maquinaId);
+        
+        if (!maquina.success) {
+            showError('Erro ao carregar dados da máquina');
+            return;
+        }
+        
+        const data = maquina.data;
+        
+        // Preencher campos do formulário
+        document.getElementById('edit-maq-id').value = data.id;
+        document.getElementById('edit-maq-loja').value = data.loja_id;
+        document.getElementById('edit-maq-patrimonio').value = data.patrimonio;
+        document.getElementById('edit-maq-serie').value = data.numero_serie;
+        document.getElementById('edit-maq-tipo').value = data.tipo_equipamento || '';
+        document.getElementById('edit-maq-marca').value = data.marca || '';
+        document.getElementById('edit-maq-modelo').value = data.modelo || '';
+        document.getElementById('edit-maq-data-aquisicao').value = data.data_aquisicao || '';
+        document.getElementById('edit-maq-valor').value = data.valor_aquisicao || '';
+        document.getElementById('edit-maq-status').value = data.status_operacional || 'ativo';
+        document.getElementById('edit-maq-periodicidade').value = data.periodicidade_preventiva || '';
+        document.getElementById('edit-maq-localizacao').value = data.localizacao || '';
+        document.getElementById('edit-maq-observacoes').value = data.observacoes || '';
+        
+        // Carregar lojas no select (se ainda não estiver carregado)
+        await loadFormOptions();
+        
+        // Reselecionar a loja após carregar opções
+        document.getElementById('edit-maq-loja').value = data.loja_id;
+        
+        // Abrir modal
+        document.getElementById('editar-maquina').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Erro ao abrir modal de edição:', error);
+        showError('Erro ao carregar dados da máquina');
+    }
+}
 
 
 
