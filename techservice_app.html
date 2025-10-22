@@ -996,11 +996,12 @@
 
                 <!-- Botões de Ação -->
                 <div class="action-buttons">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary"  onclick="openModal('preventiva-maquina')">
                         <i class="fas fa-wrench"></i>
                         Preventivas Máquinas
                     </button>
                 </div>
+                
 
                 <div class="section-divider"></div>
 
@@ -1280,7 +1281,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="form-editar-usuario" onsubmit="handleUpdateUsuario(event)">
+            <form id="form-editar-usuario" onsubmit="handleEditarUsuario(event)">
                 <input type="hidden" id="edit-user-id">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
@@ -1543,6 +1544,100 @@
         </div>
     </div>
 
+    <!-- Modal Preventiva Máquina -->
+<div id="preventiva-maquina" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Cadastro de Preventiva de Máquina</h2>
+            <button class="close" onclick="closeModal('preventiva-maquina')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-preventiva-maquina" onsubmit="handlePreventivaMaquina(event)">
+            <!-- ID oculto da preventiva -->
+            <input type="hidden" id="preventiva-id">
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="preventiva-maquina_id">Máquina *</label>
+                    <select class="form-control" id="preventiva-maquina_id" required>
+                        <option value="">Selecione uma máquina</option>
+                        <!-- Opções carregadas via API -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="preventiva-usuario_tecnico_id">Técnico Responsável *</label>
+                    <select class="form-control" id="preventiva-usuario_tecnico_id" required>
+                        <option value="">Selecione o técnico</option>
+                        <!-- Opções carregadas via API -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="preventiva-tipo">Tipo *</label>
+                    <input type="text" class="form-control" id="preventiva-tipo" placeholder="Ex: Preventiva, Corretiva" required>
+                </div>
+                <div class="form-group">
+                    <label for="preventiva-data_programada">Data Programada *</label>
+                    <input type="date" class="form-control" id="preventiva-data_programada" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="preventiva-data_realizada">Data Realizada</label>
+                    <input type="date" class="form-control" id="preventiva-data_realizada">
+                </div>
+                <div class="form-group">
+                    <label for="preventiva-status">Status *</label>
+                    <select class="form-control" id="preventiva-status" required>
+                        <option value="">Selecione o status</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="realizada">Realizada</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-checklist">Checklist</label>
+                <textarea class="form-control" id="preventiva-checklist" rows="4" placeholder="Itens verificados no checklist"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-observacoes">Observações</label>
+                <textarea class="form-control" id="preventiva-observacoes" rows="3" placeholder="Observações adicionais"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-pecas_substituidas">Peças Substituídas</label>
+                <textarea class="form-control" id="preventiva-pecas_substituidas" rows="2" placeholder="Listar peças substituídas"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-custos">Custos (R$)</label>
+                <input type="number" class="form-control" id="preventiva-custos" step="0.01" placeholder="0,00">
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-tempo_execucao">Tempo de Execução (horas)</label>
+                <input type="number" class="form-control" id="preventiva-tempo_execucao" step="0.01" placeholder="Ex: 1.5">
+            </div>
+
+            <div style="margin-top: 25px;" class="preventiva-acoes">
+                <button type="button" class="btn btn-cancelar" onclick="closeModal('preventiva-maquina')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Salvar Preventiva
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
     <!-- Modal Editar Máquina -->
         <div id="editar-maquina" class="modal" style="display: none;">
             <div class="modal-content">
@@ -1630,6 +1725,10 @@
                         <input type="text" class="form-control" id="edit-maq-localizacao" placeholder="Ex: Recepção, Sala 1, Depósito">
                     </div>
                     <div class="form-group">
+                        <label for="edit-maq-periodicidade">Localização</label>
+                        <input type="text" class="form-control" id="edit-maq-periodicidade" placeholder="Ex: 120">
+                    </div>
+                    <div class="form-group">
                         <label for="edit-maq-observacoes">Observações</label>
                         <textarea class="form-control" id="edit-maq-observacoes" rows="3" placeholder="Observações adicionais sobre o equipamento"></textarea>
                     </div>
@@ -1638,6 +1737,107 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i>
                             Atualizar Máquina
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Editar Loja -->
+        <div id="editar-loja" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Editar Loja</h2>
+                    <button class="close" onclick="closeModal('editar-loja')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="form-editar-loja" onsubmit="handleEditarLoja(event)">
+                    <!-- ID oculto da loja -->
+                    <input type="hidden" id="edit-loja-id">
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-loja-nome">Nome da Loja *</label>
+                            <input type="text" class="form-control" id="edit-loja-nome" placeholder="Ex: Filial Centro" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-loja-codigo">Código *</label>
+                            <input type="text" class="form-control" id="edit-loja-codigo" placeholder="Ex: CENTRO" required style="text-transform: uppercase;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-loja-endereco">Endereço Completo</label>
+                        <textarea class="form-control" id="edit-loja-endereco" rows="2" placeholder="Rua, número, complemento, bairro"></textarea>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label for="edit-loja-cidade">Cidade</label>
+                            <input type="text" class="form-control" id="edit-loja-cidade" placeholder="Ex: São Paulo">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-loja-estado">Estado</label>
+                            <select class="form-control" id="edit-loja-estado">
+                                <option value="">Selecione</option>
+                                <!-- Opções de estado abaixo fornecidas -->
+                                <option value="AC">Acre</option>
+                                <option value="AL">Alagoas</option>
+                                <option value="AP">Amapá</option>
+                                <option value="AM">Amazonas</option>
+                                <option value="BA">Bahia</option>
+                                <option value="CE">Ceará</option>
+                                <option value="DF">Distrito Federal</option>
+                                <option value="ES">Espírito Santo</option>
+                                <option value="GO">Goiás</option>
+                                <option value="MA">Maranhão</option>
+                                <option value="MT">Mato Grosso</option>
+                                <option value="MS">Mato Grosso do Sul</option>
+                                <option value="MG">Minas Gerais</option>
+                                <option value="PA">Pará</option>
+                                <option value="PB">Paraíba</option>
+                                <option value="PR">Paraná</option>
+                                <option value="PE">Pernambuco</option>
+                                <option value="PI">Piauí</option>
+                                <option value="RJ">Rio de Janeiro</option>
+                                <option value="RN">Rio Grande do Norte</option>
+                                <option value="RS">Rio Grande do Sul</option>
+                                <option value="RO">Rondônia</option>
+                                <option value="RR">Roraima</option>
+                                <option value="SC">Santa Catarina</option>
+                                <option value="SP">São Paulo</option>
+                                <option value="SE">Sergipe</option>
+                                <option value="TO">Tocantins</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-loja-cep">CEP</label>
+                            <input type="text" class="form-control" id="edit-loja-cep" placeholder="00000-000" maxlength="9">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="edit-loja-telefone">Telefone</label>
+                            <input type="text" class="form-control" id="edit-loja-telefone" placeholder="(11) 99999-9999">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-loja-email">E-mail</label>
+                            <input type="email" class="form-control" id="edit-loja-email" placeholder="loja@empresa.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-loja-responsavel">Responsável / Gerente</label>
+                        <input type="text" class="form-control" id="edit-loja-responsavel" placeholder="Nome do responsável pela loja">
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="edit-loja-ativa" checked>
+                            <label for="edit-loja-ativa">Loja Ativa (operacional)</label>
+                        </div>
+                    </div>
+                    <div style="text-align: right; margin-top: 25px;">
+                        <button type="button" class="btn" style="background: #ccc; color: #666; margin-right: 10px;" onclick="closeModal('editar-loja')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Atualizar Loja
                         </button>
                     </div>
                 </form>
@@ -1675,6 +1875,96 @@
             
             return true;
         }
+
+
+
+        
+// Mapeamento de tabelas para suas funções de fetch
+const tableFetchMap = {
+    'filiais': fetchFiliais,
+    'maquinas': fetchMaquinas,
+    'usuarios': fetchUsuarios
+    // Adicione outras tabelas conforme necessário
+};
+
+// Configuração de campos por tabela (opcional - use valores padrão se não especificado)
+const tableFieldConfig = {
+    'filiais': { label: 'nome', value: 'id' },
+    
+    'maquinas': { label: 'modelo', value: 'id' },
+    'usuarios': { label: 'nome', value: 'id' }
+};
+
+/**
+ * Popula um select com dados de uma tabela específica
+ * @param {string} selectId - ID do elemento select
+ * @param {string} tableName - Nome da tabela para buscar dados
+ * @param {boolean} keepFirstOption - Manter primeira opção (padrão: true)
+ */
+async function populateSelectFromTable(selectId, tableName, keepFirstOption = true) {
+    try {
+        const select = document.getElementById(selectId);
+        
+        if (!select) {
+            console.warn(`Select com id '${selectId}' não encontrado`);
+            return false;
+        }
+        
+        // Verificar se a função de fetch existe
+        const fetchFunction = tableFetchMap[tableName];
+        if (!fetchFunction) {
+            console.error(`Tabela '${tableName}' não possui função de fetch configurada`);
+            return false;
+        }
+        
+        // Buscar dados
+        const result = await fetchFunction();
+        
+        if (!result.success || !result.data) {
+            console.error(`Erro ao buscar dados de '${tableName}'`);
+            return false;
+        }
+        
+        // Obter configuração de campos (ou usar padrão)
+        const fieldConfig = tableFieldConfig[tableName] || { label: 'nome', value: 'id' };
+        
+        // Preservar primeira opção se necessário
+        const firstOption = keepFirstOption && select.children[0] ? 
+            select.children[0].cloneNode(true) : null;
+        
+        // Limpar select
+        select.innerHTML = '';
+        
+        // Restaurar primeira opção
+        if (firstOption) {
+            select.appendChild(firstOption);
+        }
+        
+        // Adicionar opções
+        result.data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item[fieldConfig.value];
+            option.textContent = item[fieldConfig.label];
+            select.appendChild(option);
+        });
+        
+        return true;
+        
+    } catch (error) {
+        console.error(`Erro ao popular select '${selectId}' com dados de '${tableName}':`, error);
+        return false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
         
         // Função para verificar se o token expirou
         function isTokenExpired(token) {
@@ -2009,17 +2299,17 @@
         }
 
         // Função para carregar opções dos formulários
-        async function loadFormOptions() {
-            try {
-                const filiaisResult = await fetchFiliais();
+        // async function loadFormOptions() {
+        //     try {
+        //         const filiaisResult = await fetchFiliais();
                 
-                if (filiaisResult.success) {
-                    populateFilialSelects(filiaisResult.data);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar opções:', error);
-            }
-        }
+        //         if (filiaisResult.success) {
+        //             populateFilialSelects(filiaisResult.data);
+        //         }
+        //     } catch (error) {
+        //         console.error('Erro ao carregar opções:', error);
+        //     }
+        // }
 
         // ========================================
         // RENDERIZAÇÃO DE DADOS
@@ -2055,27 +2345,27 @@
         }
 
         // Função para popular selects de filiais
-        function populateFilialSelects(filiais) {
-            const selects = ['filial', 'filter-filial','maq-loja','edit-maq-loja','filtro-loja-maquinas'];
+        // function populateFilialSelects(filiais) {
+        //     const selects = ['filial', 'filter-filial','maq-loja','edit-maq-loja','filtro-loja-maquinas'];
             
-            selects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                if (select) {
-                    // Limpar opções existentes (manter primeira)
-                    const firstOption = select.children[0];
-                    select.innerHTML = '';
-                    select.appendChild(firstOption);
+        //     selects.forEach(selectId => {
+        //         const select = document.getElementById(selectId);
+        //         if (select) {
+        //             // Limpar opções existentes (manter primeira)
+        //             const firstOption = select.children[0];
+        //             select.innerHTML = '';
+        //             select.appendChild(firstOption);
                     
-                    // Adicionar filiais
-                    filiais.forEach(filial => {
-                        const option = document.createElement('option');
-                        option.value = filial.id;
-                        option.textContent = filial.nome;
-                        select.appendChild(option);
-                    });
-                }
-            });
-        }
+        //             // Adicionar filiais
+        //             filiais.forEach(filial => {
+        //                 const option = document.createElement('option');
+        //                 option.value = filial.id;
+        //                 option.textContent = filial.nome;
+        //                 select.appendChild(option);
+        //             });
+        //         }
+        //     });
+        // }
 
         // Função para carregar e renderizar chamados
         async function loadChamados() {
@@ -2200,6 +2490,20 @@
             // Carregar dados específicos do modal
             if (modalId === 'acompanhar-chamados') {
                 loadChamados();
+            }
+            if (modalId === 'preventiva-maquina') {
+                // loadSelectsPreventiva();
+                populateSelectFromTable('preventiva-maquina_id', 'maquinas');
+                populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
+
+            }
+            if (modalId === 'nova-maquina') {
+                // loadSelectsPreventiva();
+             populateSelectFromTable('maq-loja', 'filiais');
+            }
+            if (modalId === 'novo-chamado') {
+                // loadSelectsPreventiva();
+             populateSelectFromTable('filial', 'filiais');
             }
         }
 
@@ -2747,7 +3051,8 @@
                 }
                 
                 // Carregar filtro de lojas
-                loadFormOptions();
+                // loadFormOptions();
+                await populateSelectFromTable('filtro-loja-maquinas', 'filiais', false);
                 
             } catch (error) {
                 console.error('Erro ao carregar máquinas:', error);
@@ -3232,7 +3537,7 @@
         }
 
         // Função para atualizar usuário
-        async function handleUpdateUsuario(event) {
+        async function handleEditarUsuario(event) {
             event.preventDefault();
             
             const userId = document.getElementById('edit-user-id').value;
@@ -3343,6 +3648,82 @@
             }
         }
 
+        // Função para atualizar maquina
+        async function handleEditarMaquina(event) {
+            event.preventDefault();
+            
+            const maquinaId = document.getElementById('edit-maq-id').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    id: maquinaId,
+                    loja_id: document.getElementById('edit-maq-loja').value,
+                    patrimonio: document.getElementById('edit-maq-patrimonio').value,
+                    numero_serie: document.getElementById('edit-maq-serie').value,
+                    tipo_equipamento: document.getElementById('edit-maq-tipo').value,
+                    marca: document.getElementById('edit-maq-marca').value,
+                    modelo: document.getElementById('edit-maq-modelo').value,
+                    data_aquisicao: document.getElementById('edit-maq-data-aquisicao').value,
+                    valor_aquisicao: document.getElementById('edit-maq-valor').value,
+                    status_operacional: document.getElementById('edit-maq-status').value,
+                    periodicidade_preventiva: document.getElementById('edit-maq-periodicidade').value,
+                    localizacao: document.getElementById('edit-maq-localizacao').value,
+                    observacoes: document.getElementById('edit-maq-observacoes').value
+                };
+                
+                // Chamar API para atualizar máquina
+                const result = await updateMaquina(maquinaId, formData);
+                
+                if (result.success) {
+                    showSuccess(result.message || 'Máquina atualizada com sucesso!');
+                    closeModal('editar-maquina');
+                    loadMaquinas(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao atualizar máquina');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar máquina:', error);
+                showError('Erro ao atualizar máquina. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+// ========================================
+// FUNÇÃO API - ATUALIZAR MÁQUINA
+// ========================================
+async function updateMaquina(maquinaId, formData) {
+    try {
+        const token = sessionStorage.getItem('token');
+
+        const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/maquinas/${maquinaId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+        throw error;
+    }
+}
+
+
 
 async function getMaquinaById(maquinaId){
     try {
@@ -3393,7 +3774,8 @@ async function editarMaquina(maquinaId) {
         document.getElementById('edit-maq-observacoes').value = data.observacoes || '';
         
         // Carregar lojas no select (se ainda não estiver carregado)
-        await loadFormOptions();
+        // await loadFormOptions();
+        await populateSelectFromTable('edit-maq-loja', 'filiais');
         
         // Reselecionar a loja após carregar opções
         document.getElementById('edit-maq-loja').value = data.loja_id;
@@ -3407,6 +3789,40 @@ async function editarMaquina(maquinaId) {
     }
 }
 
+
+
+// DELETAR MÁQUINA
+// ========================================
+async function deleteMaquina(maquinaId, patrimonio) {
+    if (!confirm(`Tem certeza que deseja excluir a máquina ${patrimonio}?\n\nEsta ação não pode ser desfeita.`)) {
+        return;
+    }
+    
+    try {
+        const token = sessionStorage.getItem('token');
+
+        const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/maquinas/${maquinaId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccess(result.message || 'Máquina excluída com sucesso!');
+            loadMaquinas(); // Recarregar lista
+        } else {
+            showError(result.message || 'Erro ao excluir máquina');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao excluir máquina:', error);
+        showError('Erro ao excluir máquina. Tente novamente.');
+    }
+}
 
 
 
@@ -3456,8 +3872,27 @@ inputTelefone.addEventListener('input', function(e) {
     e.target.value = formatarTelefone(e.target.value);
 });
 
+
+// async function loadSelectsPreventiva(){
+//     try {
+//                 const maquinasResult = await fetchMaquinas();
+//                 const tecnicosResult = await fetchFiliais();
+//                 if (filiaisResult.success) {
+//                     populateFilialSelects(filiaisResult.data);
+//                 }
+//             } catch (error) {
+//                 console.error('Erro ao carregar opções:', error);
+//             }
+
+// }
+
+
+
+
         // ========================================
         // INICIALIZAÇÃO
+        //
+        //loadFormOptions
         // ========================================
         
         // Inicializar sistema quando página carregar
