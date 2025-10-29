@@ -1892,7 +1892,7 @@ const tableFieldConfig = {
     'filiais': { label: 'nome', value: 'id' },
     
     'maquinas': { label: 'modelo', value: 'id' },
-    'usuarios': { label: 'nome', value: 'id' }
+    'usuarios': { label: 'nome_completo', value: 'id' }
 };
 
 /**
@@ -1925,6 +1925,13 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             return false;
         }
         
+        if(selectId === 'preventiva-usuario_tecnico_id'){
+            // Filtrar apenas usuários com perfil "tecnico"
+            result.data = result.data.filter(usuario => 
+                usuario.perfil === 'tecnico' || usuario.perfil === 'técnico'
+            );
+        }
+
         // Obter configuração de campos (ou usar padrão)
         const fieldConfig = tableFieldConfig[tableName] || { label: 'nome', value: 'id' };
         
@@ -2002,7 +2009,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             loadPreventivesData();
             
             // Carregar opções dos formulários
-            loadFormOptions();
+            // loadFormOptions();
         }
 
         // ========================================
@@ -3824,7 +3831,247 @@ async function deleteMaquina(maquinaId, patrimonio) {
     }
 }
 
+        // ========================================
+        // PREVENTIVA DE MÁQUINA - CRUD
+        // ========================================
 
+        // Função para criar/atualizar preventiva
+        async function handlePreventivaMaquina(event) {
+            event.preventDefault();
+            
+            const preventivaId = document.getElementById('preventiva-id').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    maquina_id: document.getElementById('preventiva-maquina_id').value,
+                    usuario_tecnico_id: document.getElementById('preventiva-usuario_tecnico_id').value,
+                    tipo: document.getElementById('preventiva-tipo').value,
+                    data_programada: document.getElementById('preventiva-data_programada').value,
+                    data_realizada: document.getElementById('preventiva-data_realizada').value || null,
+                    status: document.getElementById('preventiva-status').value,
+                    checklist: document.getElementById('preventiva-checklist').value || null,
+                    observacoes: document.getElementById('preventiva-observacoes').value || null,
+                    pecas_substituidas: document.getElementById('preventiva-pecas_substituidas').value || null,
+                    custos: document.getElementById('preventiva-custos').value || null,
+                    tempo_execucao: document.getElementById('preventiva-tempo_execucao').value || null
+                };
+                
+                let result;
+                
+                // Se tem ID, é edição; senão é criação
+                if (preventivaId) {
+                    formData.id = preventivaId;
+                    result = await updatePreventiva(preventivaId, formData);
+                } else {
+                    result = await createPreventiva(formData);
+                }
+                
+                if (result.success) {
+                    showSuccess(result.message || 'Preventiva salva com sucesso!');
+                    closeModal('preventiva-maquina');
+                    loadPreventivas(); // Recarregar lista (criar essa função)
+                } else {
+                    showError(result.message || 'Erro ao salvar preventiva');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao salvar preventiva:', error);
+                showError('Erro ao salvar preventiva. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        // ========================================
+        // FUNÇÃO API - CRIAR PREVENTIVA
+        // ========================================
+        async function createPreventiva(formData) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/preventivas', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+
+        // ========================================
+        // FUNÇÃO API - ATUALIZAR PREVENTIVA
+        // ========================================
+        async function updatePreventiva(preventivaId, formData) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/preventivas/${preventivaId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+
+        // ========================================
+        // FUNÇÃO API - BUSCAR PREVENTIVA POR ID
+        // ========================================
+        async function getPreventivaById(preventivaId) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/preventivas/${preventivaId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+
+        // ========================================
+        // FUNÇÃO - EDITAR PREVENTIVA
+        // ========================================
+        async function editarPreventiva(preventivaId) {
+            try {
+                // Buscar dados da preventiva
+                const preventiva = await getPreventivaById(preventivaId);
+                
+                if (!preventiva.success) {
+                    showError('Erro ao carregar dados da preventiva');
+                    return;
+                }
+                
+                const data = preventiva.data;
+                
+                // Preencher campos do formulário
+                document.getElementById('preventiva-id').value = data.id;
+                document.getElementById('preventiva-maquina_id').value = data.maquina_id;
+                document.getElementById('preventiva-usuario_tecnico_id').value = data.usuario_tecnico_id;
+                document.getElementById('preventiva-tipo').value = data.tipo;
+                document.getElementById('preventiva-data_programada').value = data.data_programada || '';
+                document.getElementById('preventiva-data_realizada').value = data.data_realizada || '';
+                document.getElementById('preventiva-status').value = data.status;
+                document.getElementById('preventiva-checklist').value = data.checklist || '';
+                document.getElementById('preventiva-observacoes').value = data.observacoes || '';
+                document.getElementById('preventiva-pecas_substituidas').value = data.pecas_substituidas || '';
+                document.getElementById('preventiva-custos').value = data.custos || '';
+                document.getElementById('preventiva-tempo_execucao').value = data.tempo_execucao || '';
+                
+                // Carregar opções dos selects
+                await populateSelectFromTable('preventiva-maquina_id', 'maquinas');
+                await populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
+                
+                // Reselecionar valores após carregar opções
+                document.getElementById('preventiva-maquina_id').value = data.maquina_id;
+                document.getElementById('preventiva-usuario_tecnico_id').value = data.usuario_tecnico_id;
+                
+                // Alterar título do modal
+                document.querySelector('#preventiva-maquina .modal-title').textContent = 'Editar Preventiva de Máquina';
+                
+                // Abrir modal
+                document.getElementById('preventiva-maquina').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erro ao abrir modal de edição:', error);
+                showError('Erro ao carregar dados da preventiva');
+            }
+        }
+
+        // ========================================
+        // FUNÇÃO - ABRIR MODAL PARA NOVA PREVENTIVA
+        // ========================================
+        function novaPreventiva() {
+            // Limpar formulário
+            document.getElementById('form-preventiva-maquina').reset();
+            document.getElementById('preventiva-id').value = '';
+            
+            // Carregar opções dos selects
+            populateSelectFromTable('preventiva-maquina_id', 'maquinas');
+            populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
+            
+            // Alterar título do modal
+            document.querySelector('#preventiva-maquina .modal-title').textContent = 'Cadastro de Preventiva de Máquina';
+            
+            // Abrir modal
+            document.getElementById('preventiva-maquina').style.display = 'block';
+        }
+
+        // ========================================
+        // FUNÇÃO API - DELETAR PREVENTIVA
+        // ========================================
+        async function deletePreventiva(preventivaId, tipo) {
+            if (!confirm(`Tem certeza que deseja excluir a preventiva do tipo "${tipo}"?\n\nEsta ação não pode ser desfeita.`)) {
+                return;
+            }
+            
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/preventivas/${preventivaId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess(result.message || 'Preventiva excluída com sucesso!');
+                    loadPreventivas(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao excluir preventiva');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao excluir preventiva:', error);
+                showError('Erro ao excluir preventiva. Tente novamente.');
+            }
+        }
+
+        // ========================================
+        // FUNÇÃO - CARREGAR LISTA DE PREVENTIVAS
+        // ========================================
+        async function loadPreventivas() {
+            // Implementar conforme sua estrutura de tabela/lista
+            // Similar ao loadMaquinas() que você deve ter
+            console.log('Carregar lista de preventivas...');
+        }
 
 // ========================================
         // FORMATAÇÃO DE CAMPOS
