@@ -691,9 +691,10 @@ class ChamadoController extends BaseController {
     }
     
     private function getDashboard() {
+        try{
         $stmt = $this->db->query("
             SELECT 
-                l.nome as loja_nome,
+                'TOTAL GERAL' as loja_nome,
                 COUNT(CASE WHEN c.status = 'pendente' THEN 1 END) as pendentes,
                 COUNT(CASE WHEN c.status = 'em_andamento' THEN 1 END) as em_andamento,
                 COUNT(CASE WHEN c.status = 'concluido' THEN 1 END) as concluidos,
@@ -702,13 +703,30 @@ class ChamadoController extends BaseController {
             LEFT JOIN chamado c ON l.id = c.loja_id 
                 AND c.data_abertura >= DATE_SUB(NOW(), INTERVAL 30 DAY)
             WHERE l.ativa = 1
-            GROUP BY l.id, l.nome
         ");
+        // $stmt = $this->db->query("
+        //     SELECT 
+        //         l.nome as loja_nome,
+        //         COUNT(CASE WHEN c.status = 'pendente' THEN 1 END) as pendentes,
+        //         COUNT(CASE WHEN c.status = 'em_andamento' THEN 1 END) as em_andamento,
+        //         COUNT(CASE WHEN c.status = 'concluido' THEN 1 END) as concluidos,
+        //         COUNT(*) as total
+        //     FROM loja l
+        //     LEFT JOIN chamado c ON l.id = c.loja_id 
+        //         AND c.data_abertura >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        //     WHERE l.ativa = 1
+        //     GROUP BY l.id, l.nome
+        // ");
         
         $this->sendResponse(200, [
             'success' => true,
             'data' => $stmt->fetchAll()
         ]);
+
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao gerar dash: ' . $e->getMessage()]);
+        }
+
     }
     
     private function getAll() {

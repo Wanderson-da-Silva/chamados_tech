@@ -1135,12 +1135,16 @@
                     <label for="filial">Filial</label>
                     <select class="form-control" id="filial" required>
                         <option value="">Selecione a filial</option>
-                        <!-- Opções serão carregadas via API -->
+                         <!--Opções serão carregadas via API -->
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label for="patrimonio">Patrimônio</label>
-                    <input type="text" class="form-control" id="patrimonio" placeholder="Ex: MAQ-001" required>
+                    <label for="select_patrimonio">Patrimônio</label>
+                    <select class="form-control" id="select_patrimonio" required>
+                        <option value="">Selecione o patrimônio</option>
+                        <!-- Opções serão carregadas via API -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="serie">Número de Série</label>
@@ -1724,10 +1728,7 @@
                         <label for="edit-maq-localizacao">Localização</label>
                         <input type="text" class="form-control" id="edit-maq-localizacao" placeholder="Ex: Recepção, Sala 1, Depósito">
                     </div>
-                    <div class="form-group">
-                        <label for="edit-maq-periodicidade">Localização</label>
-                        <input type="text" class="form-control" id="edit-maq-periodicidade" placeholder="Ex: 120">
-                    </div>
+                
                     <div class="form-group">
                         <label for="edit-maq-observacoes">Observações</label>
                         <textarea class="form-control" id="edit-maq-observacoes" rows="3" placeholder="Observações adicionais sobre o equipamento"></textarea>
@@ -1883,15 +1884,16 @@
 const tableFetchMap = {
     'filiais': fetchFiliais,
     'maquinas': fetchMaquinas,
-    'usuarios': fetchUsuarios
+    'usuarios': fetchUsuarios,
+    'patrimonios': fetchMaquinas
     // Adicione outras tabelas conforme necessário
 };
 
 // Configuração de campos por tabela (opcional - use valores padrão se não especificado)
 const tableFieldConfig = {
     'filiais': { label: 'nome', value: 'id' },
-    
     'maquinas': { label: 'modelo', value: 'id' },
+    'patrimonios': { label: 'patrimonio', value: 'id' },
     'usuarios': { label: 'nome_completo', value: 'id' }
 };
 
@@ -1930,6 +1932,35 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             result.data = result.data.filter(usuario => 
                 usuario.perfil === 'tecnico' || usuario.perfil === 'técnico'
             );
+        }
+
+        // Filtro para patrimônio baseado na filial selecionada
+        if(selectId === 'select_patrimonio'){
+            const filialSelect = document.getElementById('filial');
+            const filialId = filialSelect?.value;
+            
+            if(filialId){
+                result.data = result.data.filter(patrimonio => 
+                    patrimonio.filial_id == filialId
+                );
+            }
+        }
+
+        // Filtro para filial baseado no patrimônio selecionado
+        if(selectId === 'filial'){
+            const patrimonioSelect = document.getElementById('select_patrimonio');
+            const patrimonioId = patrimonioSelect?.value;
+            
+            if(patrimonioId){
+                // Encontrar o patrimônio selecionado para pegar sua filial_id
+                const patrimonioSelecionado = result.data.find(p => p.id == patrimonioId);
+                
+                if(patrimonioSelecionado && patrimonioSelecionado.filial_id){
+                    result.data = result.data.filter(filial => 
+                        filial.id == patrimonioSelecionado.filial_id
+                    );
+                }
+            }
         }
 
         // Obter configuração de campos (ou usar padrão)
@@ -2006,7 +2037,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             loadDashboardData();
             
             // Carregar dados das preventivas
-            loadPreventivesData();
+            // loadPreventivesData();
             
             // Carregar opções dos formulários
             // loadFormOptions();
@@ -2068,7 +2099,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         async function fetchDashboardData() {
             
             const token = sessionStorage.getItem('token');
-            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/dashboard', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados/dashboard', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -2270,13 +2301,20 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                 const result = await fetchDashboardData();
                 
                 if (result.success) {
+
+                    // alert("Dash board com sucesso !");
                     // Atualizar os números
-                    document.getElementById('pendentes-count').textContent = result.data.pendentes;
-                    document.getElementById('andamento-count').textContent = result.data.em_andamento;
-                    document.getElementById('concluidos-count').textContent = result.data.concluidos;
-                    
+                    document.getElementById('pendentes-count').textContent = result.data[0].pendentes ;
+                    document.getElementById('andamento-count').textContent = result.data[0].em_andamento ;
+                    document.getElementById('concluidos-count').textContent = result.data[0].concluidos ;
+
+                    // alert("numero pendentes" +  result +" !");
+                    // console.log(result.data[0].pendentes);
                     // Animar os cards
                     animateSummaryCards();
+                }else{
+                    
+                    showError('Dash board retornou sem sucesso');
                 }
             } catch (error) {
                 console.error('Erro ao carregar dashboard:', error);
@@ -2511,6 +2549,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             if (modalId === 'novo-chamado') {
                 // loadSelectsPreventiva();
              populateSelectFromTable('filial', 'filiais');
+             populateSelectFromTable('select_patrimonio', 'patrimonios');
             }
         }
 
@@ -2538,8 +2577,8 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                 
                 // Coletar dados do formulário
                 const formData = {
-                    filial: document.getElementById('filial').value,
-                    patrimonio: document.getElementById('patrimonio').value,
+                    // filial: document.getElementById('filial').value,
+                    patrimonio: document.getElementById('select_patrimonio').value,
                     serie: document.getElementById('serie').value,
                     problema: document.getElementById('problema').value,
                     fotos: document.getElementById('fotos').files,
@@ -4072,6 +4111,48 @@ async function deleteMaquina(maquinaId, patrimonio) {
             // Similar ao loadMaquinas() que você deve ter
             console.log('Carregar lista de preventivas...');
         }
+        // Event listener para quando a FILIAL for alterada
+        document.getElementById('filial').addEventListener('change', async function() {
+            const patrimonioSelect = document.getElementById('select_patrimonio');
+            
+            // Limpar seleção de patrimônio
+            patrimonioSelect.value = '';
+            
+            // Recarregar patrimônios com o filtro
+            await populateSelectFromTable('select_patrimonio', 'patrimonios'); // ajuste o nome da tabela conforme seu projeto
+        });
+
+        // Event listener para quando o PATRIMÔNIO for alterado
+        document.getElementById('select_patrimonio').addEventListener('change', async function() {
+            const patrimonioId = this.value;
+            const filialSelect = document.getElementById('filial');
+            
+            if(patrimonioId){
+                // Recarregar filiais com o filtro
+                await populateSelectFromTable('filial', 'filial'); // ajuste o nome da tabela conforme seu projeto
+                
+                // Buscar o patrimônio selecionado para pegar sua filial_id e selecionar automaticamente
+                const fetchFunction = tableFetchMap['patrimonio']; // ajuste conforme necessário
+                const result = await fetchFunction();
+                
+                if(result.success && result.data){
+                    const patrimonioSelecionado = result.data.find(p => p.id == patrimonioId);
+                    if(patrimonioSelecionado && patrimonioSelecionado.filial_id){
+                        filialSelect.value = patrimonioSelecionado.filial_id;
+                    }
+                }
+            } else {
+                // Se patrimônio for limpo, recarregar todas as filiais
+                filialSelect.value = '';
+                await populateSelectFromTable('filial', 'filial');
+            }
+        });
+
+
+
+
+
+
 
 // ========================================
         // FORMATAÇÃO DE CAMPOS
