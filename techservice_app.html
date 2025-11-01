@@ -627,7 +627,7 @@
 }
 
 /* --- Seção dos Botões --- */
-.usuario-acoes, .maquina-acoes, .loja-acoes {
+.usuario-acoes, .maquina-acoes, .loja-acoes, .chamado-acoes {
     
     display: flex;
 
@@ -1141,14 +1141,14 @@
                 
                 <div class="form-group">
                     <label for="select_patrimonio">Patrimônio</label>
-                    <select class="form-control" id="select_patrimonio" required>
+                    <select class="form-control" id="select_patrimonio"  required>
                         <option value="">Selecione o patrimônio</option>
                         <!-- Opções serão carregadas via API -->
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="serie">Número de Série</label>
-                    <input type="text" class="form-control" id="serie" placeholder="Ex: SER123456" required>
+                    <input type="text" class="form-control" id="serie" placeholder="Ex: SER123456" readonly required>
                 </div>
                 <div class="form-group">
                     <label for="problema">Descrição do Problema</label>
@@ -1170,7 +1170,7 @@
                         <input type="file" id="videos" multiple accept="video/*" style="display: none;">
                     </div>
                 </div>
-                <div style="text-align: right; margin-top: 25px;">
+                <div class="chamado-acoes">
                     <button type="button" class="btn btn-cancelar"  onclick="closeModal('novo-chamado')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i>
@@ -1886,6 +1886,7 @@ const tableFetchMap = {
     'maquinas': fetchMaquinas,
     'usuarios': fetchUsuarios,
     'patrimonios': fetchMaquinas
+
     // Adicione outras tabelas conforme necessário
 };
 
@@ -1940,8 +1941,9 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             const filialId = filialSelect?.value;
             
             if(filialId){
+                // alert('A filial selecionada é' + filialId + ' !');
                 result.data = result.data.filter(patrimonio => 
-                    patrimonio.filial_id == filialId
+                    patrimonio.loja_id == filialId
                 );
             }
         }
@@ -1952,14 +1954,19 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             const patrimonioId = patrimonioSelect?.value;
             
             if(patrimonioId){
-                // Encontrar o patrimônio selecionado para pegar sua filial_id
-                const patrimonioSelecionado = result.data.find(p => p.id == patrimonioId);
-                
-                if(patrimonioSelecionado && patrimonioSelecionado.filial_id){
-                    result.data = result.data.filter(filial => 
-                        filial.id == patrimonioSelecionado.filial_id
-                    );
-                }
+                // alert('O patrimonio selecionada é' + patrimonioId + ' !');
+
+                const maquina = await getMaquinaById(patrimonioId);
+
+                if (!maquina.success) {
+                    showError('Erro ao carregar dados da máquina');
+                    return;
+                }   
+                const idLojaMaq = maquina.data.loja_id;
+                // alert('O loja encontrada é' + idLojaMaq + ' !');
+                result.data = result.data.filter(filial => 
+                                    filial.id == idLojaMaq
+                                );
             }
         }
 
@@ -4114,38 +4121,80 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // Event listener para quando a FILIAL for alterada
         document.getElementById('filial').addEventListener('change', async function() {
             const patrimonioSelect = document.getElementById('select_patrimonio');
+            const selectPatrim = patrimonioSelect?.value;
+            const filialSelect = document.getElementById('filial');
+            const selectFilial = filialSelect?.value;
+            if(selectPatrim && !isNaN(selectPatrim) && selectPatrim !== ""){
+                const maquina = await getMaquinaById(selectPatrim);
+
+                if (!maquina.success) {
+                    showError('Erro ao carregar dados da máquina');
+                    return;
+                }   
+                const idLojaMaq = maquina.data.loja_id;
+
+                if(Number(idLojaMaq) === Number(selectFilial)){
+                    const serieMaq = document.getElementById('serie');
+                    serieMaq.value = maquina.data.numero_serie;
+                    return;
+                }else{
+                    // Limpar seleção de patrimônio
+                patrimonioSelect.value = '';
+                const serieMaq = document.getElementById('serie');
+                    serieMaq.value = "";
+                // Recarregar patrimônios com o filtro
+                await populateSelectFromTable('select_patrimonio', 'patrimonios'); // ajuste o nome da tabela conforme seu projeto
+                }
+                
+            }else{
+                // alert('Carregando patrimonio para filtrar!');
+                // Limpar seleção de patrimônio
+                
+                
+                // Recarregar patrimônios com o filtro
+                await populateSelectFromTable('select_patrimonio', 'patrimonios'); // ajuste o nome da tabela conforme seu projeto
+            }
             
-            // Limpar seleção de patrimônio
-            patrimonioSelect.value = '';
-            
-            // Recarregar patrimônios com o filtro
-            await populateSelectFromTable('select_patrimonio', 'patrimonios'); // ajuste o nome da tabela conforme seu projeto
         });
 
         // Event listener para quando o PATRIMÔNIO for alterado
         document.getElementById('select_patrimonio').addEventListener('change', async function() {
-            const patrimonioId = this.value;
+            //const patrimonioId = this.value;
             const filialSelect = document.getElementById('filial');
+            const selectFilial = filialSelect?.value;
+            const patrimonioSelect = document.getElementById('select_patrimonio');
+            const selectPatrim = patrimonioSelect?.value;
+
             
-            if(patrimonioId){
-                // Recarregar filiais com o filtro
-                await populateSelectFromTable('filial', 'filial'); // ajuste o nome da tabela conforme seu projeto
-                
-                // Buscar o patrimônio selecionado para pegar sua filial_id e selecionar automaticamente
-                const fetchFunction = tableFetchMap['patrimonio']; // ajuste conforme necessário
-                const result = await fetchFunction();
-                
-                if(result.success && result.data){
-                    const patrimonioSelecionado = result.data.find(p => p.id == patrimonioId);
-                    if(patrimonioSelecionado && patrimonioSelecionado.filial_id){
-                        filialSelect.value = patrimonioSelecionado.filial_id;
-                    }
-                }
-            } else {
-                // Se patrimônio for limpo, recarregar todas as filiais
+            if(selectFilial && !isNaN(selectFilial) && selectFilial !== ""){
+                // alert('há filail preenchida' + selectFilial + ' !');
+                const maquina = await getMaquinaById(selectPatrim);
+
+                if (!maquina.success) {
+                    showError('Erro ao carregar dados da máquina');
+                    return;
+                }   
+                const idLojaMaq = maquina.data.loja_id;
+
+                if(Number(idLojaMaq) === Number(selectFilial)){
+                    const serieMaq = document.getElementById('serie');
+                    serieMaq.value = maquina.data.numero_serie;
+                    return;
+                }else{
+                    // Limpar seleção de patrimônio
                 filialSelect.value = '';
-                await populateSelectFromTable('filial', 'filial');
-            }
+                const serieMaq = document.getElementById('serie');
+                    serieMaq.value = "";
+                await populateSelectFromTable('filial', 'filiais');
+                }
+
+            }else{
+                // alert('Carregando filiais para filtrar!');
+                // Se filial for limpo, recarregar todas as filiais
+                await populateSelectFromTable('filial', 'filiais');
+
+            }            
+            
         });
 
 
