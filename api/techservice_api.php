@@ -817,7 +817,7 @@ class ChamadoController extends BaseController {
     
     private function create() {
         $data = $this->getJsonInput();
-        $this->validateRequired($data, ['loja_id', 'maquina_id', 'titulo', 'descricao']);
+        $this->validateRequired($data, ['loja_id', 'patrimonio', 'descricao']);
         
         try {
             $this->db->beginTransaction();
@@ -834,10 +834,9 @@ class ChamadoController extends BaseController {
                 $data['loja_id'],
                 $data['maquina_id'],
                 $this->user->user_id,
-                $data['titulo'],
-                $data['descricao'],
-                $data['categoria'] ?? null,
-                $data['prioridade'] ?? 'media'
+                $data['problema'],
+               // $data['categoria'] ?? null,
+               // $data['prioridade'] ?? 'media'
             ]);
             
             $chamadoId = $this->db->lastInsertId();
@@ -1075,9 +1074,12 @@ class PreventivaController extends BaseController {
                        WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 7 THEN 'Urgente'
                        WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 15 THEN 'Próxima'
                        ELSE 'Normal'
-                   END as status_preventiva
+                   END as status_preventiva,
+                   p.id as preventiva_id,
+                    p.data_programada
             FROM maquina m
             INNER JOIN loja l ON m.loja_id = l.id
+            LEFT JOIN preventiva p ON p.maquina_id = m.id
             WHERE m.status_operacional = 'ativo' 
                 AND m.data_proxima_preventiva IS NOT NULL
                 AND l.ativa = 1

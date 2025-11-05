@@ -331,8 +331,8 @@
         }
 
         .dias-restantes {
-            background: #ffecb3;
-            color: #f57f17;
+            background: #d1ffb3;
+            color: #28790f;
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.8rem;
@@ -342,6 +342,10 @@
         .dias-restantes.urgente {
             background: #ffcdd2;
             color: #d32f2f;
+        }
+        .dias-restantes.alerta {
+            background: #ffecb3;
+            color: #f57f17;
         }
 /* lista usuario */
 
@@ -421,6 +425,12 @@
             background: #e3f2fd;
             border-color: #2196f3;
             transform: translateY(-2px);
+        }
+
+        .patrimonio-dias{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .status-badge {
@@ -627,7 +637,7 @@
 }
 
 /* --- Seção dos Botões --- */
-.usuario-acoes, .maquina-acoes, .loja-acoes, .chamado-acoes {
+.usuario-acoes, .maquina-acoes, .loja-acoes, .chamado-acoes,.preventiva-acoes {
     
     display: flex;
 
@@ -2133,7 +2143,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         async function fetchPreventivesData() {
             
             const token = sessionStorage.getItem('token');
-            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/preventivas', {
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/preventivas/proximas', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -2342,7 +2352,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                 const result = await fetchPreventivesData();
                 
                 if (result.success) {
-                    renderPreventivesGrid(result.data.filiais);
+                    renderPreventivesGrid(result.data);
                 }
             } catch (error) {
                 console.error('Erro ao carregar preventivas:', error);
@@ -2369,21 +2379,28 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         
         // Função para renderizar grid de preventivas
         function renderPreventivesGrid(filiais) {
+            //alert('renderizando preventivas');
             const grid = document.getElementById('filiais-grid');
             grid.innerHTML = '';
-            
+            console.log(filiais);
             filiais.forEach(filial => {
                 const filialCard = document.createElement('div');
                 filialCard.className = 'filial-card';
                 
                 let maquinasHtml = '';
                 filial.maquinas.forEach(maquina => {
-                    const isUrgente = maquina.diasRestantes <= 3;
+                    const isUrgente = maquina.dias_restantes != null && maquina.dias_restantes <= 15;
+                    const isAlerta = maquina.dias_restantes != null && maquina.dias_restantes > 3 && maquina.dias_restantes <= 30;
+                    
                     maquinasHtml += `
                         <div class="maquina-item">
-                            <span class="patrimonio">${maquina.patrimonio}</span>
-                            <span class="dias-restantes ${isUrgente ? 'urgente' : ''}">${maquina.diasRestantes} dias</span>
-                        </div>
+                            <div class="patrimonio-dias">
+                                <span class="patrimonio">${maquina.patrimonio}</span>
+                                <span class="dias-restantes ${isUrgente ? 'urgente' : ''} ${isAlerta ? 'alerta' : ''}">Prazo ${maquina.dias_restantes} dias</span>
+                            </div>
+                                <span class="data-programada ">Data: ${maquina.data_programada? maquina.data_programada.split('-').reverse().join('/') : 'sem marcação'}</span>
+                        
+                            </div>
                     `;
                 });
                 
@@ -2516,6 +2533,9 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             if (page === 'preventivas') {
                 // Mostrar loading se necessário
                 const loadingElement = document.getElementById('preventivas-loading');
+
+                loadPreventivesData();
+
                 if (document.getElementById('filiais-grid').children.length === 0) {
                     loadingElement.classList.remove('hidden');
                     setTimeout(() => {
@@ -2584,8 +2604,8 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                 
                 // Coletar dados do formulário
                 const formData = {
-                    // filial: document.getElementById('filial').value,
-                    patrimonio: document.getElementById('select_patrimonio').value,
+                    loja_id: document.getElementById('filial').value,
+                    maquina_id: document.getElementById('select_patrimonio').value,
                     serie: document.getElementById('serie').value,
                     problema: document.getElementById('problema').value,
                     fotos: document.getElementById('fotos').files,
