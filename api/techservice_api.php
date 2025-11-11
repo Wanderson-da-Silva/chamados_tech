@@ -817,7 +817,7 @@ class ChamadoController extends BaseController {
     
     private function create() {
         $data = $this->getJsonInput();
-        $this->validateRequired($data, ['loja_id', 'patrimonio', 'descricao']);
+        $this->validateRequired($data, ['loja_id', 'maquina_id', 'problema']);
         
         try {
             $this->db->beginTransaction();
@@ -825,18 +825,19 @@ class ChamadoController extends BaseController {
             // Inserir chamado
             $stmt = $this->db->prepare("
                 INSERT INTO chamado (
-                    loja_id, maquina_id, usuario_abertura_id, titulo, descricao, 
+                    loja_id, maquina_id, usuario_abertura_id, descricao, 
                     categoria, prioridade, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendente')
+                ) VALUES (?, ?, ?, ?, ?, ? , 'pendente')
             ");
             
             $stmt->execute([
                 $data['loja_id'],
                 $data['maquina_id'],
                 $this->user->user_id,
+                // 2,
                 $data['problema'],
-               // $data['categoria'] ?? null,
-               // $data['prioridade'] ?? 'media'
+               $data['categoria'] ?? null,
+               $data['prioridade'] ?? 'media'
             ]);
             
             $chamadoId = $this->db->lastInsertId();

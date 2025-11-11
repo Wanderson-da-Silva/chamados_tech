@@ -1165,6 +1165,27 @@
                     <textarea class="form-control" id="problema" rows="4" placeholder="Descreva detalhadamente o problema encontrado..." required></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="categoria">Categoria</label>
+                    <select class="form-control" id="categoria" required>
+                        <option value="">Selecione a categoria</option>
+                        <option value="energia">Energia</option>
+                        <option value="colisao">Colisão</option>
+                        <option value="roda">Roda</option>
+                        <option value="vazamento">Vazamento</option>
+                        <option value="painel">Painel</option>
+                        
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="prioridade">Prioridade</label>
+                    <select class="form-control" id="prioridade" required>
+                        <option value="">Selecione a prioridade</option>
+                        <option value="baixa">Baixa</option>
+                        <option value="media">Média</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Anexar Fotos</label>
                     <div class="file-upload" onclick="document.getElementById('fotos').click()">
                         <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
@@ -2474,11 +2495,11 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                 chamadoItem.className = 'chamado-item';
                 chamadoItem.innerHTML = `
                     <div class="chamado-header">
-                        <strong>#${chamado.numero} - ${chamado.patrimonio} (${chamado.filial})</strong>
+                        <strong>#${chamado.numero} - ${chamado.patrimonio} (${chamado.loja_id})</strong>
                         <span class="status-badge ${statusClass}">${statusText[chamado.status]}</span>
                     </div>
-                    <p>${chamado.problema}</p>
-                    <small style="color: #666;">Aberto em: ${dataFormatada}</small>
+                    <p>${chamado.descricao}</p>
+                    <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
                 `;
                 
                 container.appendChild(chamadoItem);
@@ -2608,6 +2629,8 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                     maquina_id: document.getElementById('select_patrimonio').value,
                     serie: document.getElementById('serie').value,
                     problema: document.getElementById('problema').value,
+                    categoria: document.getElementById('categoria').value,
+                    prioridade: document.getElementById('prioridade').value,
                     fotos: document.getElementById('fotos').files,
                     videos: document.getElementById('videos').files
                 };
@@ -2615,13 +2638,13 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                 const result = await createChamado(formData);
                 
                 if (result.success) {
-                    showSuccess(`${result.message} Número: #${result.data.numero}`);
+                    showSuccess(`${result.message} Número: #${result.data.id}`);
                     closeModal('novo-chamado');
                     
                     // Recarregar dashboard
                     loadDashboardData();
                 } else {
-                    showError(result.message || 'Erro ao criar chamado');
+                    showError(result.error || 'Erro ao criar chamado');
                 }
                 
             } catch (error) {
