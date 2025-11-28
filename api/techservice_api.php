@@ -666,16 +666,23 @@ class ChamadoController extends BaseController {
     public function handleRequest($method, $params = []) {
         switch ($method) {
             case 'GET':
-                if (isset($params[0])) {
+                // Se não existir parâmetro específico na URL (ex: id ou 'dashboard'), use getAll()
+                if (empty($params[0]) && empty($_GET)) { 
+                    $this->getAll();
+                } 
+                elseif (isset($params[0])) {
                     if ($params[0] === 'dashboard') {
                         $this->getDashboard();
                     } else {
                         $this->getById($params[0]);
                     }
-                } else {
-                    $this->getAll();
+                } 
+                else {
+                    // Aqui, quando há parâmetros via $_GET mas sem $params[0], pode-se usar um método para filtros
+                    $this->getAllFiltered($_GET);
                 }
-                break;
+            break;
+
             case 'POST':
                 $this->create();
                 break;
@@ -730,6 +737,28 @@ class ChamadoController extends BaseController {
     }
     
     private function getAll() {
+        
+    
+        $stmt = $this->db->prepare("
+            SELECT c.*, l.nome as loja_nome, m.patrimonio, ua.nome_completo as usuario_abertura,
+                   ut.nome_completo as tecnico_responsavel,
+                   TIMESTAMPDIFF(HOUR, c.data_abertura, COALESCE(c.data_conclusao, NOW())) as horas_em_aberto
+            FROM chamado c
+            INNER JOIN loja l ON c.loja_id = l.id
+            INNER JOIN maquina m ON c.maquina_id = m.id
+            INNER JOIN usuario ua ON c.usuario_abertura_id = ua.id
+            LEFT JOIN usuario ut ON c.usuario_tecnico_id = ut.id
+            ORDER BY c.data_abertura DESC
+        ");
+        $stmt->execute();
+        $this->sendResponse(200, [
+            'success' => true,
+            'data' => $stmt->fetchAll()
+        ]);
+    }
+    
+    private function getAllFiltered() {
+    
         $where = "1=1";
         $params = [];
         
@@ -744,10 +773,10 @@ class ChamadoController extends BaseController {
             $params[] = $_GET['status'];
         }
         
-        if (isset($_GET['prioridade']) && !empty($_GET['prioridade'])) {
-            $where .= " AND c.prioridade = ?";
-            $params[] = $_GET['prioridade'];
-        }
+        // if (isset($_GET['prioridade']) && !empty($_GET['prioridade'])) {
+        //     $where .= " AND c.prioridade = ?";
+        //     $params[] = $_GET['prioridade'];
+        // }
         
         $stmt = $this->db->prepare("
             SELECT c.*, l.nome as loja_nome, m.patrimonio, ua.nome_completo as usuario_abertura,
