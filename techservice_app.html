@@ -2001,26 +2001,26 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             }
         }
         // Filtro para filial baseado no patrimônio selecionado
-        if(selectId === 'filter-filial'){
-            const statusSelect = document.getElementById('filter-status');
-            const statusName = statusSelect?.value;
+        // if(selectId === 'filter-filial'){
+        //     const statusSelect = document.getElementById('filter-status');
+        //     const statusName = statusSelect?.value;
             
-            if(statusName){
-                // alert('O patrimonio selecionada é' + patrimonioId + ' !');
+        //     if(statusName){
+        //         // alert('O patrimonio selecionada é' + patrimonioId + ' !');
 
-                const status = await getMaquinaById(patrimonioId);
+        //         const status = await getMaquinaById(patrimonioId);
 
-                if (!maquina.success) {
-                    showError('Erro ao carregar dados da máquina');
-                    return;
-                }   
-                const idLojaMaq = maquina.data.loja_id;
-                // alert('O loja encontrada é' + idLojaMaq + ' !');
-                result.data = result.data.filter(filial => 
-                                    filial.id == idLojaMaq
-                                );
-            }
-        }
+        //         if (!maquina.success) {
+        //             showError('Erro ao carregar dados da máquina');
+        //             return;
+        //         }   
+        //         const idLojaMaq = maquina.data.loja_id;
+        //         // alert('O loja encontrada é' + idLojaMaq + ' !');
+        //         result.data = result.data.filter(filial => 
+        //                             filial.id == idLojaMaq
+        //                         );
+        //     }
+        // }
 
         // Obter configuração de campos (ou usar padrão)
         const fieldConfig = tableFieldConfig[tableName] || { label: 'nome', value: 'id' };
@@ -2055,7 +2055,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
 
 // selectIdi id do select a ser preenchido
 // e alista a ser preenchida
-async function populateSelectFromReturnSelect(selectId,tableName,listId, formData) {
+async function populateSelectFromReturnSelect(selectId,tableName,listId, formData,keepFirstOption = true) {
     try {
         const select = document.getElementById(selectId);
         const list = document.getElementById(listId);
@@ -2075,34 +2075,47 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
 
             renderChamadosList(result.data);
 
-                        // Usando Map para garantir unicidade por loja_id
-            result.data = Array.from(
-                new Map(result.data.map(chamado => [chamado.loja_id, chamado])).values()
-            );
-                    
 
-            // Obter configuração de campos (ou usar padrão)
-            const fieldConfig = tableFieldConfig[tableName] || { label: 'nome', value: 'id' };
-            
-            // Preservar primeira opção se necessário
-            const firstOption = keepFirstOption && select.children[0] ? 
-                select.children[0].cloneNode(true) : null;
-            
-            // Limpar select
-            select.innerHTML = '';
-            
-            // Restaurar primeira opção
-            if (firstOption) {
-                select.appendChild(firstOption);
+            if (selectId === 'filter-filial') {
+                
+                    return true; // Mantém seleção atual
+                
             }
+
+            let fieldConfig = {};
             
-            // Adicionar opções
-            resultPesquisa.data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item[fieldConfig.value];
-                option.textContent = item[fieldConfig.label];
-                select.appendChild(option);
-            });
+            
+                    // Obter configuração de campos (ou usar padrão)
+                if(selectId ==='filter-filial' ){
+                    fieldConfig = { label: 'loja_nome', value: 'loja_id' };
+                }
+                else{
+                    fieldConfig = tableFieldConfig[tableName] || { label: 'nome', value: 'id' };
+                }
+                
+                
+                // Preservar primeira opção se necessário
+                const firstOption = keepFirstOption && select.children[0] ? 
+                    select.children[0].cloneNode(true) : null;
+               
+                // Limpar select
+                select.innerHTML = '';
+                
+                // Restaurar primeira opção
+                if (firstOption) {
+                    select.appendChild(firstOption);
+                }
+                
+                // Adicionar opções
+                result.data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item[fieldConfig.value];
+                    option.textContent = item[fieldConfig.label];
+                    select.appendChild(option);
+                });
+                
+
+            
             
             return true;
         } else {
@@ -4296,11 +4309,8 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // Event listener para quando a FILIAL for alterada
         document.getElementById('filter-filial').addEventListener('change', async function() {
             const selectStatus = document.getElementById('filter-status').value;
-            
             const selectFilial = document.getElementById('filter-filial').value;
-            
-            // alert('iniciando verificação');
-            // Coletar dados do formulário
+
                 let formData = {}; 
                 
                 // Adicionar
@@ -4313,19 +4323,42 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     formData.loja_id = selectFilial;
                 }
                 if(Object.keys(formData).length === 0){
-                    return;
+                    populateSelectFromTable('filter-filial','filiais');
+                    
+                    populateSelectFromReturnSelect('filter-filial','filiais','chamados-list', formData);
+                    
                 }else{
                     
                         populateSelectFromReturnSelect('filter-filial','filiais','chamados-list', formData);
                         
-                  
-
                 }
-                // console.log('o userId: '+userId);
-                // console.log(' o dado: '+formData.telefone);
-                // Chamar API para atualizar usuário
-             
-            
+          
+        });
+
+        document.getElementById('filter-status').addEventListener('change', async function() {
+            const selectStatus = document.getElementById('filter-status').value;
+            const selectFilial = document.getElementById('filter-filial').value;
+
+                let formData = {}; 
+                
+                // Adicionar
+                if (selectStatus) {
+                    // alert('numero status ' + selectStatus);
+                    formData.status = selectStatus;
+                }
+                if (selectFilial) {
+                    // alert('numero filial ' + selectFilial);
+                    formData.loja_id = selectFilial;
+                }
+                if(Object.keys(formData).length === 0){
+                    populateSelectFromTable('filter-filial','filiais');
+                    populateSelectFromReturnSelect('filter-filial','filiais','chamados-list', formData);
+                }else{
+                    
+                        populateSelectFromReturnSelect('filter-filial','filiais','chamados-list', formData);
+                        
+                }
+          
         });
         // Event listener para quando a FILIAL for alterada
         document.getElementById('filial').addEventListener('change', async function() {
