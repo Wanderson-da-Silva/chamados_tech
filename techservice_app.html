@@ -785,7 +785,7 @@
             border-color: #2196f3;
         }
 
-        .chamado-header {
+        .chamado-header, .chamado-item .chamado-desctec {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1878,6 +1878,53 @@
 
 
 
+    <!-- Modal definir tecxnico -->
+<div id="chamado-tecnico" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Definir Técnico Chamado</h2>
+            <button class="close" onclick="closeModal('chamado-tecnico')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-preventiva-maquina" onsubmit="handleChamadoTecnico(event)">
+            <!-- ID oculto da preventiva -->
+            <input type="hidden" id="chamado-id">
+
+            
+                <div class="form-group">
+                    <label for="chamado-usuario_tecnico_id">Técnico Responsável *</label>
+                    <select class="form-control" id="chamado-usuario_tecnico_id" required>
+                        <option value="">Selecione o técnico</option>
+                        <!-- Opções carregadas via API -->
+                    </select>
+                </div>
+
+                <div class="chamado-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('chamado-tecnico')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Atribuir
+                    </button>
+                </div>
+        </form>    
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <script>
         // ========================================
         // VERIFICAÇÃO DE AUTENTICAÇÃO
@@ -1959,7 +2006,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             return false;
         }
         
-        if(selectId === 'preventiva-usuario_tecnico_id'){
+        if(selectId === 'preventiva-usuario_tecnico_id' || selectId === 'chamado-usuario_tecnico_id'){
             // Filtrar apenas usuários com perfil "tecnico"
             result.data = result.data.filter(usuario => 
                 usuario.perfil === 'tecnico' || usuario.perfil === 'técnico'
@@ -2595,7 +2642,13 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                         <strong>#${chamado.numero} - ${chamado.patrimonio} (${chamado.loja_id})</strong>
                         <span class="status-badge ${statusClass}">${statusText[chamado.status]}</span>
                     </div>
-                    <p>${chamado.descricao}</p>
+                    <div class="chamado-desctec">
+                        <p>${chamado.descricao}</p>
+                        ${chamado.usario_tecnico_id != null 
+                        ? `<p>${chamado.usario_tecnico_id}</p>` 
+                        : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id})">Definir técnico</button>`
+                        }
+                    </div>    
                     <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
                 `;
                 
@@ -2686,6 +2739,11 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 // loadSelectsPreventiva();
                 populateSelectFromTable('preventiva-maquina_id', 'maquinas');
                 populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
+
+            }
+            if (modalId === 'chamado-tecnico') {
+                
+                populateSelectFromTable('chamado-usuario_tecnico_id', 'usuarios');
 
             }
             if (modalId === 'nova-maquina') {
@@ -4441,7 +4499,60 @@ async function deleteMaquina(maquinaId, patrimonio) {
         });
 
 
-
+async function atribuirTecnico(chamadoId) {
+            try {
+                
+                    // Preencher formulário de edição
+                    document.getElementById('chamado-id').value = chamadoId;
+                    // Abrir modal de edição
+                    openModal('chamado-tecnico');
+                    
+                
+                
+            } catch (error) {
+                console.error('Erro ao atribuir id chamado: ', error);
+                showError('Erro ao atribuir id chamado. Tente novamente.');
+            } 
+        }
+// Função para atualizar maquina
+        async function handleChamadoTecnico(event) {
+            event.preventDefault();
+            
+            const chamadoId = document.getElementById('chamado-id').value;
+                
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    id: chamadoId,
+                    usuario_tecnico_id: document.getElementById('chamado-usuario_tecnico_id').value,
+                    
+                };
+                
+                // Chamar API para atualizar máquina
+                const result = await updateChamadoTecnico(chamadoId, formData);
+                
+                if (result.success) {
+                    showSuccess(result.message || 'Chamado atualizada com sucesso!');
+                    closeModal('chamado-tecnico');
+                    loadChamados(); // Recarregar lista
+                } else {
+                    showError(result.message || 'Erro ao atualizar chamado');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar chamado:', error);
+                showError('Erro ao atualizar chamado. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
 
 
 
