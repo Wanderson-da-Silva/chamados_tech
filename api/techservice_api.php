@@ -694,6 +694,7 @@ class ChamadoController extends BaseController {
                 break;
             default:
                 $this->sendResponse(405, ['error' => 'Método não permitido']);
+                
         }
     }
     

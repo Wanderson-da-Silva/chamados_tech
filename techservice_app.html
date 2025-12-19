@@ -911,6 +911,10 @@
                     <i class="fas fa-hard-hat"></i>
                     <span>Preventivas</span>
                 </div>
+                <div class="menu-item" onclick="showPage('transferencias')">
+                    <i class="fas fa-hard-hat"></i>
+                    <span>Transferências</span>
+                </div>
                 <div class="menu-item">
                     <i class="fas fa-clipboard-list"></i>
                     <span>Relatórios</span>
@@ -1128,6 +1132,83 @@
                     </div>
                 </div>
             </div>
+            <!-- Página de Transferências -->
+            <div id="transferencias-page"  class="hidden">
+                <div class="page-header">
+                    <div class="welcome-message">
+                        <strong>Bem-vindo ao sistema!</strong> Você está logado como <span id="welcome-user">Usuário Teste</span>
+                    </div>
+                    <h1 class="page-title">Centro de Transferências</h1>
+                    <p class="page-subtitle">Gerencie as transferências de equipamentos entre filiais</p>
+                </div>
+
+                <!-- Loading state -->
+                <div id="transferencias-loading" class="loading hidden">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-right: 15px;"></i>
+                    Carregando dados das transferências...
+                </div>
+
+                <!-- Cards de Resumo -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                    <!-- Seção Consertos -->
+                    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="color: #333; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-tools" style="color: #f39c12;"></i>
+                            Transferências para Conserto
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                            <div class="summary-card" style="margin: 0;">
+                                <h3 class="conserto" id="conserto-andamento-count">0</h3>
+                                <p>Em Andamento</p>
+                            </div>
+                            <div class="summary-card" style="margin: 0;">
+                                <h3 style="color: #27ae60;" id="conserto-concluido-count">0</h3>
+                                <p>Concluídos</p>
+                            </div>
+                            <div class="summary-card" style="margin: 0;">
+                                <h3 class="perda-total" id="perda-total-count">0</h3>
+                                <p>Perda Total</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção Empréstimos -->
+                    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="color: #333; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-handshake" style="color: #3498db;"></i>
+                            Transferências Temporárias (Empréstimos)
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                            <div class="summary-card" style="margin: 0;">
+                                <h3 class="emprestimo" id="emprestimo-ativo-count">0</h3>
+                                <p>Ativos</p>
+                            </div>
+                            <div class="summary-card" style="margin: 0;">
+                                <h3 style="color: #27ae60;" id="emprestimo-devolvido-count">0</h3>
+                                <p>Devolvidos</p>
+                            </div>
+                            <div class="summary-card" style="margin: 0;">
+                                <h3 class="definitivo" id="definitivo-count">0</h3>
+                                <p>Definitivos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openModal('nova-transferencia')">
+                        <i class="fas fa-exchange-alt"></i>
+                        Nova Transferência
+                    </button>
+                    <button class="btn btn-secondary" onclick="openModal('listar-transferencias')">
+                        <i class="fas fa-list"></i>
+                        Ver Transferências
+                    </button>
+                </div>
+            </div>
+
+     
         </div>
     </div>
 
@@ -1887,7 +1968,7 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <form id="form-preventiva-maquina" onsubmit="handleChamadoTecnico(event)">
+        <form id="form-chamado-maquina" onsubmit="handleChamadoTecnico(event)">
             <!-- ID oculto da preventiva -->
             <input type="hidden" id="chamado-id">
 
@@ -1911,7 +1992,157 @@
     </div>
 </div>
 
+<!-- Modal Nova Transferência -->
+    <div id="nova-transferencia" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nova Transferência de Equipamento</h2>
+                <button class="close" onclick="closeModal('nova-transferencia')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nova-transferencia" onsubmit="handleNovaTransferencia(event)">
+                    <div class="form-group">
+                        <label for="filial-origem">Filial de Origem *</label>
+                        <select class="form-control" id="filial-origem" required>
+                            <option value="">Selecione a filial de origem</option>
+                            <option value="1">Filial Centro</option>
+                            <option value="2">Filial Norte</option>
+                            <option value="3">Filial Sul</option>
+                            <option value="4">Filial Leste</option>
+                            <option value="5">Filial Oeste</option>
+                        </select>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="filial-destino">Filial de Destino *</label>
+                        <select class="form-control" id="filial-destino" required>
+                            <option value="">Selecione a filial de destino</option>
+                            <option value="central">Central de Manutenção</option>
+                            <option value="1">Filial Centro</option>
+                            <option value="2">Filial Norte</option>
+                            <option value="3">Filial Sul</option>
+                            <option value="4">Filial Leste</option>
+                            <option value="5">Filial Oeste</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maquina">Máquina/Equipamento *</label>
+                        <select class="form-control" id="maquina" required>
+                            <option value="">Selecione a máquina</option>
+                            <option value="lavadora">Lavadora Industrial</option>
+                            <option value="secadora">Secadora</option>
+                            <option value="prensa">Prensa</option>
+                            <option value="empacotadora">Empacotadora</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade *</label>
+                            <input type="number" class="form-control" id="quantidade" min="1" value="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tipo-transferencia">Tipo de Transferência *</label>
+                            <select class="form-control" id="tipo-transferencia" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="conserto">Conserto</option>
+                                <option value="emprestimo">Empréstimo Temporário</option>
+                                <option value="definitivo">Definitivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patrimonio">Patrimônio</label>
+                            <input type="text" class="form-control" id="patrimonio" placeholder="Ex: PAT123456">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="serie-transferencia">Número de Série</label>
+                            <input type="text" class="form-control" id="serie-transferencia" placeholder="Ex: SER123456">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea class="form-control" id="observacoes" rows="3" placeholder="Adicione observações sobre a transferência..."></textarea>
+                    </div>
+
+                    <div class="form-acoes">
+                        <button type="button" class="btn btn-cancelar" onclick="closeModal('nova-transferencia')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Registrar Transferência
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Listar Transferências -->
+    <div id="listar-transferencias" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Transferências de Equipamentos</h2>
+                <button class="close" onclick="closeModal('listar-transferencias')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Seção de Filtros -->
+                <div class="filter-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                    <label style="font-weight: 600; color: #555; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-filter"></i> Filtros:
+                    </label>
+                    <select class="form-control" id="filter-filial-origem" style="width: auto; min-width: 170px;">
+                        <option value="">Filial de Origem</option>
+                        <option value="Filial Centro">Filial Centro</option>
+                        <option value="Filial Norte">Filial Norte</option>
+                        <option value="Filial Sul">Filial Sul</option>
+                        <option value="Filial Leste">Filial Leste</option>
+                        <option value="Filial Oeste">Filial Oeste</option>
+                    </select>
+                    <select class="form-control" id="filter-filial-destino" style="width: auto; min-width: 170px;">
+                        <option value="">Filial de Destino</option>
+                        <option value="Central de Manutenção">Central de Manutenção</option>
+                        <option value="Filial Centro">Filial Centro</option>
+                        <option value="Filial Norte">Filial Norte</option>
+                        <option value="Filial Sul">Filial Sul</option>
+                        <option value="Filial Leste">Filial Leste</option>
+                        <option value="Filial Oeste">Filial Oeste</option>
+                    </select>
+                    <select class="form-control" id="filter-tipo" style="width: auto; min-width: 170px;">
+                        <option value="">Tipo de Transferência</option>
+                        <option value="conserto">Conserto</option>
+                        <option value="emprestimo">Empréstimo</option>
+                        <option value="definitivo">Definitivo</option>
+                    </select>
+                    <select class="form-control" id="filter-situacao" style="width: auto; min-width: 150px;">
+                        <option value="">Todos os Status</option>
+                        <option value="em-conserto">Em Conserto</option>
+                        <option value="concluido">Concluído</option>
+                        <option value="ativo">Ativo</option>
+                        <option value="devolvido">Devolvido</option>
+                        <option value="perda-total">Perda Total</option>
+                    </select>
+                    <button class="btn btn-secondary btn-small" onclick="limparFiltros()" style="margin-left: auto;">
+                        <i class="fas fa-eraser"></i>
+                        Limpar
+                    </button>
+                </div>
+
+                <div class="transferencias-lista" id="lista-transferencias">
+                    <!-- Transferências serão carregadas aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -2688,6 +2919,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             document.getElementById('lojas-page').classList.add('hidden');
             document.getElementById('maquinas-page').classList.add('hidden');
             document.getElementById('usuarios-page').classList.add('hidden');
+            document.getElementById('transferencias-page').classList.add('hidden');
             
             // Mostrar a página selecionada
             document.getElementById(page + '-page').classList.remove('hidden');
@@ -2720,6 +2952,9 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             if (page === 'lojas'){
                 loadLojas();
             }
+            if (page === 'transferencias'){
+                atualizarContadores();
+            }
             if(page === 'maquinas')
              {
             loadMaquinas();    
@@ -2750,11 +2985,16 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 // loadSelectsPreventiva();
              populateSelectFromTable('maq-loja', 'filiais');
             }
+            if (modalId === 'listar-transferencias') {
+                // loadSelectsPreventiva();
+                carregarTransferencias();
+            }
             if (modalId === 'novo-chamado') {
                 // loadSelectsPreventiva();
              populateSelectFromTable('filial', 'filiais');
              populateSelectFromTable('select_patrimonio', 'patrimonios');
             }
+
         }
 
         function closeModal(modalId) {
@@ -4534,7 +4774,7 @@ async function atribuirTecnico(chamadoId) {
                 };
                 
                 // Chamar API para atualizar máquina
-                const result = await updateChamadoTecnico(chamadoId, formData);
+                const result = await updateChamado(chamadoId, formData);
                 
                 if (result.success) {
                     showSuccess(result.message || 'Chamado atualizada com sucesso!');
@@ -4553,7 +4793,334 @@ async function atribuirTecnico(chamadoId) {
                 submitBtn.innerHTML = originalText;
             }
         }
+        async function updateChamado(chamadoId, formData){
+            try {
+                const token = sessionStorage.getItem('token');
 
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/chamados/${chamadoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+
+        }
+
+        // Dados simulados
+        let transferencias = [
+            {
+                id: 'TRF001',
+                tipo: 'conserto',
+                filialOrigem: 'Filial Centro',
+                filialDestino: 'Central de Manutenção',
+                maquina: 'Lavadora Industrial',
+                quantidade: 1,
+                patrimonio: 'PAT001234',
+                serie: 'SER789456',
+                data: '2024-12-15',
+                status: 'em-conserto',
+                observacoes: 'Problema no motor principal'
+            },
+            {
+                id: 'TRF002',
+                tipo: 'emprestimo',
+                filialOrigem: 'Filial Norte',
+                filialDestino: 'Filial Sul',
+                maquina: 'Secadora',
+                quantidade: 2,
+                patrimonio: 'PAT005678',
+                serie: 'SER123789',
+                data: '2024-12-16',
+                status: 'ativo',
+                observacoes: 'Empréstimo temporário por 30 dias'
+            },
+            {
+                id: 'TRF003',
+                tipo: 'conserto',
+                filialOrigem: 'Filial Leste',
+                filialDestino: 'Central de Manutenção',
+                maquina: 'Prensa',
+                quantidade: 1,
+                patrimonio: 'PAT009876',
+                serie: 'SER456123',
+                data: '2024-12-10',
+                status: 'perda-total',
+                observacoes: 'Danos irreversíveis após análise técnica'
+            },
+            {
+                id: 'TRF004',
+                tipo: 'conserto',
+                filialOrigem: 'Filial Oeste',
+                filialDestino: 'Central de Manutenção',
+                maquina: 'Empacotadora',
+                quantidade: 1,
+                patrimonio: 'PAT112233',
+                serie: 'SER998877',
+                data: '2024-12-12',
+                status: 'concluido',
+                observacoes: 'Substituição de peças concluída'
+            },
+            {
+                id: 'TRF005',
+                tipo: 'emprestimo',
+                filialOrigem: 'Filial Centro',
+                filialDestino: 'Filial Norte',
+                maquina: 'Lavadora Industrial',
+                quantidade: 1,
+                patrimonio: 'PAT445566',
+                serie: 'SER334455',
+                data: '2024-12-14',
+                status: 'devolvido',
+                observacoes: 'Equipamento devolvido em perfeito estado'
+            },
+            {
+                id: 'TRF006',
+                tipo: 'definitivo',
+                filialOrigem: 'Filial Sul',
+                filialDestino: 'Filial Leste',
+                maquina: 'Secadora',
+                quantidade: 3,
+                patrimonio: 'PAT778899',
+                serie: 'SER667788',
+                data: '2024-12-17',
+                status: 'ativo',
+                observacoes: 'Transferência permanente devido a reestruturação'
+            }
+        ];
+
+        // Limpar filtros
+        function limparFiltros() {
+            document.getElementById('filter-filial-origem').value = '';
+            document.getElementById('filter-filial-destino').value = '';
+            document.getElementById('filter-tipo').value = '';
+            document.getElementById('filter-situacao').value = '';
+        }
+
+        // Aplicar filtros (para uso futuro quando integrado com API)
+        function aplicarFiltros() {
+            const filialOrigem = document.getElementById('filter-filial-origem').value;
+            const filialDestino = document.getElementById('filter-filial-destino').value;
+            const tipo = document.getElementById('filter-tipo').value;
+            const status = document.getElementById('filter-situacao').value;
+
+            let filtradas = transferencias;
+
+            if (filialOrigem) {
+                filtradas = filtradas.filter(t => t.filialOrigem === filialOrigem);
+            }
+            if (filialDestino) {
+                filtradas = filtradas.filter(t => t.filialDestino === filialDestino);
+            }
+            if (tipo) {
+                filtradas = filtradas.filter(t => t.tipo === tipo);
+            }
+            if (status) {
+                filtradas = filtradas.filter(t => t.status === status);
+            }
+
+            return filtradas;
+        }
+
+        // Atualizar contadores
+        function atualizarContadores() {
+            // Consertos
+            const consertoAndamento = transferencias.filter(t => t.tipo === 'conserto' && t.status === 'em-conserto').length;
+            const consertoConcluido = transferencias.filter(t => t.tipo === 'conserto' && t.status === 'concluido').length;
+            const perdaTotal = transferencias.filter(t => t.status === 'perda-total').length;
+
+            // Empréstimos
+            const emprestimoAtivo = transferencias.filter(t => t.tipo === 'emprestimo' && t.status === 'ativo').length;
+            const emprestimoDevolvido = transferencias.filter(t => t.tipo === 'emprestimo' && t.status === 'devolvido').length;
+            const definitivo = transferencias.filter(t => t.tipo === 'definitivo').length;
+
+            // Atualizar Consertos
+            document.getElementById('conserto-andamento-count').textContent = consertoAndamento;
+            document.getElementById('conserto-concluido-count').textContent = consertoConcluido;
+            document.getElementById('perda-total-count').textContent = perdaTotal;
+
+            // Atualizar Empréstimos
+            document.getElementById('emprestimo-ativo-count').textContent = emprestimoAtivo;
+            document.getElementById('emprestimo-devolvido-count').textContent = emprestimoDevolvido;
+            document.getElementById('definitivo-count').textContent = definitivo;
+        }
+// Handle nova transferência
+        function handleNovaTransferencia(event) {
+            event.preventDefault();
+            
+            const novaTransferencia = {
+                id: 'TRF' + String(transferencias.length + 1).padStart(3, '0'),
+                tipo: document.getElementById('tipo-transferencia').value,
+                filialOrigem: document.getElementById('filial-origem').options[document.getElementById('filial-origem').selectedIndex].text,
+                filialDestino: document.getElementById('filial-destino').options[document.getElementById('filial-destino').selectedIndex].text,
+                maquina: document.getElementById('maquina').options[document.getElementById('maquina').selectedIndex].text,
+                quantidade: parseInt(document.getElementById('quantidade').value),
+                patrimonio: document.getElementById('patrimonio').value || 'N/A',
+                serie: document.getElementById('serie').value || 'N/A',
+                data: new Date().toISOString().split('T')[0],
+                status: document.getElementById('tipo-transferencia').value === 'conserto' ? 'em-conserto' : 'ativo',
+                observacoes: document.getElementById('observacoes').value || 'Sem observações'
+            };
+
+            transferencias.unshift(novaTransferencia);
+            atualizarContadores();
+            
+            alert('Transferência registrada com sucesso!');
+            closeModal('nova-transferencia');
+        }
+
+        // Carregar transferências
+        function carregarTransferencias() {
+            const lista = document.getElementById('lista-transferencias');
+            
+            // Aplicar filtros
+            const transferenciasFiltradas = aplicarFiltros();
+            
+            if (transferenciasFiltradas.length === 0) {
+                lista.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Nenhuma transferência encontrada com os filtros aplicados</p>';
+                return;
+            }
+
+            lista.innerHTML = transferenciasFiltradas.map(t => `
+                <div class="transferencia-item">
+                    <div class="transferencia-header">
+                        <span class="transferencia-id">#${t.id}</span>
+                        <span class="badge badge-${t.tipo}">${getTipoLabel(t.tipo)}</span>
+                    </div>
+                    <div class="transferencia-info">
+                        <div class="info-item">
+                            <strong>Origem:</strong> ${t.filialOrigem}
+                        </div>
+                        <div class="info-item">
+                            <strong>Destino:</strong> ${t.filialDestino}
+                        </div>
+                        <div class="info-item">
+                            <strong>Máquina:</strong> ${t.maquina}
+                        </div>
+                        <div class="info-item">
+                            <strong>Quantidade:</strong> ${t.quantidade}
+                        </div>
+                        <div class="info-item">
+                            <strong>Patrimônio:</strong> ${t.patrimonio}
+                        </div>
+                        <div class="info-item">
+                            <strong>Série:</strong> ${t.serie}
+                        </div>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <strong>Data:</strong> ${formatarData(t.data)}
+                        </div>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <strong>Observações:</strong> ${t.observacoes}
+                        </div>
+                    </div>
+                    ${t.tipo === 'conserto' && t.status === 'em-conserto' ? `
+                        <div class="status-buttons">
+                            <button class="btn btn-success btn-small" onclick="concluirConserto('${t.id}')">
+                                <i class="fas fa-check"></i> Conserto Concluído
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="registrarPerdaTotal('${t.id}')">
+                                <i class="fas fa-times"></i> Perda Total
+                            </button>
+                        </div>
+                    ` : ''}
+                    ${t.tipo === 'emprestimo' && t.status === 'ativo' ? `
+                        <div class="status-buttons">
+                            <button class="btn btn-success btn-small" onclick="devolverEquipamento('${t.id}')">
+                                <i class="fas fa-undo"></i> Registrar Devolução
+                            </button>
+                        </div>
+                    ` : ''}
+                    ${t.status === 'perda-total' ? `
+                        <div style="margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 5px; color: #842029;">
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Equipamento com perda total</strong>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function getTipoLabel(tipo) {
+            const labels = {
+                'conserto': 'Conserto',
+                'emprestimo': 'Empréstimo',
+                'definitivo': 'Definitivo'
+            };
+            return labels[tipo] || tipo;
+        }
+
+        function formatarData(data) {
+            const d = new Date(data + 'T00:00:00');
+            return d.toLocaleDateString('pt-BR');
+        }
+
+        function concluirConserto(id) {
+            const transferencia = transferencias.find(t => t.id === id);
+            if (transferencia) {
+                transferencia.status = 'concluido';
+                alert('Conserto concluído! Equipamento pronto para retorno.');
+                atualizarContadores();
+                carregarTransferencias();
+            }
+        }
+
+        function registrarPerdaTotal(id) {
+            if (confirm('Tem certeza que deseja registrar perda total? Esta ação não pode ser desfeita.')) {
+                const transferencia = transferencias.find(t => t.id === id);
+                if (transferencia) {
+                    transferencia.status = 'perda-total';
+                    alert('Perda total registrada.');
+                    atualizarContadores();
+                    carregarTransferencias();
+                }
+            }
+        }
+
+        function devolverEquipamento(id) {
+            if (confirm('Confirmar devolução do equipamento para a filial de origem?')) {
+                const transferencia = transferencias.find(t => t.id === id);
+                if (transferencia) {
+                    transferencia.status = 'devolvido';
+                    alert('Devolução registrada com sucesso!');
+                    atualizarContadores();
+                    carregarTransferencias();
+                }
+            }
+        }
+
+        // Adicionar event listeners nos filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('filter-filial-origem').addEventListener('change', function() {
+                if (document.getElementById('listar-transferencias').classList.contains('show')) {
+                    carregarTransferencias();
+                }
+            });
+            
+            document.getElementById('filter-filial-destino').addEventListener('change', function() {
+                if (document.getElementById('listar-transferencias').classList.contains('show')) {
+                    carregarTransferencias();
+                }
+            });
+            
+            document.getElementById('filter-tipo').addEventListener('change', function() {
+                if (document.getElementById('listar-transferencias').classList.contains('show')) {
+                    carregarTransferencias();
+                }
+            });
+            
+            document.getElementById('filter-situacao').addEventListener('change', function() {
+                if (document.getElementById('listar-transferencias').classList.contains('show')) {
+                    carregarTransferencias();
+                }
+            });
+        });
 
 
 
