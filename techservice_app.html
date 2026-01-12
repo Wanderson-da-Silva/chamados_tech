@@ -227,7 +227,7 @@
         }
 
         .pendente { color: #ff6b6b; }
-        .andamento { color: #ffd93d; }
+        .em_andamento { color: #ffd93d; }
         .concluido { color: #6bcf7f; }
 
         /* Botões de Ação */
@@ -259,6 +259,13 @@
 
         .btn-secondary {
             background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+        .btn-tertiary {
+            background: linear-gradient(135deg, #b7dcfd, #2ca0ec);
+        }
+
+        .btn-quaternary {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
         }
 
         .btn:hover {
@@ -433,27 +440,7 @@
             justify-content: space-between;
         }
 
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-concluido {
-            background: #e8f5e8;
-            color: #2e7d32;
-        }
-
-        .status-pendente {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .status-andamento {
-            background: #fff3e0;
-            color: #ef6c00;
-        }
+        
 
         /* --- Estilo do Card Principal --- */
 
@@ -792,7 +779,7 @@
             margin-bottom: 10px;
         }
 
-        .status-badge {
+        .chamado-header .status-badge {
             padding: 4px 12px;
             border-radius: 15px;
             font-size: 0.8rem;
@@ -804,9 +791,9 @@
             color: #c62828;
         }
 
-        .status-andamento {
-            background: #fff3e0;
-            color: #ef6c00;
+        .status-em_andamento {
+            background: #fffee0;
+            color: #000000;
         }
 
         .status-concluido {
@@ -991,6 +978,10 @@
                     <button class="btn btn-secondary" onclick="openModal('acompanhar-chamados')">
                         <i class="fas fa-list"></i>
                         Acompanhar Chamados
+                    </button>
+                    <button class="btn btn-tertiary" onclick="openModal('finalizar-chamado')">
+                        <i class="fas fa-list"></i>
+                        Finalizar Chamado
                     </button>
                 </div>
             </div>
@@ -1971,7 +1962,7 @@
         <form id="form-chamado-maquina" onsubmit="handleChamadoTecnico(event)">
             <!-- ID oculto da preventiva -->
             <input type="hidden" id="chamado-id">
-
+            <input type="hidden" id="chamado-status">
             
                 <div class="form-group">
                     <label for="chamado-usuario_tecnico_id">Técnico Responsável *</label>
@@ -2839,6 +2830,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 
                 if (result.success) {
                     renderChamadosList(result.data);
+                    
                 }
             } catch (error) {
                 console.error('Erro ao carregar chamados:', error);
@@ -2860,7 +2852,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 const statusClass = `status-${chamado.status}`;
                 const statusText = {
                     'pendente': 'Pendente',
-                    'andamento': 'Em Andamento',
+                    'em_andamento': 'Em Andamento',
                     'concluido': 'Concluído'
                 };
                 
@@ -2875,9 +2867,9 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     </div>
                     <div class="chamado-desctec">
                         <p>${chamado.descricao}</p>
-                        ${chamado.usario_tecnico_id != null 
-                        ? `<p>${chamado.usario_tecnico_id}</p>` 
-                        : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id})">Definir técnico</button>`
+                        ${chamado.usuario_tecnico_id != null 
+                        ? `<p>${chamado.usuario_tecnico_id} - ${chamado.tecnico_responsavel} </p>` 
+                        : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id},'${chamado.status}')">Definir técnico</button>`
                         }
                     </div>    
                     <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
@@ -4739,11 +4731,12 @@ async function deleteMaquina(maquinaId, patrimonio) {
         });
 
 
-async function atribuirTecnico(chamadoId) {
+async function atribuirTecnico(chamadoId,statusChamado) {
             try {
                 
                     // Preencher formulário de edição
                     document.getElementById('chamado-id').value = chamadoId;
+                    document.getElementById('chamado-status').value = statusChamado;
                     // Abrir modal de edição
                     openModal('chamado-tecnico');
                     
@@ -4759,17 +4752,21 @@ async function atribuirTecnico(chamadoId) {
             event.preventDefault();
             
             const chamadoId = document.getElementById('chamado-id').value;
+            const chamadoStatus = 'em_andamento';
                 
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
             
             try {
                 // Mostrar loading no botão
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
                 
                 // Coletar dados do formulário
                 const formData = {
                     id: chamadoId,
                     usuario_tecnico_id: document.getElementById('chamado-usuario_tecnico_id').value,
+                    status: chamadoStatus
                     
                 };
                 
@@ -4780,8 +4777,9 @@ async function atribuirTecnico(chamadoId) {
                     showSuccess(result.message || 'Chamado atualizada com sucesso!');
                     closeModal('chamado-tecnico');
                     loadChamados(); // Recarregar lista
+                    loadDashboardData();//dashboard
                 } else {
-                    showError(result.message || 'Erro ao atualizar chamado');
+                    showError(result.message || 'Erro ao atualizar chamado 1');
                 }
                 
             } catch (error) {
@@ -4796,7 +4794,7 @@ async function atribuirTecnico(chamadoId) {
         async function updateChamado(chamadoId, formData){
             try {
                 const token = sessionStorage.getItem('token');
-
+// console.log("itens preventiva" + formData['usuario_tecnico_id']);
                 const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/chamados/${chamadoId}`, {
                     method: 'PUT',
                     headers: {

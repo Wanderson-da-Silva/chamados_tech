@@ -926,6 +926,8 @@ class ChamadoController extends BaseController {
             // Campos que podem ser atualizados
             $campos = [];
             $valores = [];
+            $sql = '';
+            $sqlFinal = '';
             
             if (isset($data['status'])) {
                 $campos[] = 'status = ?';
@@ -933,9 +935,9 @@ class ChamadoController extends BaseController {
                 
                 // Atualizar datas específicas baseadas no status
                 if ($data['status'] === 'em_andamento' && $chamadoAtual['status'] === 'pendente') {
-                    $campos[] = 'data_inicio_atendimento = NOW()';
+                    $campos[] = 'data_inicio_atendimento = NOW() ';
                     $campos[] = 'usuario_tecnico_id = ?';
-                    $valores[] = $this->user->user_id;
+                    $valores[] = $data['usuario_tecnico_id'];
                 } elseif ($data['status'] === 'concluido') {
                     $campos[] = 'data_conclusao = NOW()';
                 }
@@ -971,17 +973,27 @@ class ChamadoController extends BaseController {
                 $sql = "UPDATE chamado SET " . implode(', ', $campos) . " WHERE id = ?";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($valores);
+
+                // Montar SQL final para debug/retorno
+                // $sqlFinal = $sql;
+                // foreach ($valores as $valor) {
+                //     // Adiciona aspas em strings, mantém números sem aspas
+                //     $valorFormatado = is_numeric($valor) ? $valor : "'" . $valor . "'";
+                //     // Substitui o primeiro ? encontrado
+                //     $sqlFinal = preg_replace('/\?/', $valorFormatado, $sqlFinal, 1);
+                // }
+
             }
             
             $this->db->commit();
             
             $this->sendResponse(200, [
                 'success' => true,
-                'message' => 'Chamado atualizado com sucesso'
-            ]);
+                'message' => 'Chamado atualizado com sucesso']);
         } catch (PDOException $e) {
             $this->db->rollBack();
-            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: ' . $e->getMessage()]);
+            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: ' . $e->getMessage()
+        ]);
         }
     }
 }
