@@ -1,0 +1,430 @@
+-- ========================================
+-- SISTEMA DE CHAMADOS E PREVENTIVAS
+-- Schema do Banco de Dados
+-- ========================================
+
+-- Tabela de Lojas/Filiais
+CREATE TABLE loja (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    codigo VARCHAR(20) UNIQUE NOT NULL, -- Ex: FIL001, CENTRO, etc
+    endereco TEXT,
+    cidade VARCHAR(100),
+    estado VARCHAR(2),
+    cep VARCHAR(10),
+    telefone VARCHAR(20),
+    email VARCHAR(100),
+    responsavel VARCHAR(100),
+    ativa BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_codigo (codigo),
+    INDEX idx_ativa (ativa),
+    INDEX idx_cidade (cidade)
+);
+
+-- Tabela de Máquinas/Equipamentos
+CREATE TABLE maquina (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    loja_id INT NOT NULL,
+    patrimonio VARCHAR(50) UNIQUE NOT NULL, -- Ex: MAQ-001, EQUIP-123
+    numero_serie VARCHAR(100) UNIQUE NOT NULL, -- Ex: SER123456
+    modelo VARCHAR(100),
+    marca VARCHAR(100),
+    tipo_equipamento VARCHAR(50), -- Ex: Impressora, Computador, etc
+    data_aquisicao DATE,
+    valor_aquisicao DECIMAL(10,2) NULL, -- Campo não obrigatório
+    status_operacional ENUM('ativo', 'inativo', 'manutencao', 'descartado') DEFAULT 'ativo',
+    localizacao VARCHAR(200), -- Localização dentro da loja
+    observacoes TEXT,
+    
+    -- Campos para Preventiva
+    periodicidade_preventiva INT, -- Em dias (Ex: 90, 180, 365)
+    data_ultima_preventiva DATE,
+    data_proxima_preventiva DATE,
+    
+    -- Campos de Auditoria
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Chaves Estrangeiras
+    FOREIGN KEY (loja_id) REFERENCES loja(id) ON DELETE RESTRICT,
+    
+    -- Índices
+    INDEX idx_loja (loja_id),
+    INDEX idx_patrimonio (patrimonio),
+    INDEX idx_serie (numero_serie),
+    INDEX idx_status (status_operacional),
+    INDEX idx_proxima_preventiva (data_proxima_preventiva),
+    INDEX idx_tipo (tipo_equipamento)
+);
+
+-- Tabela de Usuários (para controle de acesso)
+CREATE TABLE usuario (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    nome_completo VARCHAR(150) NOT NULL,
+    telefone VARCHAR(20),
+    perfil ENUM('admin', 'tecnico', 'operador', 'visualizador') DEFAULT 'operador',
+    ativo BOOLEAN DEFAULT TRUE,
+    ultimo_login TIMESTAMP NULL,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_username (username),
+    INDEX idx_email (email),
+    INDEX idx_perfil (perfil),
+    INDEX idx_ativo (ativo)
+);
+
+-- Tabela de Chamados
+CREATE TABLE chamado (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    numero VARCHAR(20) UNIQUE NOT NULL, -- Ex: CH-001, CALL-2025-001
+    loja_id INT NOT NULL,
+    maquina_id INT NOT NULL,
+    usuario_abertura_id INT NOT NULL,
+    usuario_tecnico_id INT NULL, -- Técnico responsável
+    
+    -- Dados do Problema
+    titulo VARCHAR(200) NOT NULL,
+    descricao TEXT NOT NULL,
+    categoria VARCHAR(50), -- Ex: Hardware, Software, Rede, etc
+    prioridade ENUM('baixa', 'media', 'alta', 'critica') DEFAULT 'media',
+    
+    -- Status e Controle
+    status ENUM('pendente', 'em_andamento', 'aguardando_peca', 'pausado', 'concluido', 'cancelado') DEFAULT 'pendente',
+    data_abertura TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_inicio_atendimento TIMESTAMP NULL,
+    data_conclusao TIMESTAMP NULL,
+    prazo_resolucao TIMESTAMP NULL,
+    
+    -- Solução
+    diagnostico TEXT NULL,
+    solucao TEXT NULL,
+    tempo_gasto INT NULL, -- Em minutos
+    custo_servico DECIMAL(10,2) NULL, -- Campo não obrigatório
+    custo_pecas DECIMAL(10,2) NULL, -- Campo não obrigatório
+    
+    -- Avaliação
+    nota_atendimento INT NULL CHECK (nota_atendimento BETWEEN 1 AND 5), -- Campo não obrigatório
+    comentario_avaliacao TEXT NULL, -- Campo não obrigatório
+    
+    -- Campos de Auditoria
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Chaves Estrangeiras
+    FOREIGN KEY (loja_id) REFERENCES loja(id) ON DELETE RESTRICT,
+    FOREIGN KEY (maquina_id) REFERENCES maquina(id) ON DELETE RESTRICT,
+    FOREIGN KEY (usuario_abertura_id) REFERENCES usuario(id) ON DELETE RESTRICT,
+    FOREIGN KEY (usuario_tecnico_id) REFERENCES usuario(id) ON DELETE SET NULL,
+    
+    -- Índices
+    INDEX idx_numero (numero),
+    INDEX idx_loja (loja_id),
+    INDEX idx_maquina (maquina_id),
+    INDEX idx_status (status),
+    INDEX idx_prioridade (prioridade),
+    INDEX idx_data_abertura (data_abertura),
+    INDEX idx_tecnico (usuario_tecnico_id),
+    INDEX idx_categoria (categoria),
+    INDEX idx_prazo (prazo_resolucao)
+);
+
+-- Tabela de Anexos (Fotos e Vídeos)
+CREATE TABLE chamado_anexo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    chamado_id INT NOT NULL,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    nome_original VARCHAR(255) NOT NULL,
+    tipo_arquivo VARCHAR(10) NOT NULL, -- Ex: jpg, png, mp4, avi
+    tamanho_bytes BIGINT NOT NULL,
+    caminho_arquivo VARCHAR(500) NOT NULL,
+    tipo_anexo ENUM('foto', 'video', 'documento') NOT NULL,
+    descricao VARCHAR(200),
+    data_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Chave Estrangeira
+    FOREIGN KEY (chamado_id) REFERENCES chamado(id) ON DELETE CASCADE,
+    
+    -- Índices
+    INDEX idx_chamado (chamado_id),
+    INDEX idx_tipo (tipo_anexo),
+    INDEX idx_data_upload (data_upload)
+);
+
+-- Tabela de Histórico do Chamado
+CREATE TABLE chamado_historico (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    chamado_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    status_anterior VARCHAR(20),
+    status_novo VARCHAR(20) NOT NULL,
+    comentario TEXT,
+    data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Chaves Estrangeiras
+    FOREIGN KEY (chamado_id) REFERENCES chamado(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE RESTRICT,
+    
+    -- Índices
+    INDEX idx_chamado (chamado_id),
+    INDEX idx_data (data_alteracao)
+);
+
+-- Tabela de Preventivas
+CREATE TABLE preventiva (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    maquina_id INT NOT NULL,
+    usuario_tecnico_id INT NULL,
+    tipo VARCHAR(50) NOT NULL, -- Ex: Limpeza, Calibragem, Troca de Peças
+    data_programada DATE NOT NULL,
+    data_realizada DATE NULL,
+    status ENUM('programada', 'em_andamento', 'concluida', 'cancelada') DEFAULT 'programada',
+    
+    -- Detalhes da Preventiva
+    checklist TEXT, -- JSON com itens verificados
+    observacoes TEXT,
+    pecas_substituidas TEXT,
+    custos DECIMAL(10,2) DEFAULT 0.00,
+    tempo_execucao INT NULL, -- Em minutos
+    
+    -- Próxima Preventiva
+    proxima_data DATE NULL,
+    
+    -- Auditoria
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Chaves Estrangeiras
+    FOREIGN KEY (maquina_id) REFERENCES maquina(id) ON DELETE RESTRICT,
+    FOREIGN KEY (usuario_tecnico_id) REFERENCES usuario(id) ON DELETE SET NULL,
+    
+    -- Índices
+    INDEX idx_maquina (maquina_id),
+    INDEX idx_data_programada (data_programada),
+    INDEX idx_status (status),
+    INDEX idx_tecnico (usuario_tecnico_id)
+);
+
+-- ========================================
+-- VIEWS ÚTEIS PARA CONSULTAS
+-- ========================================
+
+-- View para Dashboard de Chamados - alterado procurar por vw_dashboard_chamados_por_tipo
+CREATE VIEW vw_dashboard_chamados AS
+SELECT 
+    l.nome as loja_nome,
+    COUNT(CASE WHEN c.status = 'pendente' THEN 1 END) as pendentes,
+    COUNT(CASE WHEN c.status = 'em_andamento' THEN 1 END) as em_andamento,
+    COUNT(CASE WHEN c.status = 'concluido' THEN 1 END) as concluidos,
+    COUNT(*) as total_chamados
+FROM loja l
+LEFT JOIN chamado c ON l.id = c.loja_id 
+    AND c.data_abertura >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+WHERE l.ativa = TRUE
+GROUP BY l.id, l.nome;
+
+-- View para Preventivas Próximas
+CREATE VIEW vw_preventivas_proximas AS
+SELECT 
+    l.nome as loja_nome,
+    m.patrimonio,
+    m.numero_serie,
+    m.modelo,
+    m.data_proxima_preventiva,
+    DATEDIFF(m.data_proxima_preventiva, CURDATE()) as dias_restantes,
+    CASE 
+        WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 0 THEN 'Vencida'
+        WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 7 THEN 'Urgente'
+        WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 15 THEN 'Próxima'
+        ELSE 'Normal'
+    END as status_preventiva
+FROM maquina m
+INNER JOIN loja l ON m.loja_id = l.id
+WHERE m.status_operacional = 'ativo' 
+    AND m.data_proxima_preventiva IS NOT NULL
+    AND l.ativa = TRUE
+ORDER BY m.data_proxima_preventiva ASC;
+
+-- View Completa de Chamados com Detalhes
+CREATE VIEW vw_chamados_completo AS
+SELECT 
+    c.id,
+    c.numero,
+    c.titulo,
+    c.descricao,
+    c.status,
+    c.prioridade,
+    c.data_abertura,
+    c.data_conclusao,
+    c.custo_servico,
+    c.custo_pecas,
+    c.nota_atendimento,
+    c.comentario_avaliacao,
+    l.nome as loja_nome,
+    l.codigo as loja_codigo,
+    m.patrimonio,
+    m.numero_serie,
+    m.modelo,
+    m.valor_aquisicao,
+    ua.nome_completo as usuario_abertura,
+    ut.nome_completo as tecnico_responsavel,
+    CASE 
+        WHEN c.status = 'concluido' THEN TIMESTAMPDIFF(HOUR, c.data_abertura, c.data_conclusao)
+        ELSE TIMESTAMPDIFF(HOUR, c.data_abertura, NOW())
+    END as horas_em_aberto
+FROM chamado c
+INNER JOIN loja l ON c.loja_id = l.id
+INNER JOIN maquina m ON c.maquina_id = m.id
+INNER JOIN usuario ua ON c.usuario_abertura_id = ua.id
+LEFT JOIN usuario ut ON c.usuario_tecnico_id = ut.id;
+
+-- ========================================
+-- TRIGGERS PARA AUTOMAÇÃO
+-- ========================================
+
+-- Trigger para gerar número do chamado automaticamente
+DELIMITER $$
+CREATE TRIGGER trg_gerar_numero_chamado 
+    BEFORE INSERT ON chamado
+    FOR EACH ROW
+BEGIN
+    IF NEW.numero IS NULL OR NEW.numero = '' THEN
+        SET NEW.numero = CONCAT('CH-', YEAR(NOW()), '-', LPAD(
+            (SELECT COALESCE(MAX(CAST(SUBSTRING(numero, -3) AS UNSIGNED)), 0) + 1
+             FROM chamado 
+             WHERE numero LIKE CONCAT('CH-', YEAR(NOW()), '-%')), 
+            3, '0'
+        ));
+    END IF;
+END$$
+DELIMITER ;
+
+-- Trigger para atualizar histórico quando status muda
+DELIMITER $$
+CREATE TRIGGER trg_chamado_historico 
+    AFTER UPDATE ON chamado
+    FOR EACH ROW
+BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO chamado_historico (
+            chamado_id, 
+            usuario_id, 
+            status_anterior, 
+            status_novo, 
+            comentario
+        ) VALUES (
+            NEW.id,
+            NEW.usuario_tecnico_id,
+            OLD.status,
+            NEW.status,
+            'Status alterado automaticamente'
+        );
+    END IF;
+END$$
+DELIMITER ;
+
+-- Trigger para atualizar próxima preventiva
+DELIMITER $$
+CREATE TRIGGER trg_atualizar_proxima_preventiva 
+    AFTER UPDATE ON preventiva
+    FOR EACH ROW
+BEGIN
+    IF NEW.status = 'concluida' AND OLD.status != 'concluida' THEN
+        UPDATE maquina 
+        SET 
+            data_ultima_preventiva = NEW.data_realizada,
+            data_proxima_preventiva = DATE_ADD(NEW.data_realizada, INTERVAL periodicidade_preventiva DAY)
+        WHERE id = NEW.maquina_id;
+    END IF;
+END$$
+DELIMITER ;
+
+-- ========================================
+-- DADOS INICIAIS DE EXEMPLO
+-- ========================================
+
+-- Inserir usuário administrador padrão
+INSERT INTO usuario (username, email, senha_hash, nome_completo, perfil) VALUES
+('admin', 'admin@techservice.com', '$2y$10$exemplo_hash_senha', 'Administrador Sistema', 'admin');
+
+-- Inserir lojas exemplo
+INSERT INTO loja (nome, codigo, cidade, estado, ativa) VALUES
+('Filial Centro', 'CENTRO', 'São Paulo', 'SP', TRUE),
+('Filial Norte', 'NORTE', 'São Paulo', 'SP', TRUE),
+('Filial Sul', 'SUL', 'São Paulo', 'SP', TRUE),
+('Filial Oeste', 'OESTE', 'São Paulo', 'SP', TRUE);
+
+-- Inserir máquinas exemplo
+INSERT INTO maquina (loja_id, patrimonio, numero_serie, modelo, marca, tipo_equipamento, periodicidade_preventiva, data_proxima_preventiva) VALUES
+(1, 'MAQ-001', 'SER123001', 'HP LaserJet Pro', 'HP', 'Impressora', 90, DATE_ADD(CURDATE(), INTERVAL 2 DAY)),
+(1, 'MAQ-015', 'SER123015', 'Dell OptiPlex', 'Dell', 'Computador', 180, DATE_ADD(CURDATE(), INTERVAL 5 DAY)),
+(2, 'MAQ-045', 'SER123045', 'Canon ImageRunner', 'Canon', 'Impressora', 90, DATE_ADD(CURDATE(), INTERVAL 1 DAY)),
+(3, 'MAQ-123', 'SER123123', 'Lenovo ThinkCentre', 'Lenovo', 'Computador', 180, DATE_ADD(CURDATE(), INTERVAL 4 DAY));
+
+-- ========================================
+-- ÍNDICES PARA PERFORMANCE
+-- ========================================
+
+-- Índices compostos para consultas frequentes
+CREATE INDEX idx_chamado_loja_status ON chamado(loja_id, status);
+CREATE INDEX idx_chamado_data_status ON chamado(data_abertura, status);
+CREATE INDEX idx_maquina_loja_status ON maquina(loja_id, status_operacional);
+CREATE INDEX idx_preventiva_data_status ON preventiva(data_programada, status);
+
+-- ========================================
+-- COMENTÁRIOS FINAIS
+-- ========================================
+
+/*
+ESTRUTURA DO BANCO:
+
+1. LOJA - Filiais/estabelecimentos
+2. MAQUINA - Equipamentos por filial  
+3. USUARIO - Usuários do sistema
+4. CHAMADO - Chamados de manutenção
+5. CHAMADO_ANEXO - Fotos/vídeos dos chamados
+6. CHAMADO_HISTORICO - Log de mudanças
+7. PREVENTIVA - Manutenções preventivas
+
+RELACIONAMENTOS:
+- Loja 1:N Máquina
+- Máquina 1:N Chamado  
+- Chamado 1:N Anexos
+- Chamado 1:N Histórico
+- Máquina 1:N Preventiva
+- Usuário 1:N Chamado (abertura)
+- Usuário 1:N Chamado (técnico)
+
+FEATURES:
+- Numeração automática de chamados
+- Histórico completo de alterações
+- Controle de preventivas automático
+- Views para dashboards
+- Índices otimizados
+- Triggers para automação
+*/
+
+
+
+mysqldump -u trevo -p chamado_prev > C:\xampp\htdocs\chamados_tech\api\backup2.sql
+
+
+GET(PEGAR) - POST(CRIAR) - PUT(EDITAR-tem outro)
+
+
+CREATE OR REPLACE VIEW vw_dashboard_chamados_por_tipo AS
+
+select sum(case when `c`.`status` = 'pendente' then 1 else 0 end) AS `pendente`,
+sum(case when `c`.`status` = 'em_andamento' then 1 else 0 end) AS `em_andamento`,
+sum(case when `c`.`status` = 'concluido' then 1 else 0 end) AS `concluido`,
+sum(case when `c`.`status` = 'aguardando_peca' then 1 else 0 end) AS `aguardando_peca`,
+sum(case when `c`.`status` = 'pausado' then 1 else 0 end) AS `pausado`,
+sum(case when `c`.`status` = 'cancelado' then 1 else 0 end) AS `cancelado`,
+count(0) AS `total` from `chamado` `c`
+

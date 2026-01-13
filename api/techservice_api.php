@@ -701,30 +701,9 @@ class ChamadoController extends BaseController {
     private function getDashboard() {
         try{
         $stmt = $this->db->query("
-            SELECT 
-                'TOTAL GERAL' as loja_nome,
-                COUNT(CASE WHEN c.status = 'pendente' THEN 1 END) as pendentes,
-                COUNT(CASE WHEN c.status = 'em_andamento' THEN 1 END) as em_andamento,
-                COUNT(CASE WHEN c.status = 'concluido' THEN 1 END) as concluidos,
-                COUNT(*) as total
-            FROM loja l
-            LEFT JOIN chamado c ON l.id = c.loja_id 
-                AND c.data_abertura >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-            WHERE l.ativa = 1
+            SELECT * FROM vw_dashboard_chamados_por_tipo
         ");
-        // $stmt = $this->db->query("
-        //     SELECT 
-        //         l.nome as loja_nome,
-        //         COUNT(CASE WHEN c.status = 'pendente' THEN 1 END) as pendentes,
-        //         COUNT(CASE WHEN c.status = 'em_andamento' THEN 1 END) as em_andamento,
-        //         COUNT(CASE WHEN c.status = 'concluido' THEN 1 END) as concluidos,
-        //         COUNT(*) as total
-        //     FROM loja l
-        //     LEFT JOIN chamado c ON l.id = c.loja_id 
-        //         AND c.data_abertura >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        //     WHERE l.ativa = 1
-        //     GROUP BY l.id, l.nome
-        // ");
+        
         
         $this->sendResponse(200, [
             'success' => true,

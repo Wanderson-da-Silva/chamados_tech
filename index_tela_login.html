@@ -230,33 +230,7 @@
     <script>
         // Função para simular chamada da API de login
         async function login_api() {
-            // Simula delay da requisição
-            //await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Simula validação (aceita qualquer usuário/senha para demonstração)
-            /*
-            if (username.trim() && password.trim()) {
-                return {
-                    success: true,
-                    message: "Login realizado com sucesso",
-                    user: {
-                        id: 1,
-                        username: username,
-                        name: "Usuário Teste",
-                        role: "Técnico"
-                    },
-                    token: "fake_jwt_token_12345"
-                };
-            } else {
-                return {
-                    success: false,
-                    message: "Usuário ou senha inválidos"
-                };
-            }
-            */
-
-
-            
+                        
             const formData = {
                     username: document.getElementById('username').value,
                     senha: document.getElementById('password').value
@@ -309,7 +283,7 @@
                     // Armazena dados do usuário
                     sessionStorage.setItem('user', JSON.stringify(result.user));
                     sessionStorage.setItem('token', result.token);
-                    
+                                        
                     // Mostra mensagem de sucesso
                     const successDiv = document.createElement('div');
                     successDiv.className = 'login-success';
