@@ -1335,6 +1335,70 @@
         </div>
     </div>
 
+<!-- Modal Concluir Chamado -->
+    <div id="concluir-chamado" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Concluir Chamado</h2>
+                <button class="close" onclick="closeModal('concluir-chamado')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-concluir-chamado" onsubmit="handleConcluirChamado(event)">
+
+                <!-- ID oculto da loja -->
+                <input type="hidden" id="id-conclusao-chamado">
+                <div class="form-group">
+                    <label for="conclusao-filial">Filial</label>
+                    <input type="text" class="form-control" id="conclusao-filial" readonly required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="conclusao-patrimonio">Patrimônio</label>
+                    <input type="text" class="form-control" id="conclusao-patrimonio" placeholder="num patrimonio" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="conclusao-serie">Número de Série</label>
+                    <input type="text" class="form-control" id="conclusao-serie" placeholder="Ex: SER123456" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="conclusao-problema">Descrição do Problema</label>
+                    <textarea class="form-control" id="conclusao-problema" rows="4" placeholder="Detalhadamente o problema encontrado..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="conclusao-solucao">Solução do Problema</label>
+                    <textarea class="form-control" id="conclusao-solucao" rows="4" placeholder="Solução do problema encontrado..." required></textarea>
+                </div>
+                                
+                <div class="form-group">
+                    <label>Anexar Fotos</label>
+                    <div class="file-upload" onclick="document.getElementById('conclusao-fotos').click()">
+                        <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                        <p>Clique para adicionar fotos</p>
+                        <input type="file" id="conclusao-fotos" multiple accept="image/*" style="display: none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Anexar Vídeos</label>
+                    <div class="file-upload" onclick="document.getElementById('conclusao-videos').click()">
+                        <i class="fas fa-video" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                        <p>Clique para adicionar vídeos</p>
+                        <input type="file" id="conclusao-videos" multiple accept="video/*" style="display: none;">
+                    </div>
+                </div>
+                <div class="chamado-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('concluir-chamado')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Abrir Chamado
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
     <!-- Modal Acompanhar Chamados -->
     <div id="acompanhar-chamados" class="modal" style="display: none;">
         <div class="modal-content">
@@ -2732,20 +2796,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             });
             return await response.json();
             
-            /*
-            // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            return {
-                success: true,
-                message: "Chamado criado com sucesso!",
-                data: {
-                    id: Date.now(),
-                    numero: `CH-${String(Date.now()).slice(-3)}`
-                }
-            };*/
         }
-
+        
         // ========================================
         // CARREGAMENTO DE DADOS
         // ========================================
@@ -3161,7 +3213,51 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 if (result.success) {
                     showSuccess(`${result.message} Número: #${result.data.id}`);
                     closeModal('novo-chamado');
-                    
+                    loadChamados();
+                    // Recarregar dashboard
+                    loadDashboardData();
+                } else {
+                    showError(result.error || 'Erro ao criar chamado');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao criar chamado:', error);
+                showError('Erro ao criar chamado. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+        // Função para lidar com novo chamado
+        async function handleConcluirChamado(event) {
+            event.preventDefault();
+            
+            const chamadoId = document.getElementById('id-conclusao-chamado').value;
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+                
+                // Coletar dados do formulário
+                const formData = {
+                    id: chamadoId,
+                    status: 'concluido',
+                    solucao: document.getElementById('conclusao-solucao').value,
+                    fotos: document.getElementById('conclusao-fotos').files,
+                    videos: document.getElementById('conclusao-videos').files
+                };
+                
+                const result = await updateChamado(chamadoId, formData);
+                
+                if (result.success) {
+                    showSuccess(`${result.message} Número: #${result.data.id}`);
+                    closeModal('concluir-chamado');
+                    loadChamados();
                     // Recarregar dashboard
                     loadDashboardData();
                 } else {
@@ -3291,14 +3387,43 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             // Upload de fotos
             document.getElementById('fotos').addEventListener('change', function(e) {
                 const files = e.target.files;
+                
                 if (files.length > 0) {
                     const parent = e.target.parentNode;
-                    parent.innerHTML = `<i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i><p>${files.length} foto(s) selecionada(s)</p>`;
+                    parent.insertAdjacentHTML('beforeend', `
+                        <div>
+                            <i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i>
+                            <p>${files.length} foto(s) selecionada(s)</p>
+                        </div>
+                    `);
                 }
             });
 
             // Upload de vídeos
             document.getElementById('videos').addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    const parent = e.target.parentNode;
+                    parent.innerHTML = `<i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i><p>${files.length} vídeo(s) selecionado(s)</p>`;
+                }
+            });
+
+            // Upload de fotos
+            document.getElementById('conclusao-fotos').addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    const parent = e.target.parentNode;
+                    parent.insertAdjacentHTML('beforeend', `
+                        <div>
+                            <i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i>
+                            <p>${files.length} foto(s) selecionada(s)</p>
+                        </div>
+                    `);
+                }
+            });
+
+            // Upload de vídeos
+            document.getElementById('conclusao-videos').addEventListener('change', function(e) {
                 const files = e.target.files;
                 if (files.length > 0) {
                     const parent = e.target.parentNode;
@@ -3320,19 +3445,6 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             });
             return await response.json();
             
-            /*
-            // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            return {
-                success: true,
-                data: [
-                    { id: 1, username: "admin", nome_completo: "Administrador Sistema", email: "admin@techservice.com", perfil: "admin", ativo: true, ultimo_login: "2025-09-22 08:30:00" },
-                    { id: 2, username: "joao.tech", nome_completo: "João Silva Santos", email: "joao@techservice.com", perfil: "tecnico", ativo: true, ultimo_login: "2025-09-21 16:45:00" },
-                    { id: 3, username: "maria.op", nome_completo: "Maria Oliveira", email: "maria@techservice.com", perfil: "operador", ativo: true, ultimo_login: "2025-09-20 14:20:00" },
-                    { id: 4, username: "carlos.view", nome_completo: "Carlos Pereira", email: "carlos@techservice.com", perfil: "visualizador", ativo: false, ultimo_login: "2025-09-15 10:15:00" }
-                ]
-            };*/
         }
         // Função para buscar usuários
         async function fetchChamadosFiltrados(formData) {
@@ -5178,6 +5290,10 @@ async function updateChamado(chamadoId, formData){
             };
             
             if (!confirm(`Confirmar alteração do status para "${statusTextConfirm[novoStatus]}"?`)) {
+                return;
+            }
+            if ($novoStatus === 'concluido') {
+                openModal('concluir-chamado');
                 return;
             }
             
