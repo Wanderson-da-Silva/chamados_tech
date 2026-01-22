@@ -1316,6 +1316,8 @@
                         <input type="file" id="fotos" multiple accept="image/*" style="display: none;">
                     </div>
                 </div>
+                <div id="listaFotos"></div>
+                <div id="resultado"></div>
                 <div class="form-group">
                     <label>Anexar Vídeos</label>
                     <div class="file-upload" onclick="document.getElementById('videos').click()">
@@ -3183,51 +3185,96 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 resetFileUploads();
             }
         }
-
+        let arquivosSelecionados = [];
         // Função para lidar com novo chamado
         async function handleNovoChamado(event) {
             event.preventDefault();
+        //depois de testar evio fotos, descomentar    
+            // const submitBtn = event.target.querySelector('button[type="submit"]');
+            // const originalText = submitBtn.innerHTML;
             
-            const submitBtn = event.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            // const resultado = document.getElementById('resultado');
+            //     const inputFoto = document.getElementById('fotos');
+            //     resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
+            //     resultado.style.color = 'blue';
+
+
+
+
+            // try {
+            //     // Mostrar loading no botão
+            //     submitBtn.disabled = true;
+            //     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
             
-            try {
-                // Mostrar loading no botão
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+            //     // Coletar dados do formulário
+            //     const formData = {
+            //         loja_id: document.getElementById('filial').value,
+            //         maquina_id: document.getElementById('select_patrimonio').value,
+            //         serie: document.getElementById('serie').value,
+            //         problema: document.getElementById('problema').value,
+            //         categoria: document.getElementById('categoria').value,
+            //         prioridade: document.getElementById('prioridade').value,
+            //         fotos: document.getElementById('fotos').files,
+            //         videos: document.getElementById('videos').files
+            //     };
+            
+            
+            
+            
+            // if (arquivosSelecionados.length === 0) {
+            //         alert('Por favor, selecione pelo menos uma foto.');
+            //         return;
+            //         }
+                    
+            //         // Verifica se todos são imagens
+            //         for (let i = 0; i < arquivosSelecionados.length; i++) {
+            //             if (!arquivosSelecionados[i].type.startsWith('image/')) {
+            //                 alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
+            //                 return;
+            //             }
+                        
+            //             // Verifica o tamanho (máx 5MB)
+            //             if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
+            //                 alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
+            //                 return;
+            //             }
+            //         }
+            //           // Adiciona todos os arquivos
+            //             arquivosSelecionados.forEach((arquivo) => {
+            //                 formData.append('fotos[]', arquivo);
+            //             });
+
+
+
+            
                 
-                // Coletar dados do formulário
-                const formData = {
-                    loja_id: document.getElementById('filial').value,
-                    maquina_id: document.getElementById('select_patrimonio').value,
-                    serie: document.getElementById('serie').value,
-                    problema: document.getElementById('problema').value,
-                    categoria: document.getElementById('categoria').value,
-                    prioridade: document.getElementById('prioridade').value,
-                    fotos: document.getElementById('fotos').files,
-                    videos: document.getElementById('videos').files
-                };
+            //     const result = await createChamado(formData);
                 
-                const result = await createChamado(formData);
+            //     if (result.success) {
+            //         showSuccess(`${result.message} Número: #${result.data.id}`);
+                        // inputFoto.value = ''; // Limpa o input
+                        // limparTodasFotos();    
+            //         closeModal('novo-chamado');
+            //         loadChamados();
+            //         // Recarregar dashboard
+            //         loadDashboardData();
+            //     } else {
+            //         showError(result.error || 'Erro ao criar chamado');
+            //     }
                 
-                if (result.success) {
-                    showSuccess(`${result.message} Número: #${result.data.id}`);
-                    closeModal('novo-chamado');
-                    loadChamados();
-                    // Recarregar dashboard
-                    loadDashboardData();
-                } else {
-                    showError(result.error || 'Erro ao criar chamado');
-                }
-                
-            } catch (error) {
-                console.error('Erro ao criar chamado:', error);
-                showError('Erro ao criar chamado. Tente novamente.');
-            } finally {
-                // Restaurar botão
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
+            // } catch (error) {
+            //     console.error('Erro ao criar chamado:', error);
+            //     showError('Erro ao criar chamado. Tente novamente.');
+            // } finally {
+            //     // Restaurar botão
+            //     submitBtn.disabled = false;
+            //     submitBtn.innerHTML = originalText;
+            // }
+        const idChamado = 1;
+        
+        enviarImagens(idChamado);
+        
+        
         }
         // Função para lidar com novo chamado
         async function handleConcluirChamado(event) {
@@ -3302,7 +3349,55 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 }, index * 100);
             });
         }
+        // Função para atualizar a lista de fotos na tela
+        function atualizarListaFotos() {
+            const container = document.getElementById('listaFotos');
+            
+            if (!container) {
+                console.error('Elemento com id "listaFotos" não encontrado');
+                return;
+            }
+            
+            container.innerHTML = ''; // Limpa a lista atual
+            
+            if (arquivosSelecionados.length === 0) {
+                container.innerHTML = '<p>Nenhuma foto selecionada</p>';
+                return;
+            }
+            
+            // Mostra o total de fotos
+            const titulo = document.createElement('p');
+            titulo.innerHTML = `<strong>${arquivosSelecionados.length} foto(s) selecionada(s):</strong>`;
+            container.appendChild(titulo);
+            
+            // Lista cada foto com opção de remover
+            arquivosSelecionados.forEach((arquivo, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; align-items: center; margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 4px;';
+                
+                itemDiv.innerHTML = `
+                    <i class="fas fa-image" style="color: #4CAF50; margin-right: 10px;"></i>
+                    <span style="flex: 1;">${arquivo.name} (${(arquivo.size / 1024).toFixed(2)} KB)</span>
+                    <button type="button" onclick="removerFoto(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                `;
+                
+                container.appendChild(itemDiv);
+            });
+        }
 
+        // Função para remover uma foto específica
+        function removerFoto(index) {
+            arquivosSelecionados.splice(index, 1);
+            atualizarListaFotos();
+        }
+
+        // Função para limpar todas as fotos
+        function limparTodasFotos() {
+            arquivosSelecionados = [];
+            atualizarListaFotos();
+        }
         // Função para resetar uploads de arquivo
         function resetFileUploads() {
             const fotoUpload = document.querySelector('[onclick*="fotos"]');
@@ -3386,16 +3481,17 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         document.addEventListener('DOMContentLoaded', function() {
             // Upload de fotos
             document.getElementById('fotos').addEventListener('change', function(e) {
-                const files = e.target.files;
+                const novosArquivos = Array.from(e.target.files);
                 
-                if (files.length > 0) {
-                    const parent = e.target.parentNode;
-                    parent.insertAdjacentHTML('beforeend', `
-                        <div>
-                            <i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i>
-                            <p>${files.length} foto(s) selecionada(s)</p>
-                        </div>
-                    `);
+                if (novosArquivos.length > 0) {
+                    // Adiciona os novos arquivos ao array existente
+                    arquivosSelecionados = arquivosSelecionados.concat(novosArquivos);
+                    
+                    // Atualiza a exibição
+                    atualizarListaFotos();
+                    
+                    // Limpa o input para permitir nova seleção do mesmo arquivo
+                    e.target.value = '';
                 }
             });
 
@@ -5328,6 +5424,105 @@ async function updateChamado(chamadoId, formData){
                 submitBtn.innerHTML = originalText;
             }
          }
+
+        //enviar imagens para pasta
+        async function enviarImagens(idChamado) {
+            if (arquivosSelecionados.length === 0) {
+                    alert('Por favor, selecione pelo menos uma foto.');
+                    return;
+                }
+                
+                // Verifica se todos são imagens
+                for (let i = 0; i < arquivosSelecionados.length; i++) {
+                    if (!arquivosSelecionados[i].type.startsWith('image/')) {
+                        alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
+                        return;
+                    }
+                    
+                    // Verifica o tamanho (máx 5MB)
+                    if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
+                        alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
+                        return;
+                    }
+                }
+                
+                // Prepara o FormData
+                const formData = new FormData();
+                
+                // Adiciona o ID do chamado
+                
+                formData.append('idChamado', idChamado);
+                
+                // Adiciona todos os arquivos
+                arquivosSelecionados.forEach((arquivo) => {
+                    formData.append('fotos[]', arquivo);
+                });
+                
+
+            try {
+                const resultado = document.getElementById('resultado');
+                const inputFoto = document.getElementById('fotos');
+                resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
+                resultado.style.color = 'blue';
+
+
+                // resultado.textContent = `Enviando ${totalArquivos} foto(s)...`;
+                // resultado.style.color = 'blue';
+
+                // Envia as fotos para o servidor PHP
+                const response = await fetch('http://localhost/chamados_tech/api/techservice_fotos.php', {
+                method: 'POST',
+                body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                resultado.innerHTML = `<strong>✓ ${data.total_enviadas} foto(s) enviada(s) com sucesso!</strong><br>`;
+                
+                // Mostra os nomes dos arquivos enviados
+                if (data.arquivos && data.arquivos.length > 0) {
+                    resultado.innerHTML += '<ul style="margin:5px 0; padding-left:20px;">';
+                    data.arquivos.forEach(arq => {
+                    resultado.innerHTML += `<li>${arq}</li>`;
+                    });
+                    resultado.innerHTML += '</ul>';
+                }
+                
+                resultado.style.color = 'green';
+                inputFoto.value = ''; // Limpa o input
+                limparTodasFotos();
+                
+                // Limpa os previews se existirem
+                const previewContainer = document.getElementById('previewContainer');
+                if (previewContainer) {
+                    previewContainer.innerHTML = '';
+                }
+                } else {
+                resultado.textContent = 'Erro: ' + data.message;
+                resultado.style.color = 'red';
+                }
+            } catch (error) {
+                resultado.textContent = 'Erro de conexão 1: ' + error.message;
+                resultado.style.color = 'red';
+            }
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Carregar transferências
         function carregarTransferencias() {
