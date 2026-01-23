@@ -2791,10 +2791,9 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData)
+                body: formData
             });
             return await response.json();
             
@@ -3189,92 +3188,103 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         // Função para lidar com novo chamado
         async function handleNovoChamado(event) {
             event.preventDefault();
-        //depois de testar evio fotos, descomentar    
-            // const submitBtn = event.target.querySelector('button[type="submit"]');
-            // const originalText = submitBtn.innerHTML;
+            //depois de testar evio fotos, descomentar    
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
             
-            // const resultado = document.getElementById('resultado');
-            //     const inputFoto = document.getElementById('fotos');
-            //     resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
-            //     resultado.style.color = 'blue';
+            const resultado = document.getElementById('resultado');
+                const inputFoto = document.getElementById('fotos');
+                resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
+                resultado.style.color = 'blue';
 
 
 
 
-            // try {
-            //     // Mostrar loading no botão
-            //     submitBtn.disabled = true;
-            //     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
             
-            //     // Coletar dados do formulário
-            //     const formData = {
-            //         loja_id: document.getElementById('filial').value,
-            //         maquina_id: document.getElementById('select_patrimonio').value,
-            //         serie: document.getElementById('serie').value,
-            //         problema: document.getElementById('problema').value,
-            //         categoria: document.getElementById('categoria').value,
-            //         prioridade: document.getElementById('prioridade').value,
-            //         fotos: document.getElementById('fotos').files,
-            //         videos: document.getElementById('videos').files
-            //     };
-            
+                // Coletar dados do formulário
+                const formData = new FormData();
+    
+                // Campos de texto
+                formData.append('loja_id', document.getElementById('filial').value);
+                formData.append('maquina_id', document.getElementById('select_patrimonio').value);
+                formData.append('serie', document.getElementById('serie').value);
+                formData.append('problema', document.getElementById('problema').value);
+                formData.append('categoria', document.getElementById('categoria').value);
+                formData.append('prioridade', document.getElementById('prioridade').value);
             
             
+            // //envio teste
             
-            // if (arquivosSelecionados.length === 0) {
-            //         alert('Por favor, selecione pelo menos uma foto.');
-            //         return;
-            //         }
+                       
+                    if (arquivosSelecionados.length === 0) {
+                    alert('Por favor, selecione pelo menos uma foto.');
+                    return;
+                }
+                
+                // Verifica se todos são imagens
+                for (let i = 0; i < arquivosSelecionados.length; i++) {
+                    if (!arquivosSelecionados[i].type.startsWith('image/')) {
+                        alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
+                        return;
+                    }
                     
-            //         // Verifica se todos são imagens
-            //         for (let i = 0; i < arquivosSelecionados.length; i++) {
-            //             if (!arquivosSelecionados[i].type.startsWith('image/')) {
-            //                 alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
-            //                 return;
-            //             }
-                        
-            //             // Verifica o tamanho (máx 5MB)
-            //             if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
-            //                 alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
-            //                 return;
-            //             }
-            //         }
-            //           // Adiciona todos os arquivos
-            //             arquivosSelecionados.forEach((arquivo) => {
-            //                 formData.append('fotos[]', arquivo);
-            //             });
+                    // Verifica o tamanho (máx 5MB)
+                    if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
+                        alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
+                        return;
+                    }
+                }
+                              
+                
+                // Adiciona todos os arquivos
+                arquivosSelecionados.forEach((arquivo) => {
+                    formData.append('fotos[]', arquivo);
+                });
+                
+                // Exibe TUDO que está no FormData
+                console.log('=== Conteúdo do FormData ===');
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        console.log(key + ':', {
+                            nome: value.name,
+                            tipo: value.type,
+                            tamanho: (value.size / 1024).toFixed(2) + ' KB'
+                        });
+                    } else {
+                        console.log(key + ':', value);
+                    }
+                }
+                
+                const result = await createChamado(formData);
+                
+                if (result.success) {
+
+                    showSuccess(`${result.message} `);
+                    // showSuccess(`${result.message} Número: #${result.data.id}`);
+                    inputFoto.value = ''; // Limpa o input
+                    limparTodasFotos();    
+                    closeModal('novo-chamado');
+                    loadChamados();
+                    // Recarregar dashboard
+                    loadDashboardData();
+                } else {
+                    showError(result.error || 'Erro ao criar chamado');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao criar chamado:', error);
+                showError('Erro ao criar chamado. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
 
 
-
-            
-                
-            //     const result = await createChamado(formData);
-                
-            //     if (result.success) {
-            //         showSuccess(`${result.message} Número: #${result.data.id}`);
-                        // inputFoto.value = ''; // Limpa o input
-                        // limparTodasFotos();    
-            //         closeModal('novo-chamado');
-            //         loadChamados();
-            //         // Recarregar dashboard
-            //         loadDashboardData();
-            //     } else {
-            //         showError(result.error || 'Erro ao criar chamado');
-            //     }
-                
-            // } catch (error) {
-            //     console.error('Erro ao criar chamado:', error);
-            //     showError('Erro ao criar chamado. Tente novamente.');
-            // } finally {
-            //     // Restaurar botão
-            //     submitBtn.disabled = false;
-            //     submitBtn.innerHTML = originalText;
-            // }
-        const idChamado = 1;
-        
-        enviarImagens(idChamado);
-        
-        
         }
         // Função para lidar com novo chamado
         async function handleConcluirChamado(event) {
@@ -5425,104 +5435,7 @@ async function updateChamado(chamadoId, formData){
             }
          }
 
-        //enviar imagens para pasta
-        async function enviarImagens(idChamado) {
-            if (arquivosSelecionados.length === 0) {
-                    alert('Por favor, selecione pelo menos uma foto.');
-                    return;
-                }
-                
-                // Verifica se todos são imagens
-                for (let i = 0; i < arquivosSelecionados.length; i++) {
-                    if (!arquivosSelecionados[i].type.startsWith('image/')) {
-                        alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
-                        return;
-                    }
-                    
-                    // Verifica o tamanho (máx 5MB)
-                    if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
-                        alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
-                        return;
-                    }
-                }
-                
-                // Prepara o FormData
-                const formData = new FormData();
-                
-                // Adiciona o ID do chamado
-                
-                formData.append('idChamado', idChamado);
-                
-                // Adiciona todos os arquivos
-                arquivosSelecionados.forEach((arquivo) => {
-                    formData.append('fotos[]', arquivo);
-                });
-                
-
-            try {
-                const resultado = document.getElementById('resultado');
-                const inputFoto = document.getElementById('fotos');
-                resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
-                resultado.style.color = 'blue';
-
-
-                // resultado.textContent = `Enviando ${totalArquivos} foto(s)...`;
-                // resultado.style.color = 'blue';
-
-                // Envia as fotos para o servidor PHP
-                const response = await fetch('http://localhost/chamados_tech/api/techservice_fotos.php', {
-                method: 'POST',
-                body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                resultado.innerHTML = `<strong>✓ ${data.total_enviadas} foto(s) enviada(s) com sucesso!</strong><br>`;
-                
-                // Mostra os nomes dos arquivos enviados
-                if (data.arquivos && data.arquivos.length > 0) {
-                    resultado.innerHTML += '<ul style="margin:5px 0; padding-left:20px;">';
-                    data.arquivos.forEach(arq => {
-                    resultado.innerHTML += `<li>${arq}</li>`;
-                    });
-                    resultado.innerHTML += '</ul>';
-                }
-                
-                resultado.style.color = 'green';
-                inputFoto.value = ''; // Limpa o input
-                limparTodasFotos();
-                
-                // Limpa os previews se existirem
-                const previewContainer = document.getElementById('previewContainer');
-                if (previewContainer) {
-                    previewContainer.innerHTML = '';
-                }
-                } else {
-                resultado.textContent = 'Erro: ' + data.message;
-                resultado.style.color = 'red';
-                }
-            } catch (error) {
-                resultado.textContent = 'Erro de conexão 1: ' + error.message;
-                resultado.style.color = 'red';
-            }
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
 
         // Carregar transferências
         function carregarTransferencias() {

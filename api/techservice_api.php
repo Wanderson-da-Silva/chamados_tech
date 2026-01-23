@@ -10,6 +10,9 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
+//horario brazil/brasil
+date_default_timezone_set('America/Sao_Paulo');
+
 // Handle preflight OPTIONS request
 //junto com os headers a cima trata a origem e os metodos para verificar se é uma origem autorizada e um method listado
 //alguns metodos chamam o options antes da sua execução real quando há uma origem diferente das listadas ou metodos nao autorizados o próprio navegador não deixa as requisicoes continuarem
@@ -825,35 +828,51 @@ class ChamadoController extends BaseController {
     }
     
     private function create() {
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    
+    if (strpos($contentType, 'multipart/form-data') !== false) {
+        $data = $_POST;
+    } else {
         $data = $this->getJsonInput();
-        $this->validateRequired($data, ['loja_id', 'maquina_id', 'problema']);
+    }
+    
+    $this->validateRequired($data, ['loja_id', 'maquina_id', 'problema']);
+    
+    try {
+        $this->db->beginTransaction();
         
-        try {
-            $this->db->beginTransaction();
+        // Inserir chamado
+        $stmt = $this->db->prepare("
+            INSERT INTO chamado (
+                loja_id, maquina_id, usuario_abertura_id, descricao, 
+                categoria, prioridade, status
+            ) VALUES (?, ?, ?, ?, ?, ?, 'pendente')
+        ");
+        
+        $stmt->execute([
+            $data['loja_id'],
+            $data['maquina_id'],
+            $this->user->user_id,
+            $data['problema'],
+            $data['categoria'] ?? null,
+            $data['prioridade'] ?? 'media'
+        ]);
+        
+        $chamadoId = $this->db->lastInsertId();
+        
+        // ✅ PROCESSAR FOTOS
+        if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
+            $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos']);
             
-            // Inserir chamado
-            $stmt = $this->db->prepare("
-                INSERT INTO chamado (
-                    loja_id, maquina_id, usuario_abertura_id, descricao, 
-                    categoria, prioridade, status
-                ) VALUES (?, ?, ?, ?, ?, ? , 'pendente')
-            ");
+            if (!$resultadoFotos['success']) {
+                $this->db->rollBack();
+                $this->sendResponse(500, $resultadoFotos);
+                return;
+            }
             
-            $stmt->execute([
-                $data['loja_id'],
-                $data['maquina_id'],
-                $this->user->user_id,
-                // 2,
-                $data['problema'],
-               $data['categoria'] ?? null,
-               $data['prioridade'] ?? 'media'
-            ]);
-            
-            $chamadoId = $this->db->lastInsertId();
-            
-            // Processar anexos se existirem
-            if (isset($data['anexos']) && !empty($data['anexos'])) {
-                foreach ($data['anexos'] as $anexo) {
+            // ✅ INSERIR ANEXOS NO BANCO - apenas os que foram enviados com sucesso
+            if (!empty($resultadoFotos['arquivos'])) {
+                foreach ($resultadoFotos['arquivos'] as $anexo) {
                     $stmt = $this->db->prepare("
                         INSERT INTO chamado_anexo (
                             chamado_id, nome_arquivo, nome_original, tipo_arquivo, 
@@ -873,19 +892,25 @@ class ChamadoController extends BaseController {
                     ]);
                 }
             }
-            
-            $this->db->commit();
-            
-            $this->sendResponse(201, [
-                'success' => true,
-                'message' => 'Chamado criado com sucesso',
-                'data' => ['id' => $chamadoId]
-            ]);
-        } catch (PDOException $e) {
-            $this->db->rollBack();
-            $this->sendResponse(500, ['error' => 'Erro ao criar chamado: ' . $e->getMessage()]);
         }
+        
+        $this->db->commit();
+        
+        $this->sendResponse(201, [
+            'success' => true,
+            'message' => 'Chamado criado com sucesso',
+            'data' => [
+                'id' => $chamadoId,
+                'fotos_enviadas' => $resultadoFotos['total_enviadas'] ?? 0,
+                'avisos' => $resultadoFotos['avisos'] ?? []
+            ]
+        ]);
+        
+    } catch (PDOException $e) {
+        $this->db->rollBack();
+        $this->sendResponse(500, ['error' => 'Erro ao criar chamado: ' . $e->getMessage()]);
     }
+}
     
     private function update($id) {
         $data = $this->getJsonInput();
@@ -975,6 +1000,127 @@ class ChamadoController extends BaseController {
         ]);
         }
     }
+
+    public function moverImagens($idChamado, $arquivos = null){
+    // Valida se o ID foi enviado
+    if (empty($idChamado)) {
+        return [
+            'success' => false,
+            'message' => 'foto(s) - idChamado inexistente!'
+        ];
+    }
+
+    // Se não passou arquivos, tenta pegar do $_FILES
+    if ($arquivos === null) {
+        //$arquivos = $_FILES['fotos'] ?? null;
+
+
+        return [
+            'success' => false,
+            'error' => 'foto(s) inexistente io nula !'
+        ];
+    }
+
+    // Verifica se há arquivos enviados
+    if (empty($arquivos) || empty($arquivos['name'][0])) {
+        return [
+            'success' => false,
+            'error' => 'foto(s) inexistente io !'
+        ];
+    }
+
+    // Resto do código continua igual...
+    $pastaDestino = 'fotos/';
+    
+    if (!file_exists($pastaDestino)) {
+        mkdir($pastaDestino, 0777, true);
+    }
+
+    $extensoesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $tamanhoMaximo = 5 * 1024 * 1024;
+    
+    $arquivosEnviados = [];
+    $erros = [];
+    
+    $totalArquivos = count($arquivos['name']);
+
+    for ($i = 0; $i < $totalArquivos; $i++) {
+        if ($arquivos['error'][$i] === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+        
+        if ($arquivos['error'][$i] !== UPLOAD_ERR_OK) {
+            $erros[] = "Erro ao fazer upload de '{$arquivos['name'][$i]}'.";
+            continue;
+        }
+        
+        $nomeOriginal = $arquivos['name'][$i];
+        $tmpName = $arquivos['tmp_name'][$i];
+        $tamanho = $arquivos['size'][$i];
+        $tipoArquivo = $arquivos['type'][$i];
+        $extensao = strtolower(pathinfo($nomeOriginal, PATHINFO_EXTENSION));
+        
+        if (!in_array($extensao, $extensoesPermitidas)) {
+            $erros[] = "'{$nomeOriginal}': formato não permitido.";
+            continue;
+        }
+        
+        $verificaImagem = getimagesize($tmpName);
+        if ($verificaImagem === false) {
+            $erros[] = "'{$nomeOriginal}': não é uma imagem válida.";
+            continue;
+        }
+        
+        if ($tamanho > $tamanhoMaximo) {
+            $erros[] = "'{$nomeOriginal}': excede o tamanho máximo de 5MB.";
+            continue;
+        }
+        
+        $dataAtual = date('Y-m-d_H-i-s');
+        $nomeGerado = uniqid() . '_' . time() . '_' . $i;
+        $nomeArquivo = $idChamado . '_' . $dataAtual . '_' . $nomeGerado . '.' . $extensao;
+        $caminhoCompleto = $pastaDestino . $nomeArquivo;
+        
+        if (move_uploaded_file($tmpName, $caminhoCompleto)) {
+           // ✅ Monta array com TODOS os dados necessários para INSERT
+            $arquivosEnviados[] = [
+                'nome_arquivo' => $nomeArquivo,           // Nome no servidor
+                'nome_original' => $nomeOriginal,          // Nome original do usuário
+                'tipo_arquivo' => $tipoArquivo,            // MIME type (image/jpeg)
+                'tamanho_bytes' => $tamanho,               // Tamanho em bytes
+                'caminho_arquivo' => $caminhoCompleto,     // Caminho completo
+                'tipo_anexo' => 'foto',                    // Tipo (foto/video/documento)
+                'descricao' => null                        // Descrição (opcional)
+            ];
+        } else {
+            $erros[] = "'{$nomeOriginal}': erro ao salvar no servidor.";
+        }
+    }
+
+    if (count($arquivosEnviados) > 0) {
+        $resposta = [
+            'success' => true,
+            'message' => count($arquivosEnviados) . ' foto(s) enviada(s) com sucesso!',
+            'total_enviadas' => count($arquivosEnviados),
+            'arquivos' => $arquivosEnviados
+        ];
+        
+        if (count($erros) > 0) {
+            $resposta['avisos'] = $erros;
+            $resposta['message'] .= ' Alguns arquivos não foram enviados.';
+        }
+        
+        return $resposta;
+    } else {
+        return [
+            'success' => false,
+            'error' => 'Nenhuma foto foi enviada!',
+            'avisos' => $erros
+        ];
+    }
+}
+
+
 }
 
 // ========================================
