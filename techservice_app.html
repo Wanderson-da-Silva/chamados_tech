@@ -1380,6 +1380,9 @@
                         <input type="file" id="conclusao-fotos" multiple accept="image/*" style="display: none;">
                     </div>
                 </div>
+                <div id="listaFotos_conclusao"></div>
+                <div id="resultado_conclusao"></div>
+
                 <div class="form-group">
                     <label>Anexar Vídeos</label>
                     <div class="file-upload" onclick="document.getElementById('conclusao-videos').click()">
@@ -2302,7 +2305,8 @@ const tableFetchMap = {
     'filiais': fetchFiliais,
     'maquinas': fetchMaquinas,
     'usuarios': fetchUsuarios,
-    'patrimonios': fetchMaquinas
+    'patrimonios': fetchMaquinas,
+    'maquinasSemPreventivas': fetchMaquinasSemPreventivas
 
     // Adicione outras tabelas conforme necessário
 };
@@ -2312,7 +2316,8 @@ const tableFieldConfig = {
     'filiais': { label: 'nome', value: 'id' },
     'maquinas': { label: 'modelo', value: 'id' },
     'patrimonios': { label: 'patrimonio', value: 'id' },
-    'usuarios': { label: 'nome_completo', value: 'id' }
+    'usuarios': { label: 'nome_completo', value: 'id' },
+    'maquinasSemPreventivas': { label: 'patrimonio', value: 'id' }
 };
 
 /**
@@ -2342,6 +2347,19 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         
         if (!result.success || !result.data) {
             console.error(`Erro ao buscar dados de '${tableName}'`);
+            return false;
+        }
+
+        if (result.data.length === 0) {
+            console.log(`Nenhum dado encontrado em '${tableName}'`);
+            
+            // Reseta o select
+            const selectElement = document.getElementById(selectId);
+            if (selectElement) {
+                selectElement.innerHTML = '<option value="">Sem dados retornados</option>';
+                selectElement.disabled = true; // Opcional: desabilita o select
+            }
+            
             return false;
         }
         
@@ -2784,20 +2802,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             */
         }
 
-        // Função para criar novo chamado
-        async function createChamado(formData) {
-            
-            const token = sessionStorage.getItem('token');
-            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-            return await response.json();
-            
-        }
+        
         
         // ========================================
         // CARREGAMENTO DE DADOS
@@ -2963,7 +2968,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     
                     <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
 
-                    ${gerarSelectStatus(chamado.id, chamado.status, tipoUsuarioLogado)}
+                    ${gerarSelectStatus(chamado.id, chamado.status, tipoUsuarioLogado) || '' }
             
                     </div> 
                 `;
@@ -3028,9 +3033,9 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 'pendente': 'Pendente',
                 'em_andamento': 'Em Andamento',
                 'concluido': 'Concluído',
-                'aguardando_peca': 'Aguardando Peças',
+                'aguardando_peca': 'Aguardando peças',
                 'pausado': 'Pausado',
-                'cancelado': 'Cancelado'
+                'cancelado':'Cancelado'
             };
             
             let selectHTML = `
@@ -3150,7 +3155,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
             if (modalId === 'preventiva-maquina') {
                 // loadSelectsPreventiva();
-                populateSelectFromTable('preventiva-maquina_id', 'maquinas');
+                populateSelectFromTable('preventiva-maquina_id', 'maquinasSemPreventivas');
+                                
                 populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
 
             }
@@ -3185,6 +3191,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
         }
         let arquivosSelecionados = [];
+        let arquivosSelecionados_conclusao = [];
+
         // Função para lidar com novo chamado
         async function handleNovoChamado(event) {
             event.preventDefault();
@@ -3193,11 +3201,9 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             const originalText = submitBtn.innerHTML;
             
             const resultado = document.getElementById('resultado');
-                const inputFoto = document.getElementById('fotos');
-                resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
-                resultado.style.color = 'blue';
-
-
+            const inputFoto = document.getElementById('fotos');
+            resultado.textContent = `Enviando ${arquivosSelecionados.length} foto(s)...`;
+            resultado.style.color = 'blue';
 
 
             try {
@@ -3220,7 +3226,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             // //envio teste
             
                        
-                    if (arquivosSelecionados.length === 0) {
+                if (arquivosSelecionados.length === 0) {
                     alert('Por favor, selecione pelo menos uma foto.');
                     return;
                 }
@@ -3294,25 +3300,60 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
 
             const submitBtn = event.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
+
+
+            const resultado = document.getElementById('resultado_conclusao');
+            const inputFoto = document.getElementById('conclusao-fotos');
+            resultado.textContent = `Enviando ${arquivosSelecionados_conclusao.length} foto(s)...`;
+            resultado.style.color = 'blue';
+
+
             
             try {
                 // Mostrar loading no botão
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
                 
+
                 // Coletar dados do formulário
-                const formData = {
-                    id: chamadoId,
-                    status: 'concluido',
-                    solucao: document.getElementById('conclusao-solucao').value,
-                    fotos: document.getElementById('conclusao-fotos').files,
-                    videos: document.getElementById('conclusao-videos').files
-                };
+                const formData = new FormData();
                 
+                formData.append('id', chamadoId );
+                formData.append('status', 'concluido');
+                formData.append('solucao', document.getElementById('conclusao-solucao').value);
+                
+                //fotos e videos
+                if (arquivosSelecionados_conclusao.length === 0) {
+                    alert('Por favor, selecione pelo menos uma foto.');
+                    return;
+                }
+                
+                // Verifica se todos são imagens
+                for (let i = 0; i < arquivosSelecionados_conclusao.length; i++) {
+                    if (!arquivosSelecionados_conclusao[i].type.startsWith('image/')) {
+                        alert(`O arquivo "${arquivosSelecionados_conclusao[i].name}" não é uma imagem válida.`);
+                        return;
+                    }
+                    
+                    // Verifica o tamanho (máx 5MB)
+                    if (arquivosSelecionados_conclusao[i].size > 5 * 1024 * 1024) {
+                        alert(`A foto "${arquivosSelecionados_conclusao[i].name}" excede o tamanho máximo de 5MB.`);
+                        return;
+                    }
+                }
+                              
+                
+                // Adiciona todos os arquivos
+                arquivosSelecionados_conclusao.forEach((arquivo) => {
+                    formData.append('fotos[]', arquivo);
+                });
+
                 const result = await updateChamado(chamadoId, formData);
                 
                 if (result.success) {
-                    showSuccess(`${result.message} Número: #${result.data.id}`);
+                    //showSuccess(`${result.message} Número: #${result.data.id}`);
+                    inputFoto.value = ''; // Limpa o input
+                    limparTodasFotos_conclusao();
                     closeModal('concluir-chamado');
                     loadChamados();
                     // Recarregar dashboard
@@ -3428,6 +3469,78 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
         }
 
+        // Função para atualizar a lista de fotos na tela
+        function atualizarListaFotos_conclusao() {
+            const container = document.getElementById('listaFotos_conclusao');
+            
+            if (!container) {
+                console.error('Elemento com id "listaFotos_conclusao" não encontrado');
+                return;
+            }
+            
+            container.innerHTML = ''; // Limpa a lista atual
+            
+            if (arquivosSelecionados_conclusao.length === 0) {
+                container.innerHTML = '<p>Nenhuma foto selecionada</p>';
+                return;
+            }
+            
+            // Mostra o total de fotos
+            const titulo = document.createElement('p');
+            titulo.innerHTML = `<strong>${arquivosSelecionados_conclusao.length} foto(s) selecionada(s):</strong>`;
+            container.appendChild(titulo);
+            
+            // Lista cada foto com opção de remover
+            arquivosSelecionados_conclusao.forEach((arquivo, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; align-items: center; margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 4px;';
+                
+                itemDiv.innerHTML = `
+                    <i class="fas fa-image" style="color: #4CAF50; margin-right: 10px;"></i>
+                    <span style="flex: 1;">${arquivo.name} (${(arquivo.size / 1024).toFixed(2)} KB)</span>
+                    <button type="button" onclick="removerFoto(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                `;
+                
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Função para remover uma foto específica
+        function removerFoto_conclusao(index) {
+            arquivosSelecionados_conclusao.splice(index, 1);
+            atualizarListaFotos_conclusao();
+        }
+
+        // Função para limpar todas as fotos
+        function limparTodasFotos_conclusao() {
+            arquivosSelecionados_conclusao = [];
+            atualizarListaFotos_conclusao();
+        }
+        // Função para resetar uploads de arquivo
+        function resetFileUploads_conclusao() {
+            const fotoUpload = document.querySelector('[onclick*="conclusao-fotos"]');
+            const videoUpload = document.querySelector('[onclick*="conclusao-videos"]');
+            
+            if (fotoUpload) {
+                fotoUpload.innerHTML = `
+                    <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                    <p>Clique para adicionar fotos</p>
+                `;
+            }
+            
+            if (videoUpload) {
+                videoUpload.innerHTML = `
+                    <i class="fas fa-video" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                    <p>Clique para adicionar vídeos</p>
+                `;
+            }
+        }
+
+
+
+
         // Função para mostrar mensagens de sucesso
         function showSuccess(message) {
             // Criar toast de sucesso
@@ -3492,14 +3605,11 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             // Upload de fotos
             document.getElementById('fotos').addEventListener('change', function(e) {
                 const novosArquivos = Array.from(e.target.files);
-                
                 if (novosArquivos.length > 0) {
                     // Adiciona os novos arquivos ao array existente
-                    arquivosSelecionados = arquivosSelecionados.concat(novosArquivos);
-                    
+                    arquivosSelecionados = arquivosSelecionados.concat(novosArquivos);   
                     // Atualiza a exibição
-                    atualizarListaFotos();
-                    
+                    atualizarListaFotos(); 
                     // Limpa o input para permitir nova seleção do mesmo arquivo
                     e.target.value = '';
                 }
@@ -3516,15 +3626,14 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
 
             // Upload de fotos
             document.getElementById('conclusao-fotos').addEventListener('change', function(e) {
-                const files = e.target.files;
-                if (files.length > 0) {
-                    const parent = e.target.parentNode;
-                    parent.insertAdjacentHTML('beforeend', `
-                        <div>
-                            <i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i>
-                            <p>${files.length} foto(s) selecionada(s)</p>
-                        </div>
-                    `);
+                const novosArquivos = Array.from(e.target.files);
+                if (novosArquivos.length > 0) {
+                    // Adiciona os novos arquivos ao array existente
+                    arquivosSelecionados_conclusao = arquivosSelecionados_conclusao.concat(novosArquivos);   
+                    // Atualiza a exibição
+                    atualizarListaFotos_conclusao(); 
+                    // Limpa o input para permitir nova seleção do mesmo arquivo
+                    e.target.value = '';
                 }
             });
 
@@ -3771,81 +3880,20 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             });
             return await response.json();
             
-            /*
-            // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 600));
+        }
+        // Função para buscar máquinas
+        async function fetchMaquinasSemPreventivas() {
             
-            return {
-                success: true,
-                data: [
-                    { 
-                        id: 1, 
-                        patrimonio: "MAQ-001", 
-                        numero_serie: "SER123001", 
-                        modelo: "HP LaserJet Pro", 
-                        marca: "HP", 
-                        tipo_equipamento: "Impressora", 
-                        loja_nome: "Filial Centro", 
-                        status_operacional: "ativo", 
-                        data_proxima_preventiva: "2025-10-15",
-                        localizacao: "Recepção",
-                        valor_aquisicao: 1200.00
-                    },
-                    { 
-                        id: 2, 
-                        patrimonio: "MAQ-015", 
-                        numero_serie: "SER123015", 
-                        modelo: "Dell OptiPlex 3090", 
-                        marca: "Dell", 
-                        tipo_equipamento: "Computador", 
-                        loja_nome: "Filial Centro", 
-                        status_operacional: "ativo", 
-                        data_proxima_preventiva: "2025-11-20",
-                        localizacao: "Sala 1",
-                        valor_aquisicao: 2500.00
-                    },
-                    { 
-                        id: 3, 
-                        patrimonio: "MAQ-045", 
-                        numero_serie: "SER123045", 
-                        modelo: "Canon ImageRunner 2625i", 
-                        marca: "Canon", 
-                        tipo_equipamento: "Impressora", 
-                        loja_nome: "Filial Norte", 
-                        status_operacional: "manutencao", 
-                        data_proxima_preventiva: "2025-10-10",
-                        localizacao: "Almoxarifado",
-                        valor_aquisicao: 3200.00
-                    },
-                    { 
-                        id: 4, 
-                        patrimonio: "MAQ-123", 
-                        numero_serie: "SER123123", 
-                        modelo: "Lenovo ThinkCentre M70q", 
-                        marca: "Lenovo", 
-                        tipo_equipamento: "Computador", 
-                        loja_nome: "Filial Sul", 
-                        status_operacional: "ativo", 
-                        data_proxima_preventiva: "2025-12-01",
-                        localizacao: "Gerência",
-                        valor_aquisicao: 2800.00
-                    },
-                    { 
-                        id: 5, 
-                        patrimonio: "MAQ-067", 
-                        numero_serie: "SER123067", 
-                        modelo: "Samsung ML-2010", 
-                        marca: "Samsung", 
-                        tipo_equipamento: "Impressora", 
-                        loja_nome: "Filial Oeste", 
-                        status_operacional: "inativo", 
-                        data_proxima_preventiva: "2025-09-30",
-                        localizacao: "Depósito",
-                        valor_aquisicao: 400.00
-                    }
-                ]
-            };
-            */
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas/semPrev', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            
         }
 
         // Função para buscar filiais/lojas
@@ -4856,7 +4904,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 document.getElementById('preventiva-tempo_execucao').value = data.tempo_execucao || '';
                 
                 // Carregar opções dos selects
-                await populateSelectFromTable('preventiva-maquina_id', 'maquinas');
+                await populateSelectFromTable('preventiva-maquina_id', 'maquinasSemPreventivas');
                 await populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
                 
                 // Reselecionar valores após carregar opções
@@ -4873,25 +4921,6 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 console.error('Erro ao abrir modal de edição:', error);
                 showError('Erro ao carregar dados da preventiva');
             }
-        }
-
-        // ========================================
-        // FUNÇÃO - ABRIR MODAL PARA NOVA PREVENTIVA
-        // ========================================
-        function novaPreventiva() {
-            // Limpar formulário
-            document.getElementById('form-preventiva-maquina').reset();
-            document.getElementById('preventiva-id').value = '';
-            
-            // Carregar opções dos selects
-            populateSelectFromTable('preventiva-maquina_id', 'maquinas');
-            populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
-            
-            // Alterar título do modal
-            document.querySelector('#preventiva-maquina .modal-title').textContent = 'Cadastro de Preventiva de Máquina';
-            
-            // Abrir modal
-            document.getElementById('preventiva-maquina').style.display = 'block';
         }
 
         // ========================================
@@ -5113,13 +5142,13 @@ async function atribuirTecnico(chamadoId,statusChamado) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
                 
+
                 // Coletar dados do formulário
-                const formData = {
-                    id: chamadoId,
-                    usuario_tecnico_id: document.getElementById('chamado-usuario_tecnico_id').value,
-                    status: chamadoStatus
-                    
-                };
+                const formData = new FormData();
+                
+                formData.append('id', chamadoId );
+                formData.append('usuario_tecnico_id', document.getElementById('chamado-usuario_tecnico_id').value);
+                formData.append('status', chamadoStatus);
                 
                 // Chamar API para atualizar máquina
                 const result = await updateChamado(chamadoId, formData);
@@ -5130,7 +5159,7 @@ async function atribuirTecnico(chamadoId,statusChamado) {
                     loadChamados(); // Recarregar lista
                     loadDashboardData();//dashboard
                 } else {
-                    showError(result.message || 'Erro ao atualizar chamado 1');
+                    showError(result.error || 'Erro ao atualizar chamado 1');
                 }
                 
             } catch (error) {
@@ -5143,49 +5172,49 @@ async function atribuirTecnico(chamadoId,statusChamado) {
             }
         }
 
-        async function handleChamadoStatus(event) {
-            event.preventDefault();
+        // async function handleChamadoStatus(event) {
+        //     event.preventDefault();
             
-            const chamadoId = document.getElementById('chamado-id').value;
-            const chamadoStatus = document.getElementById('chamado-status').value;
+        //     const chamadoId = document.getElementById('chamado-id').value;
+        //     const chamadoStatus = document.getElementById('chamado-status').value;
                                     
-            const submitBtn = event.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+        //     const submitBtn = event.target.querySelector('button[type="submit"]');
+        //     const originalText = submitBtn.innerHTML;
             
-            try {
-                // Mostrar loading no botão
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        //     try {
+        //         // Mostrar loading no botão
+        //         submitBtn.disabled = true;
+        //         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
                 
-                // Coletar dados do formulário
-                const formData = {
-                    id: chamadoId,
-                    usuario_tecnico_id: document.getElementById('chamado-usuario_tecnico_id').value,
-                    status: chamadoStatus
-                    
-                };
+        //         // Coletar dados do formulário
+
+        //         const formData = new FormData();
                 
-                // Chamar API para atualizar máquina
-                const result = await updateChamado(chamadoId, formData);
+        //         formData.append('id', chamadoId );
+        //         formData.append('usuario_tecnico_id', document.getElementById('chamado-usuario_tecnico_id').value);
+        //         formData.append('status', chamadoStatus );
                 
-                if (result.success) {
-                    showSuccess(result.message || 'Chamado atualizada com sucesso!');
-                    closeModal('chamado-tecnico');
-                    loadChamados(); // Recarregar lista
-                    loadDashboardData();//dashboard
-                } else {
-                    showError(result.message || 'Erro ao atualizar chamado 1');
-                }
+        //         // Chamar API para atualizar máquina
+        //         const result = await updateChamado(chamadoId, formData);
                 
-            } catch (error) {
-                console.error('Erro ao atualizar chamado:', error);
-                showError('Erro ao atualizar chamado. Tente novamente.');
-            } finally {
-                // Restaurar botão
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        }
+        //         if (result.success) {
+        //             showSuccess(result.message || 'Chamado atualizada com sucesso!');
+        //             closeModal('chamado-tecnico');
+        //             loadChamados(); // Recarregar lista
+        //             loadDashboardData();//dashboard
+        //         } else {
+        //             showError(result.error || 'Erro ao atualizar chamado 1');
+        //         }
+                
+        //     } catch (error) {
+        //         console.error('Erro ao atualizar chamado:', error);
+        //         showError('Erro ao atualizar chamado. Tente novamente.');
+        //     } finally {
+        //         // Restaurar botão
+        //         submitBtn.disabled = false;
+        //         submitBtn.innerHTML = originalText;
+        //     }
+        // }
 
 
         
@@ -5355,31 +5384,13 @@ async function atribuirTecnico(chamadoId,statusChamado) {
 
 
 
-async function updateChamado(chamadoId, formData){
-            try {
-                const token = sessionStorage.getItem('token');
-                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/chamados/${chamadoId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                return await response.json();
-                
-            } catch (error) {
-                console.error('Erro na requisição:', error);
-                throw error;
-            }
 
-        }
 
 // Função para salvar o novo status
         async function salvarNovoStatus(chamadoId){
             const selectElement = document.getElementById(`select-status-${chamadoId}`);
             const novoStatus = selectElement.value;
+
             
             if (!novoStatus) {
                 alert('Por favor, selecione um status.');
@@ -5398,7 +5409,8 @@ async function updateChamado(chamadoId, formData){
             if (!confirm(`Confirmar alteração do status para "${statusTextConfirm[novoStatus]}"?`)) {
                 return;
             }
-            if ($novoStatus === 'concluido') {
+            if (novoStatus === 'concluido') {
+                closeModal('acompanhar-chamados');
                 openModal('concluir-chamado');
                 return;
             }
@@ -5406,11 +5418,11 @@ async function updateChamado(chamadoId, formData){
             try {
                 
                 // Coletar dados do formulário
-                const formData = {
-                    id: chamadoId,
-                    status: novoStatus
-                    
-                };
+
+                const formData = new FormData();
+                
+                formData.append('id', chamadoId );
+                formData.append('status', novoStatus );
     
                 // Chamar API para atualizar máquina
                 const result = await updateChamado(chamadoId, formData);
@@ -5421,17 +5433,16 @@ async function updateChamado(chamadoId, formData){
                     loadChamados(); // Recarregar lista
                     loadDashboardData();//dashboard
                 } else {
-                    showError(result.message || 'Erro ao atualizar chamado 1');
+                    
+                    // Converter para objeto
+                   
+                    showError(result.error + '. chaves '+ result.chaves + '. quantidade: ' + result.quantidade || 'Erro ao atualizar chamado 1');
                 }
 
                 
             } catch (error) {
                 console.error('Erro ao atualizar chamado:', error);
                 showError('Erro ao atualizar chamado. Tente novamente.');
-            } finally {
-                // Restaurar botão
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
             }
          }
 
@@ -5582,7 +5593,43 @@ async function updateChamado(chamadoId, formData){
             });
         });
 
+        // Função para criar novo chamado
+        async function createChamado(formData) {
+            
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            return await response.json();
+            
+        }
 
+        async function updateChamado(chamadoId, formData){
+            try {
+                    
+                    formData.append('_method', 'PUT');
+                    
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/chamados/${chamadoId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                        
+                    return await response.json();
+                        
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+                
 
 // ========================================
         // FORMATAÇÃO DE CAMPOS

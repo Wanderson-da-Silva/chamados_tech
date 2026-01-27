@@ -438,7 +438,11 @@ class MaquinaController extends BaseController {
         switch ($method) {
             case 'GET':
                 if (isset($params[0])) {
-                    $this->getById($params[0]);
+                    if ($params[0] === 'semPrev') {
+                        $this->getMaquinasSemPreventiva();
+                    } else {
+                        $this->getById($params[0]);
+                    }
                 } else {
                     $this->getAll();
                 }
@@ -496,6 +500,22 @@ class MaquinaController extends BaseController {
         $this->sendResponse(200, [
             'success' => true,
             'data' => $stmt->fetchAll()
+        ]);
+    }
+    private function getMaquinasSemPreventiva() {
+                
+        $stmt = $this->db->prepare("
+            SELECT m.id, m.patrimonio, p.data_realizada
+            FROM maquina m
+            INNER JOIN preventiva p ON m.id = p.maquina_id
+            WHERE p.data_realizada IS NOT NULL
+            ORDER BY m.patrimonio ASC
+        ");
+        $stmt->execute();
+        
+        $this->sendResponse(200, [
+            'success' => true,
+            'data' => $stmt->fetchAll(),
         ]);
     }
     
@@ -687,7 +707,17 @@ class ChamadoController extends BaseController {
             break;
 
             case 'POST':
-                $this->create();
+                // ✅ Verificar se é um POST verdadeiro ou um PUT simulado
+                if (isset($_POST['_method']) && $_POST['_method'] === 'PUT') {
+                    // É um PUT simulado
+                    if (!isset($params[0])) {
+                        $this->sendResponse(400, ['error' => 'ID do chamado é obrigatório']);
+                    }
+                    $this->update($params[0]);
+                } else {
+                    // É um POST verdadeiro
+                    $this->create();
+                }
                 break;
             case 'PUT':
                 if (!isset($params[0])) {
@@ -828,6 +858,92 @@ class ChamadoController extends BaseController {
     }
     
     private function create() {
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        
+        if (strpos($contentType, 'multipart/form-data') !== false) {
+            $data = $_POST;
+        } else {
+            $data = $this->getJsonInput();
+        }
+        
+        $this->validateRequired($data, ['loja_id', 'maquina_id', 'problema']);
+        
+        try {
+            $this->db->beginTransaction();
+            
+            // Inserir chamado
+            $stmt = $this->db->prepare("
+                INSERT INTO chamado (
+                    loja_id, maquina_id, usuario_abertura_id, descricao, 
+                    categoria, prioridade, status
+                ) VALUES (?, ?, ?, ?, ?, ?, 'pendente')
+            ");
+            
+            $stmt->execute([
+                $data['loja_id'],
+                $data['maquina_id'],
+                $this->user->user_id,
+                $data['problema'],
+                $data['categoria'] ?? null,
+                $data['prioridade'] ?? 'media'
+            ]);
+            
+            $chamadoId = $this->db->lastInsertId();
+            
+            // ✅ PROCESSAR FOTOS
+            if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
+                $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos']);
+                
+                if (!$resultadoFotos['success']) {
+                    $this->db->rollBack();
+                    $this->sendResponse(500, $resultadoFotos);
+                    return;
+                }
+                
+                // ✅ INSERIR ANEXOS NO BANCO - apenas os que foram enviados com sucesso
+                if (!empty($resultadoFotos['arquivos'])) {
+                    foreach ($resultadoFotos['arquivos'] as $anexo) {
+                        $stmt = $this->db->prepare("
+                            INSERT INTO chamado_anexo (
+                                chamado_id, nome_arquivo, nome_original, tipo_arquivo, 
+                                tamanho_bytes, caminho_arquivo, tipo_anexo, descricao
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $stmt->execute([
+                            $chamadoId,
+                            $anexo['nome_arquivo'],
+                            $anexo['nome_original'],
+                            $anexo['tipo_arquivo'],
+                            $anexo['tamanho_bytes'],
+                            $anexo['caminho_arquivo'],
+                            $anexo['tipo_anexo'],
+                            $anexo['descricao'] ?? null
+                        ]);
+                    }
+                }
+            }
+            
+            $this->db->commit();
+            
+            $this->sendResponse(201, [
+                'success' => true,
+                'message' => 'Chamado criado com sucesso',
+                'data' => [
+                    'id' => $chamadoId,
+                    'fotos_enviadas' => $resultadoFotos['total_enviadas'] ?? 0,
+                    'avisos' => $resultadoFotos['avisos'] ?? []
+                ]
+            ]);
+        
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            $this->sendResponse(500, ['error' => 'Erro ao criar chamado: ' . $e->getMessage()]);
+        }
+    }
+    
+    private function update($id) {
+
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
     
     if (strpos($contentType, 'multipart/form-data') !== false) {
@@ -835,85 +951,6 @@ class ChamadoController extends BaseController {
     } else {
         $data = $this->getJsonInput();
     }
-    
-    $this->validateRequired($data, ['loja_id', 'maquina_id', 'problema']);
-    
-    try {
-        $this->db->beginTransaction();
-        
-        // Inserir chamado
-        $stmt = $this->db->prepare("
-            INSERT INTO chamado (
-                loja_id, maquina_id, usuario_abertura_id, descricao, 
-                categoria, prioridade, status
-            ) VALUES (?, ?, ?, ?, ?, ?, 'pendente')
-        ");
-        
-        $stmt->execute([
-            $data['loja_id'],
-            $data['maquina_id'],
-            $this->user->user_id,
-            $data['problema'],
-            $data['categoria'] ?? null,
-            $data['prioridade'] ?? 'media'
-        ]);
-        
-        $chamadoId = $this->db->lastInsertId();
-        
-        // ✅ PROCESSAR FOTOS
-        if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
-            $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos']);
-            
-            if (!$resultadoFotos['success']) {
-                $this->db->rollBack();
-                $this->sendResponse(500, $resultadoFotos);
-                return;
-            }
-            
-            // ✅ INSERIR ANEXOS NO BANCO - apenas os que foram enviados com sucesso
-            if (!empty($resultadoFotos['arquivos'])) {
-                foreach ($resultadoFotos['arquivos'] as $anexo) {
-                    $stmt = $this->db->prepare("
-                        INSERT INTO chamado_anexo (
-                            chamado_id, nome_arquivo, nome_original, tipo_arquivo, 
-                            tamanho_bytes, caminho_arquivo, tipo_anexo, descricao
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    ");
-                    
-                    $stmt->execute([
-                        $chamadoId,
-                        $anexo['nome_arquivo'],
-                        $anexo['nome_original'],
-                        $anexo['tipo_arquivo'],
-                        $anexo['tamanho_bytes'],
-                        $anexo['caminho_arquivo'],
-                        $anexo['tipo_anexo'],
-                        $anexo['descricao'] ?? null
-                    ]);
-                }
-            }
-        }
-        
-        $this->db->commit();
-        
-        $this->sendResponse(201, [
-            'success' => true,
-            'message' => 'Chamado criado com sucesso',
-            'data' => [
-                'id' => $chamadoId,
-                'fotos_enviadas' => $resultadoFotos['total_enviadas'] ?? 0,
-                'avisos' => $resultadoFotos['avisos'] ?? []
-            ]
-        ]);
-        
-    } catch (PDOException $e) {
-        $this->db->rollBack();
-        $this->sendResponse(500, ['error' => 'Erro ao criar chamado: ' . $e->getMessage()]);
-    }
-}
-    
-    private function update($id) {
-        $data = $this->getJsonInput();
         
         // Verificar se chamado existe
         $stmt = $this->db->prepare("SELECT id, status FROM chamado WHERE id = ?");
@@ -972,31 +1009,67 @@ class ChamadoController extends BaseController {
                 $valores[] = $data['custo_pecas'];
             }
             
+            // ✅ PROCESSAR FOTOS
+            if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
+                $resultadoFotos = $this->moverImagens($chamadoAtual, $_FILES['fotos']);
+                
+                if (!$resultadoFotos['success']) {
+                    $this->db->rollBack();
+                    $this->sendResponse(500, $resultadoFotos);
+                    return;
+                }
+                
+                // ✅ INSERIR ANEXOS NO BANCO - apenas os que foram enviados com sucesso
+                if (!empty($resultadoFotos['arquivos'])) {
+                    foreach ($resultadoFotos['arquivos'] as $anexo) {
+                        $stmt = $this->db->prepare("
+                            INSERT INTO chamado_anexo (
+                                chamado_id, nome_arquivo, nome_original, tipo_arquivo, 
+                                tamanho_bytes, caminho_arquivo, tipo_anexo, descricao
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $stmt->execute([
+                            $chamadoAtual,
+                            $anexo['nome_arquivo'],
+                            $anexo['nome_original'],
+                            $anexo['tipo_arquivo'],
+                            $anexo['tamanho_bytes'],
+                            $anexo['caminho_arquivo'],
+                            $anexo['tipo_anexo'],
+                            $anexo['descricao'] ?? null
+                        ]);
+                    }
+                }
+            }
+
             if (!empty($campos)) {
                 $valores[] = $id;
                 $sql = "UPDATE chamado SET " . implode(', ', $campos) . " WHERE id = ?";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($valores);
 
-                // Montar SQL final para debug/retorno
-                // $sqlFinal = $sql;
-                // foreach ($valores as $valor) {
-                //     // Adiciona aspas em strings, mantém números sem aspas
-                //     $valorFormatado = is_numeric($valor) ? $valor : "'" . $valor . "'";
-                //     // Substitui o primeiro ? encontrado
-                //     $sqlFinal = preg_replace('/\?/', $valorFormatado, $sqlFinal, 1);
-                // }
 
+                $sqlFinal = $sql;
+                foreach ($valores as $valor) {
+                    // Adiciona aspas em strings, mantém números sem aspas
+                    $valorFormatado = is_numeric($valor) ? $valor : "'" . $valor . "'";
+                    // Substitui o primeiro ? encontrado
+                    $sqlFinal = preg_replace('/\?/', $valorFormatado, $sqlFinal, 1);
+                }
+
+            }else{ $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: sem valores env p atualizar ' 
+                    ]);
             }
             
             $this->db->commit();
             
             $this->sendResponse(200, [
                 'success' => true,
-                'message' => 'Chamado atualizado com sucesso']);
+                'message' => 'Chamado atualizado com sucesso !2!']);
         } catch (PDOException $e) {
             $this->db->rollBack();
-            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: ' . $e->getMessage()
+            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: '. $sqlFinal. 'MENSAGEM ERRO: ' . $e->getMessage()
         ]);
         }
     }
