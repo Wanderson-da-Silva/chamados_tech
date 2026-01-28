@@ -624,10 +624,16 @@
 }
 
 /* --- Seção dos Botões --- */
-.usuario-acoes, .maquina-acoes, .loja-acoes, .chamado-acoes,.preventiva-acoes {
+.usuario-acoes, .maquina-acoes, .loja-acoes,.preventiva-acoes {
     
     display: flex;
 
+}
+
+.chamado-acoes {
+    display: flex;
+    align-items: center;
+    padding: 10px;
 }
 
 .btn_opcoes {
@@ -675,7 +681,7 @@
             padding: 30px;
             border-radius: 15px;
             width: 90%;
-            max-width: 600px;
+            max-width: 800px;
             max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -822,6 +828,43 @@
             padding: 50px;
             color: #666;
         }
+        .chamado-item {
+            display: flex;
+            gap: 15px;
+            align-items: stretch;
+        }
+
+        .chamado-conteudo {
+            flex: 1;
+            /* Mantém todo o conteúdo atual */
+        }
+
+        .chamado-pdf-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            min-width: 60px;
+        }
+
+        .btn-pdf {
+            
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-pdf:hover {
+            background: #ee5a52;
+            transform: scale(1.1);
+        }
+
+
+
+
 
         @media (max-width: 1200px) {
             .filiais-grid {
@@ -899,6 +942,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <!-- Verificação de Autorização (Comentado para teste) -->
@@ -1365,7 +1409,7 @@
                 </div>
                 <div class="form-group">
                     <label for="conclusao-problema">Descrição do Problema</label>
-                    <textarea class="form-control" id="conclusao-problema" rows="4" placeholder="Detalhadamente o problema encontrado..." required></textarea>
+                    <textarea class="form-control" id="conclusao-problema" rows="4" placeholder="Detalhadamente o problema encontrado..." required readonly></textarea>
                 </div>
                 <div class="form-group">
                     <label for="conclusao-solucao">Solução do Problema</label>
@@ -2953,24 +2997,32 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 const chamadoItem = document.createElement('div');
                 chamadoItem.className = 'chamado-item';
                 chamadoItem.innerHTML = `
-                    <div class="chamado-header">
-                        <strong>#${chamado.numero} - ${chamado.patrimonio} (${chamado.loja_id})</strong>
-                        <span class="status-badge ${statusClass}">${statusText[chamado.status]}</span>
-                    </div>
-                    <div class="chamado-desctec">
-                        <p>${chamado.descricao}</p>
-                        ${chamado.usuario_tecnico_id != null 
-                        ? `<p>${chamado.usuario_tecnico_id} - ${chamado.tecnico_responsavel} </p>` 
-                        : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id},'${chamado.status}')">Definir técnico</button>`
-                        }
-                    </div>    
-                    <div class="chamado-rodape">
-                    
-                    <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
+                    <div class="chamado-conteudo">
+                        <div class="chamado-header">
+                            <strong>#${chamado.numero} - ${chamado.patrimonio} (${chamado.loja_id})</strong>
+                            <span class="status-badge ${statusClass}">${statusText[chamado.status]}</span>
+                        </div>
+                        <div class="chamado-desctec">
+                            <p>${chamado.descricao}</p>
+                            ${chamado.usuario_tecnico_id != null 
+                            ? `<p>${chamado.usuario_tecnico_id} - ${chamado.tecnico_responsavel} </p>` 
+                            : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id},'${chamado.status}')">Definir técnico</button>`
+                            }
+                        </div>    
+                        <div class="chamado-rodape">
+                        
+                            <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
 
-                    ${gerarSelectStatus(chamado.id, chamado.status, tipoUsuarioLogado) || '' }
-            
-                    </div> 
+                            ${gerarSelectStatus(chamado.id, chamado.status, tipoUsuarioLogado) || '' }
+                
+                        </div> 
+                    </div>
+                    <div class="chamado-pdf-wrapper">
+                        <button class="btn-pdf btn-small" onclick="gerarPDFChamado(${chamado.id})" title="Gerar PDF do Chamado">
+                            <i class="fas fa-file-pdf">
+                            </i>
+                        </button>
+                    </div>
                 `;
                 
                 container.appendChild(chamadoItem);
@@ -3226,44 +3278,39 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             // //envio teste
             
                        
-                if (arquivosSelecionados.length === 0) {
-                    alert('Por favor, selecione pelo menos uma foto.');
-                    return;
-                }
-                
-                // Verifica se todos são imagens
-                for (let i = 0; i < arquivosSelecionados.length; i++) {
-                    if (!arquivosSelecionados[i].type.startsWith('image/')) {
-                        alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
-                        return;
+                if (arquivosSelecionados.length > 0) {
+                    // Verifica se todos são imagens
+                    for (let i = 0; i < arquivosSelecionados.length; i++) {
+                        if (!arquivosSelecionados[i].type.startsWith('image/')) {
+                            alert(`O arquivo "${arquivosSelecionados[i].name}" não é uma imagem válida.`);
+                            return;
+                        }
+                        // Verifica o tamanho (máx 5MB)
+                        if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
+                            alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
+                            return;
+                        }
                     }
-                    
-                    // Verifica o tamanho (máx 5MB)
-                    if (arquivosSelecionados[i].size > 5 * 1024 * 1024) {
-                        alert(`A foto "${arquivosSelecionados[i].name}" excede o tamanho máximo de 5MB.`);
-                        return;
-                    }
+                    // Adiciona todos os arquivos
+                    arquivosSelecionados.forEach((arquivo) => {
+                        formData.append('fotos[]', arquivo);
+                    });
+
                 }
-                              
-                
-                // Adiciona todos os arquivos
-                arquivosSelecionados.forEach((arquivo) => {
-                    formData.append('fotos[]', arquivo);
-                });
                 
                 // Exibe TUDO que está no FormData
-                console.log('=== Conteúdo do FormData ===');
-                for (let [key, value] of formData.entries()) {
-                    if (value instanceof File) {
-                        console.log(key + ':', {
-                            nome: value.name,
-                            tipo: value.type,
-                            tamanho: (value.size / 1024).toFixed(2) + ' KB'
-                        });
-                    } else {
-                        console.log(key + ':', value);
-                    }
-                }
+                // console.log('=== Conteúdo do FormData ===');
+                // for (let [key, value] of formData.entries()) {
+                //     if (value instanceof File) {
+                //         console.log(key + ':', {
+                //             nome: value.name,
+                //             tipo: value.type,
+                //             tamanho: (value.size / 1024).toFixed(2) + ' KB'
+                //         });
+                //     } else {
+                //         console.log(key + ':', value);
+                //     }
+                // }
                 
                 const result = await createChamado(formData);
                 
@@ -3323,31 +3370,29 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 formData.append('solucao', document.getElementById('conclusao-solucao').value);
                 
                 //fotos e videos
-                if (arquivosSelecionados_conclusao.length === 0) {
-                    alert('Por favor, selecione pelo menos uma foto.');
-                    return;
-                }
+                if (arquivosSelecionados_conclusao.length > 0) {
                 
-                // Verifica se todos são imagens
-                for (let i = 0; i < arquivosSelecionados_conclusao.length; i++) {
-                    if (!arquivosSelecionados_conclusao[i].type.startsWith('image/')) {
-                        alert(`O arquivo "${arquivosSelecionados_conclusao[i].name}" não é uma imagem válida.`);
-                        return;
-                    }
+                    // Verifica se todos são imagens
+                    for (let i = 0; i < arquivosSelecionados_conclusao.length; i++) {
+                        if (!arquivosSelecionados_conclusao[i].type.startsWith('image/')) {
+                            alert(`O arquivo "${arquivosSelecionados_conclusao[i].name}" não é uma imagem válida.`);
+                            return;
+                        }
+                        
+                        // Verifica o tamanho (máx 5MB)
+                        if (arquivosSelecionados_conclusao[i].size > 5 * 1024 * 1024) {
+                            alert(`A foto "${arquivosSelecionados_conclusao[i].name}" excede o tamanho máximo de 5MB.`);
+                            return;
+                        }
+                    }                 
                     
-                    // Verifica o tamanho (máx 5MB)
-                    if (arquivosSelecionados_conclusao[i].size > 5 * 1024 * 1024) {
-                        alert(`A foto "${arquivosSelecionados_conclusao[i].name}" excede o tamanho máximo de 5MB.`);
-                        return;
-                    }
-                }
-                              
-                
-                // Adiciona todos os arquivos
-                arquivosSelecionados_conclusao.forEach((arquivo) => {
-                    formData.append('fotos[]', arquivo);
-                });
+                    // Adiciona todos os arquivos
+                    arquivosSelecionados_conclusao.forEach((arquivo) => {
+                        formData.append('fotos[]', arquivo);
+                    });
 
+                }
+            
                 const result = await updateChamado(chamadoId, formData);
                 
                 if (result.success) {
@@ -4567,6 +4612,51 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
         }
 
+        async function getChamadoById(chamadoId) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/chamados/${chamadoId}`, {
+                    method: 'GET',
+                    headers: {
+                   'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                    }
+                });
+                
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+        async function getChamadoAnexoById(chamadoId) {
+            try {
+                const token = sessionStorage.getItem('token');
+
+                const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/anexos/deChamado/${chamadoId}`, {
+                    method: 'GET',
+                    headers: {
+                   'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                    }
+                });
+                
+                // ADICIONE ESTA VERIFICAÇÃO:
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Erro do servidor:', errorData);
+                    throw new Error(`Erro ${response.status}: ${errorData.error || 'Erro desconhecido'}`);
+                }
+                return await response.json();
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                throw error;
+            }
+        }
+
         // Função para atualizar maquina
         async function handleEditarMaquina(event) {
             event.preventDefault();
@@ -5111,7 +5201,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
         });
 
 
-async function atribuirTecnico(chamadoId,statusChamado) {
+        async function atribuirTecnico(chamadoId,statusChamado) {
             try {
                 
                     // Preencher formulário de edição
@@ -5127,7 +5217,239 @@ async function atribuirTecnico(chamadoId,statusChamado) {
                 showError('Erro ao atribuir id chamado. Tente novamente.');
             } 
         }
-// Função para atualizar maquina
+
+        async function gerarPDFChamado(chamadoId) {
+            try {
+                    const chamado = await getChamadoById(chamadoId);
+
+                    if (chamado.success) {
+                        const dados = chamado.data;
+
+                    
+                        // Buscar anexos do chamado usando a função existente
+                        const responseAnexos = await getChamadoAnexoById(chamadoId);
+                        let anexos = responseAnexos.success ? responseAnexos.data : [];                               
+                        //console.log('Response Anexos:', responseAnexos);
+                        //console.log('Response Anexos (JSON):', JSON.stringify(responseAnexos, null, 2));
+                        // Cria uma nova instância do jsPDF
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        
+                        // Configurações
+                        let y = 20; // Posição Y inicial
+                        
+                        // Título
+                        doc.setFontSize(18);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('CHAMADO TÉCNICO', 105, y, { align: 'center' });
+                        y += 15;
+                        
+                        // Linha separadora
+                        doc.setLineWidth(0.5);
+                        doc.line(20, y, 190, y);
+                        y += 10;
+                        
+                        // Dados do chamado
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Número do Chamado:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`#${dados.numero}`, 80, y);
+                        y += 8;
+                        
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Loja:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text( dados.loja_id +'-'+ dados.loja_nome || '-', 80, y);
+                        y += 8;
+
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Patrimônio:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.patrimonio || '-', 80, y);
+                        y += 8;
+                        
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Modelo:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.modelo || '-', 80, y);
+                        y += 8;
+
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Série:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.serie || '-', 80, y);
+                        y += 8;                  
+                        
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Status:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.status || '-', 80, y);
+                        y += 8;
+                        
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Data Abertura:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.data_abertura || '-', 80, y);
+                        y += 8;
+                        
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Técnico Responsável:', 20, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.tecnico_responsavel || 'Não atribuído', 80, y);
+                        y += 15;
+                        
+                        // Descrição
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Descrição do Problema:', 20, y);
+                        y += 8;
+                        doc.setFont(undefined, 'normal');
+                        
+                        // Quebra texto longo em múltiplas linhas
+                        const descricao = doc.splitTextToSize(dados.descricao || 'Sem descrição', 170);
+                        doc.text(descricao, 20, y);
+                        y += (descricao.length * 6) + 10;
+                        
+                        // Se houver solução
+                        if (dados.solucao) {
+                            doc.setFont(undefined, 'bold');
+                            doc.text('Solução:', 20, y);
+                            y += 8;
+                            doc.setFont(undefined, 'normal');
+                            const solucao = doc.splitTextToSize(dados.solucao, 170);
+                            doc.text(solucao, 20, y);
+                            y += (solucao.length * 6) + 10;
+                        }
+                        
+                        // ANEXOS - Imagens
+                        if (anexos && anexos.length > 0) {
+                            const API_BASE_URL = `${window.location.protocol}//${window.location.host}/chamados_tech/api`;
+
+
+                            // Verifica se precisa adicionar nova página
+                            if (y > 200) {
+                                doc.addPage();
+                                y = 20;
+                            }
+                            
+                            doc.setFont(undefined, 'bold');
+                            doc.setFontSize(14);
+                            doc.text('Anexos:', 20, y);
+                            y += 10;
+                            
+                            // Processa cada anexo
+                            const imagensPromises = anexos.map(anexo => {
+                                return new Promise((resolve, reject) => {
+                                    const img = new Image();
+                                    img.crossOrigin = 'Anonymous';
+                                    
+                                    img.onload = function() {
+                                        // Cria canvas para converter para base64
+                                        const canvas = document.createElement('canvas');
+                                        canvas.width = img.width;
+                                        canvas.height = img.height;
+                                        const ctx = canvas.getContext('2d');
+                                        ctx.drawImage(img, 0, 0);
+                                        
+                                        const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                                        resolve({ imgData, nome: anexo.nome_arquivo, upload: anexo.data_upload });
+                                    };
+                                    
+                                    img.onerror = function() {
+                                        console.warn(`Erro ao carregar: ${anexo.nome_arquivo}`);
+                                        resolve(null); // Resolve com null para não quebrar o Promise.all
+                                    };
+                                    
+                                    // Carrega a imagem usando o caminho do banco
+                                    // img.src = anexo.caminho_arquivo;
+                                    img.src = `${API_BASE_URL}/${anexo.caminho_arquivo}`;
+                                });
+                            });
+                            
+                            // Aguarda todas as imagens carregarem
+                            const imagens = await Promise.all(imagensPromises);
+                            
+                            // Filtra imagens que carregaram com sucesso
+                            const imagensValidas = imagens.filter(img => img !== null);
+                            
+                            if (imagensValidas.length > 0) {
+                                imagensValidas.forEach((imagem, index) => {
+                                    // Verifica se precisa de nova página
+                                    if (y > 200) {
+                                        doc.addPage();
+                                        y = 20;
+                                    }
+                                    
+                                    // Nome do arquivo
+                                    doc.setFontSize(10);
+                                    doc.setFont(undefined, 'normal');
+                                    // Inline sem função
+                                    const partes = imagem.upload.split(' ');
+                                    const dataPartes = partes[0].split('-');
+                                    const dataFormatada = `${dataPartes[2]}/${dataPartes[1]}/${dataPartes[0]} ${partes[1]}`;
+
+                                    doc.text(`Arquivo: ${imagem.nome} - Upload: ${dataFormatada}`, 20, y);
+                                    y += 8;
+                                    
+                                    // Adiciona a imagem (ajusta tamanho)
+                                    const imgWidth = 170; // Largura máxima
+                                    const imgHeight = 100; // Altura máxima
+                                    
+                                    try {
+                                        doc.addImage(imagem.imgData, 'JPEG', 20, y, imgWidth, imgHeight);
+                                        y += imgHeight + 15;
+                                    } catch (error) {
+                                        console.error('Erro ao adicionar imagem ao PDF:', error);
+                                        doc.setTextColor(255, 0, 0);
+                                        doc.text('Erro ao renderizar esta imagem', 20, y);
+                                        doc.setTextColor(0, 0, 0);
+                                        y += 10;
+                                    }
+                                });
+                            } else {
+                                doc.setFontSize(10);
+                                doc.setTextColor(150, 150, 150);
+                                doc.text('Nenhuma imagem disponível para exibição', 20, y);
+                                doc.setTextColor(0, 0, 0);
+                                y += 10;
+                            }
+                        }
+                        else{
+                            doc.setFont(undefined, 'bold');
+                            doc.text('Anexos:', 20, y);
+                            y += 8;
+                            doc.setFont(undefined, 'normal');
+                            const anexo = doc.splitTextToSize( 'Sem anexo', 170);
+                            doc.text(anexo, 20, y);
+                            y += (anexo.length * 6) + 10;
+                        }
+                        // Rodapé em todas as páginas
+                        const totalPages = doc.internal.getNumberOfPages();
+                        for (let i = 1; i <= totalPages; i++) {
+                            doc.setPage(i);
+                            doc.setFontSize(8);
+                            doc.setTextColor(128, 128, 128);
+                            doc.text(
+                                `Página ${i} de ${totalPages} - Gerado em: ${new Date().toLocaleString('pt-BR')}`,
+                                105,
+                                285,
+                                { align: 'center' }
+                            );
+                        }
+                        // Salva o PDF
+                        doc.save(`Chamado_${dados.numero}.pdf`);
+                    
+                    } else {
+                        showError(usuario.message || 'Erro ao buscar dados do chamado para PDF');
+                    }
+
+            } catch (error) {
+                console.error('Erro ao gerar PDF chamado: ', error);
+                showError('Erro ao gerar PDF chamado. Tente novamente.');
+            } 
+        }
+
+        // Função para atualizar maquina
         async function handleChamadoTecnico(event) {
             event.preventDefault();
             
@@ -5410,9 +5732,34 @@ async function atribuirTecnico(chamadoId,statusChamado) {
                 return;
             }
             if (novoStatus === 'concluido') {
-                closeModal('acompanhar-chamados');
-                openModal('concluir-chamado');
-                return;
+
+                try{
+                    // Buscar dados do usuário na API
+                    const chamado = await getChamadoById(chamadoId);
+                
+                    if (chamado.success) {
+                        const dados = chamado.data;
+                        
+                        // Preencher formulário de edição
+                        document.getElementById('id-conclusao-chamado').value = dados.id;
+                        document.getElementById('conclusao-filial').value = dados.loja_nome;
+                        document.getElementById('conclusao-patrimonio').value = dados.patrimonio;
+                        document.getElementById('conclusao-serie').value = dados.serie;
+                        document.getElementById('conclusao-problema').value = dados.descricao || '';
+                    
+                        closeModal('acompanhar-chamados');
+                        openModal('concluir-chamado');
+                        return;
+                    
+                    } else {
+                        showError(usuario.message || 'Erro ao buscar dados do chamado');
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao buscar dados do chamado:', error);
+                    showError('Erro ao buscar dados do chamado. Tente novamente.');
+                }
+
             }
             
             try {
