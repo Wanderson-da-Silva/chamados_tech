@@ -5419,8 +5419,10 @@ async function deleteMaquina(maquinaId, patrimonio) {
                                     y += 8;
                                     
                                     // Adiciona a imagem (ajusta tamanho)
-                                    const imgWidth = 170; // Largura máxima
-                                    const imgHeight = 100; // Altura máxima
+                                    // const imgWidth = 170; // Largura máxima
+                                    // const imgHeight = 100; // Altura máxima
+                                    const imgWidth = 100; // Largura máxima
+                                    const imgHeight = 70; // Altura máxima
                                     
                                     try {
                                         doc.addImage(imagem.imgData, 'JPEG', 20, y, imgWidth, imgHeight);
