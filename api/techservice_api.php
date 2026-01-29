@@ -1319,24 +1319,25 @@ class ChamadoController extends BaseController {
             $data = $this->getJsonInput();
         }
         
-        // Verificar se chamado existe
-        $stmt = $this->db->prepare("SELECT id, status FROM chamado WHERE id = ?");
-        $stmt->execute([$id]);
-        $chamadoAtual = $stmt->fetch();
-        
-        if (!$chamadoAtual) {
-            $this->sendResponse(404, ['error' => 'Chamado não encontrado']);
-        }
-        
         try {
+            // Verificar se chamado existe
+            $stmt = $this->db->prepare("SELECT id, status FROM chamado WHERE id = ?");
+            $stmt->execute([$id]);
+            $chamadoAtual = $stmt->fetch();
+            
+            if (!$chamadoAtual) {
+                $this->sendResponse(404, ['error' => 'Chamado não encontrado']);
+            }
+        
             $this->db->beginTransaction();
             
             // Campos que podem ser atualizados
             $campos = [];
             $valores = [];
+        /*
             $sql = '';
             $sqlFinal = '';
-            
+            */
             if (isset($data['status'])) {
                 $campos[] = 'status = ?';
                 $valores[] = $data['status'];
@@ -1350,6 +1351,7 @@ class ChamadoController extends BaseController {
                     $campos[] = 'data_conclusao = NOW()';
                 }
             }
+            
             
             if (isset($data['diagnostico'])) {
                 $campos[] = 'diagnostico = ?';
@@ -1375,11 +1377,12 @@ class ChamadoController extends BaseController {
                 $campos[] = 'custo_pecas = ?';
                 $valores[] = $data['custo_pecas'];
             }
-            
+           
             // ✅ PROCESSAR FOTOS
-            if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
-                $resultadoFotos = $this->moverImagens($chamadoAtual, $_FILES['fotos']);
-                
+            if (isset($_FILES['conclusao-fotos']) && !empty($_FILES['conclusao-fotos']['name'][0])) {
+                // $resultadoFotos = $this->moverImagens($chamadoAtual, $_FILES['conclusao-fotos']);
+                $resultadoFotos = $this->moverImagens($chamadoAtual['id'], $_FILES['conclusao-fotos']);
+                                                        
                 if (!$resultadoFotos['success']) {
                     $this->db->rollBack();
                     $this->sendResponse(500, $resultadoFotos);
@@ -1397,7 +1400,7 @@ class ChamadoController extends BaseController {
                         ");
                         
                         $stmt->execute([
-                            $chamadoAtual,
+                            $chamadoAtual['id'],
                             $anexo['nome_arquivo'],
                             $anexo['nome_original'],
                             $anexo['tipo_arquivo'],
@@ -1410,156 +1413,70 @@ class ChamadoController extends BaseController {
                 }
             }
 
+
+
             if (!empty($campos)) {
-                $valores[] = $id;
+                $valores[] = $chamadoAtual['id'];
                 $sql = "UPDATE chamado SET " . implode(', ', $campos) . " WHERE id = ?";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($valores);
 
 
-                $sqlFinal = $sql;
-                foreach ($valores as $valor) {
-                    // Adiciona aspas em strings, mantém números sem aspas
-                    $valorFormatado = is_numeric($valor) ? $valor : "'" . $valor . "'";
-                    // Substitui o primeiro ? encontrado
-                    $sqlFinal = preg_replace('/\?/', $valorFormatado, $sqlFinal, 1);
-                }
+               // $sqlFinal = $sql;
+                // foreach ($valores as $valor) {
+                //     // Adiciona aspas em strings, mantém números sem aspas
+                //     $valorFormatado = is_numeric($valor) ? $valor : "'" . $valor . "'";
+                //     // Substitui o primeiro ? encontrado
+                //     $sqlFinal = preg_replace('/\?/', $valorFormatado, $sqlFinal, 1);
+                // }
 
-            }else{ $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: sem valores env p atualizar ' 
+            }else{ 
+            $this->db->rollBack();    
+            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: sem valores env p atualizar ' 
                     ]);
             }
-            
+           
             $this->db->commit();
+
+             /*   $mensagem = "=== DEBUG API ===\n\n";
+                $mensagem .= "Content-Type: " . $contentType . "\n\n";
+                $mensagem .= "Dados POST:\n" . print_r($data, true) . "\n\n";
+                $mensagem .= "Campos FILES: " . implode(', ', array_keys($_FILES)) . "\n\n";
+                $mensagem .= "Detalhes FILES:\n" . print_r($_FILES, true);
+                
+                $this->sendResponse(200, [
+                    'success' => true,
+                    'message' => $mensagem
+                ]);
+                
+                return; // Para não executar nada depois
+*/
+
+                  
+            // Capturar os nomes dos campos de arquivos enviados
             
+
             $this->sendResponse(200, [
                 'success' => true,
-                'message' => 'Chamado atualizado com sucesso !2!']);
+                'message' => 'Chamado atualizado com sucesso !2!. Campos files: '
+                ,
+                'data' => [
+                    'id' => $id,
+                    'fotos_enviadas' => $resultadoFotos['total_enviadas'] ?? 0,
+                    'avisos' => $resultadoFotos['avisos'] ?? []
+                ]
+
+
+
+                ]);
         } catch (PDOException $e) {
+            
             $this->db->rollBack();
-            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: '. $sqlFinal. 'MENSAGEM ERRO: ' . $e->getMessage()
+            $this->sendResponse(500, ['error' => 'Erro ao atualizar chamado: MENSAGEM ERRO: ' . $e->getMessage()
+            
         ]);
         }
     }
-
-    // public function moverImagens($idChamado, $arquivos = null){
-    //     // Valida se o ID foi enviado
-    //     if (empty($idChamado)) {
-    //         return [
-    //             'success' => false,
-    //             'message' => 'foto(s) - idChamado inexistente!'
-    //         ];
-    //     }
-
-    //     // Se não passou arquivos, tenta pegar do $_FILES
-    //     if ($arquivos === null) {
-    //         //$arquivos = $_FILES['fotos'] ?? null;
-
-
-    //         return [
-    //             'success' => false,
-    //             'error' => 'foto(s) inexistente io nula !'
-    //         ];
-    //     }
-
-    //     // Verifica se há arquivos enviados
-    //     if (empty($arquivos) || empty($arquivos['name'][0])) {
-    //         return [
-    //             'success' => false,
-    //             'error' => 'foto(s) inexistente io !'
-    //         ];
-    //     }
-
-    //     // Resto do código continua igual...
-    //     $pastaDestino = 'fotos/';
-        
-    //     if (!file_exists($pastaDestino)) {
-    //         mkdir($pastaDestino, 0777, true);
-    //     }
-
-    //     $extensoesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    //     $tamanhoMaximo = 5 * 1024 * 1024;
-        
-    //     $arquivosEnviados = [];
-    //     $erros = [];
-        
-    //     $totalArquivos = count($arquivos['name']);
-
-    //     for ($i = 0; $i < $totalArquivos; $i++) {
-    //         if ($arquivos['error'][$i] === UPLOAD_ERR_NO_FILE) {
-    //             continue;
-    //         }
-            
-    //         if ($arquivos['error'][$i] !== UPLOAD_ERR_OK) {
-    //             $erros[] = "Erro ao fazer upload de '{$arquivos['name'][$i]}'.";
-    //             continue;
-    //         }
-            
-    //         $nomeOriginal = $arquivos['name'][$i];
-    //         $tmpName = $arquivos['tmp_name'][$i];
-    //         $tamanho = $arquivos['size'][$i];
-    //         $tipoArquivo = $arquivos['type'][$i];
-    //         $extensao = strtolower(pathinfo($nomeOriginal, PATHINFO_EXTENSION));
-            
-    //         if (!in_array($extensao, $extensoesPermitidas)) {
-    //             $erros[] = "'{$nomeOriginal}': formato não permitido.";
-    //             continue;
-    //         }
-            
-    //         $verificaImagem = getimagesize($tmpName);
-    //         if ($verificaImagem === false) {
-    //             $erros[] = "'{$nomeOriginal}': não é uma imagem válida.";
-    //             continue;
-    //         }
-            
-    //         if ($tamanho > $tamanhoMaximo) {
-    //             $erros[] = "'{$nomeOriginal}': excede o tamanho máximo de 5MB.";
-    //             continue;
-    //         }
-            
-    //         $dataAtual = date('Y-m-d_H-i-s');
-    //         $nomeGerado = uniqid() . '_' . time() . '_' . $i;
-    //         $nomeArquivo = $idChamado . '_' . $dataAtual . '_' . $nomeGerado . '.' . $extensao;
-    //         $caminhoCompleto = $pastaDestino . $nomeArquivo;
-            
-    //         if (move_uploaded_file($tmpName, $caminhoCompleto)) {
-    //         // ✅ Monta array com TODOS os dados necessários para INSERT
-    //             $arquivosEnviados[] = [
-    //                 'nome_arquivo' => $nomeArquivo,           // Nome no servidor
-    //                 'nome_original' => $nomeOriginal,          // Nome original do usuário
-    //                 'tipo_arquivo' => $tipoArquivo,            // MIME type (image/jpeg)
-    //                 'tamanho_bytes' => $tamanho,               // Tamanho em bytes
-    //                 'caminho_arquivo' => $caminhoCompleto,     // Caminho completo
-    //                 'tipo_anexo' => 'foto',                    // Tipo (foto/video/documento)
-    //                 'descricao' => null                        // Descrição (opcional)
-    //             ];
-    //         } else {
-    //             $erros[] = "'{$nomeOriginal}': erro ao salvar no servidor.";
-    //         }
-    //     }
-
-    //     if (count($arquivosEnviados) > 0) {
-    //         $resposta = [
-    //             'success' => true,
-    //             'message' => count($arquivosEnviados) . ' foto(s) enviada(s) com sucesso!',
-    //             'total_enviadas' => count($arquivosEnviados),
-    //             'arquivos' => $arquivosEnviados
-    //         ];
-            
-    //         if (count($erros) > 0) {
-    //             $resposta['avisos'] = $erros;
-    //             $resposta['message'] .= ' Alguns arquivos não foram enviados.';
-    //         }
-            
-    //         return $resposta;
-    //     } else {
-    //         return [
-    //             'success' => false,
-    //             'error' => 'Nenhuma foto foi enviada!',
-    //             'avisos' => $erros
-    //         ];
-    //     }
-    // }
-
 
 }
 

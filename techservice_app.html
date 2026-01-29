@@ -3388,13 +3388,34 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     
                     // Adiciona todos os arquivos
                     arquivosSelecionados_conclusao.forEach((arquivo) => {
-                        formData.append('fotos[]', arquivo);
+                        formData.append('conclusao-fotos[]', arquivo);
                     });
 
                 }
             
+                // Exibe TUDO que está no FormData
+                console.log('=== Conteúdo do FormData ===');
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        console.log(key + ':', {
+                            nome: value.name,
+                            tipo: value.type,
+                            tamanho: (value.size / 1024).toFixed(2) + ' KB'
+                        });
+                    } else {
+                        console.log(key + ':', value);
+                    }
+                }
+
+
+
                 const result = await updateChamado(chamadoId, formData);
-                
+                // console.log('Response envios:', formData.conclusao-fotos);
+                console.log('Response Conclusao:', result);
+                console.log('Response Conclusao 1:', result.message);
+                // console.log('Response conclusao (JSON):', JSON.stringify(result, null, 2));
+
+
                 if (result.success) {
                     //showSuccess(`${result.message} Número: #${result.data.id}`);
                     inputFoto.value = ''; // Limpa o input
@@ -5251,52 +5272,58 @@ async function deleteMaquina(maquinaId, patrimonio) {
                         
                         // Dados do chamado
                         doc.setFontSize(12);
+                        const coluna1X = 20;  // Posição X da coluna esquerda
+                        const coluna2X = 110; // Posição X da coluna direita
+                        const labelOffsetP = 18; // Distância entre label e valor
+                        const labelOffsetM = 30; // Distância entre label e valor
+                        const labelOffsetG = 47; // Distância entre label e valor
+
+                        // Primeira linha: Número do Chamado | Loja
                         doc.setFont(undefined, 'bold');
-                        doc.text('Número do Chamado:', 20, y);
+                        doc.text('Número do Chamado:', coluna1X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(`#${dados.numero}`, 80, y);
-                        y += 8;
-                        
-                        doc.setFont(undefined, 'bold');
-                        doc.text('Loja:', 20, y);
-                        doc.setFont(undefined, 'normal');
-                        doc.text( dados.loja_id +'-'+ dados.loja_nome || '-', 80, y);
-                        y += 8;
+                        doc.text(`#${dados.numero}`, coluna1X + labelOffsetG, y);
 
                         doc.setFont(undefined, 'bold');
-                        doc.text('Patrimônio:', 20, y);
+                        doc.text('Loja:', coluna2X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(dados.patrimonio || '-', 80, y);
-                        y += 8;
-                        
-                        doc.setFont(undefined, 'bold');
-                        doc.text('Modelo:', 20, y);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(dados.modelo || '-', 80, y);
+                        doc.text(dados.loja_id + ' - ' + dados.loja_nome || '-', coluna2X + labelOffsetP, y);
                         y += 8;
 
+                        // Segunda linha: Patrimônio | Modelo
                         doc.setFont(undefined, 'bold');
-                        doc.text('Série:', 20, y);
+                        doc.text('Patrimônio:', coluna1X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(dados.serie || '-', 80, y);
-                        y += 8;                  
-                        
+                        doc.text(dados.patrimonio || '-', coluna1X + labelOffsetM, y);
+
                         doc.setFont(undefined, 'bold');
-                        doc.text('Status:', 20, y);
+                        doc.text('Modelo:', coluna2X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(dados.status || '-', 80, y);
+                        doc.text(dados.modelo || '-', coluna2X + labelOffsetP, y);
                         y += 8;
-                        
+
+                        // Terceira linha: Série | Status
                         doc.setFont(undefined, 'bold');
-                        doc.text('Data Abertura:', 20, y);
+                        doc.text('Série:', coluna1X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(dados.data_abertura || '-', 80, y);
+                        doc.text(dados.serie || '-', coluna1X + labelOffsetP, y);
+
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Status:', coluna2X, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.status || '-', coluna2X + labelOffsetP, y);
                         y += 8;
-                        
+
+                        // Quarta linha: Data Abertura | Técnico Responsável
                         doc.setFont(undefined, 'bold');
-                        doc.text('Técnico Responsável:', 20, y);
+                        doc.text('Data Abertura:', coluna1X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(dados.tecnico_responsavel || 'Não atribuído', 80, y);
+                        doc.text(dados.data_abertura || '-', coluna1X + labelOffsetM, y);
+
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Técnico Responsável:', coluna2X, y);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(dados.tecnico_responsavel || 'Não atribuído', coluna2X + labelOffsetG, y);
                         y += 15;
                         
                         // Descrição
@@ -5398,6 +5425,10 @@ async function deleteMaquina(maquinaId, patrimonio) {
                                     try {
                                         doc.addImage(imagem.imgData, 'JPEG', 20, y, imgWidth, imgHeight);
                                         y += imgHeight + 15;
+
+
+
+                                        
                                     } catch (error) {
                                         console.error('Erro ao adicionar imagem ao PDF:', error);
                                         doc.setTextColor(255, 0, 0);
@@ -5405,6 +5436,10 @@ async function deleteMaquina(maquinaId, patrimonio) {
                                         doc.setTextColor(0, 0, 0);
                                         y += 10;
                                     }
+
+
+
+                                    
                                 });
                             } else {
                                 doc.setFontSize(10);
