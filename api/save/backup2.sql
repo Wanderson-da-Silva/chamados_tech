@@ -65,7 +65,7 @@ CREATE TABLE `chamado` (
   CONSTRAINT `chamado_ibfk_2` FOREIGN KEY (`maquina_id`) REFERENCES `maquina` (`id`),
   CONSTRAINT `chamado_ibfk_3` FOREIGN KEY (`usuario_abertura_id`) REFERENCES `usuario` (`id`),
   CONSTRAINT `chamado_ibfk_4` FOREIGN KEY (`usuario_tecnico_id`) REFERENCES `usuario` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -74,7 +74,7 @@ CREATE TABLE `chamado` (
 
 LOCK TABLES `chamado` WRITE;
 /*!40000 ALTER TABLE `chamado` DISABLE KEYS */;
-INSERT INTO `chamado` VALUES (2,'CH-2025-002',1,1,2,3,'','derfe','energia','baixa','em_andamento','2025-12-16 23:34:41','2026-01-09 15:19:01',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-12-16 23:34:41','2026-01-09 15:19:01'),(3,'CH-2026-001',1,1,2,3,'','tretreter','energia','baixa','em_andamento','2026-01-09 13:16:13','2026-01-09 14:54:23',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-09 13:16:13','2026-01-09 14:54:23'),(4,'CH-2026-002',3,4,2,3,'','ertret','colisao','media','concluido','2026-01-09 15:21:09','2026-01-09 15:39:15','2026-01-12 19:54:56',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-09 15:21:09','2026-01-12 19:54:56'),(5,'CH-2026-003',2,3,2,NULL,'','teste ftos','energia','baixa','pendente','2026-01-21 17:20:50',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-21 17:20:50','2026-01-21 17:20:50'),(6,'CH-2026-004',2,3,2,NULL,'','tretret','vazamento','alta','pendente','2026-01-23 02:19:50',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-23 02:19:50','2026-01-23 02:19:50');
+INSERT INTO `chamado` VALUES (2,'CH-2025-002',1,1,2,3,'','derfe','energia','baixa','concluido','2025-12-16 23:34:41','2026-01-09 15:19:01','2026-01-29 15:49:48',NULL,NULL,'menino',NULL,NULL,NULL,NULL,NULL,'2025-12-16 23:34:41','2026-01-29 15:49:48'),(3,'CH-2026-001',1,1,2,3,'','tretreter','energia','baixa','concluido','2026-01-09 13:16:13','2026-01-09 14:54:23','2026-01-29 13:36:43',NULL,NULL,'ertete',NULL,NULL,NULL,NULL,NULL,'2026-01-09 13:16:13','2026-01-29 13:36:43'),(4,'CH-2026-002',3,4,2,3,'','ertret','colisao','media','concluido','2026-01-09 15:21:09','2026-01-09 15:39:15','2026-01-12 19:54:56',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-09 15:21:09','2026-01-12 19:54:56'),(5,'CH-2026-003',2,3,2,3,'','teste ftos','energia','baixa','concluido','2026-01-21 17:20:50','2026-01-29 14:07:30','2026-01-29 14:07:44',NULL,NULL,'ertert',NULL,NULL,NULL,NULL,NULL,'2026-01-21 17:20:50','2026-01-29 14:07:44'),(6,'CH-2026-004',2,3,2,4,'','tretret','vazamento','alta','concluido','2026-01-23 02:19:50','2026-01-27 21:09:08','2026-01-29 13:17:54',NULL,NULL,'etertet',NULL,NULL,NULL,NULL,NULL,'2026-01-23 02:19:50','2026-01-29 13:17:54'),(7,'CH-2026-005',3,4,2,3,'','tretret','vazamento','alta','concluido','2026-01-23 02:30:33','2026-01-29 13:40:31','2026-01-29 13:41:02',NULL,NULL,'fghfh',NULL,NULL,NULL,NULL,NULL,'2026-01-23 02:30:33','2026-01-29 13:41:02'),(8,'CH-2026-006',3,4,2,4,'','TESTE','energia','baixa','concluido','2026-01-26 19:58:48','2026-01-29 13:43:24','2026-01-29 14:05:12',NULL,NULL,'fhfghfgh',NULL,NULL,NULL,NULL,NULL,'2026-01-26 19:58:48','2026-01-29 14:05:12'),(9,'CH-2026-007',3,5,2,4,'','NOVO CHAMADO','energia','media','cancelado','2026-01-26 20:02:42','2026-01-27 20:41:24',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-26 20:02:42','2026-01-27 20:53:55'),(10,'CH-2026-008',2,3,2,4,'','bola','roda','alta','concluido','2026-01-29 13:22:35','2026-01-29 13:23:09','2026-01-29 13:23:48',NULL,NULL,'fght',NULL,NULL,NULL,NULL,NULL,'2026-01-29 13:22:35','2026-01-29 13:23:48'),(11,'CH-2026-009',2,3,2,3,'','ertrt','colisao','media','concluido','2026-01-29 16:34:02','2026-01-29 16:34:09','2026-01-29 16:34:42',NULL,NULL,'tree',NULL,NULL,NULL,NULL,NULL,'2026-01-29 16:34:02','2026-01-29 16:34:42'),(12,'CH-2026-010',1,1,2,NULL,'','dgdfg','energia','baixa','pendente','2026-01-29 21:31:15',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-01-29 21:31:15','2026-01-29 21:31:15');
 /*!40000 ALTER TABLE `chamado` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -162,7 +162,7 @@ CREATE TABLE `chamado_anexo` (
   KEY `idx_tipo` (`tipo_anexo`),
   KEY `idx_data_upload` (`data_upload`),
   CONSTRAINT `chamado_anexo_ibfk_1` FOREIGN KEY (`chamado_id`) REFERENCES `chamado` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -171,7 +171,7 @@ CREATE TABLE `chamado_anexo` (
 
 LOCK TABLES `chamado_anexo` WRITE;
 /*!40000 ALTER TABLE `chamado_anexo` DISABLE KEYS */;
-INSERT INTO `chamado_anexo` VALUES (1,6,'6_2026-01-23_03-19-50_6972dac6a364e_1769134790_0.jpg','VW-Fusca.jpg','image/jpeg',265012,'fotos/6_2026-01-23_03-19-50_6972dac6a364e_1769134790_0.jpg','foto',NULL,'2026-01-23 02:19:50'),(2,6,'6_2026-01-23_03-19-50_6972dac6a3f6a_1769134790_1.png','fel.png','image/png',129254,'fotos/6_2026-01-23_03-19-50_6972dac6a3f6a_1769134790_1.png','foto',NULL,'2026-01-23 02:19:50');
+INSERT INTO `chamado_anexo` VALUES (1,6,'6_2026-01-23_03-19-50_6972dac6a364e_1769134790_0.jpg','VW-Fusca.jpg','image/jpeg',265012,'fotos/6_2026-01-23_03-19-50_6972dac6a364e_1769134790_0.jpg','foto',NULL,'2026-01-23 02:19:50'),(3,7,'7_2026-01-22_23-30-33_6972dd49288cc_1769135433_0.jpg','VW-Fusca.jpg','image/jpeg',265012,'fotos/7_2026-01-22_23-30-33_6972dd49288cc_1769135433_0.jpg','foto',NULL,'2026-01-23 02:30:33'),(4,7,'7_2026-01-22_23-30-33_6972dd4929187_1769135433_1.png','fel.png','image/png',129254,'fotos/7_2026-01-22_23-30-33_6972dd4929187_1769135433_1.png','foto',NULL,'2026-01-23 02:30:33'),(5,8,'8_2026-01-26_16-58-48_6977c77847149_1769457528_0.png','fel.png','image/png',129254,'fotos/8_2026-01-26_16-58-48_6977c77847149_1769457528_0.png','foto',NULL,'2026-01-26 19:58:48'),(6,9,'9_2026-01-26_17-02-42_6977c86228c4f_1769457762_0.png','fel.png','image/png',129254,'fotos/9_2026-01-26_17-02-42_6977c86228c4f_1769457762_0.png','foto',NULL,'2026-01-26 20:02:42'),(7,10,'10_2026-01-29_10-22-35_697b5f1b807c2_1769692955_0.jpg','bola.jpg','image/jpeg',3106,'fotos/10_2026-01-29_10-22-35_697b5f1b807c2_1769692955_0.jpg','foto',NULL,'2026-01-29 13:22:35'),(8,2,'2_2026-01-29_12-10-21_697b785dbc552_1769699421_0.jpg','fio.jpg','image/jpeg',2535,'fotos/2_2026-01-29_12-10-21_697b785dbc552_1769699421_0.jpg','foto',NULL,'2026-01-29 15:10:21'),(9,2,'2_2026-01-29_12-11-48_697b78b414f77_1769699508_0.jpg','fio2.jpg','image/jpeg',4283,'fotos/2_2026-01-29_12-11-48_697b78b414f77_1769699508_0.jpg','foto',NULL,'2026-01-29 15:11:48'),(10,2,'2_2026-01-29_12-31-55_697b7d6bbbbf1_1769700715_0.png','boy.png','image/png',7130,'fotos/2_2026-01-29_12-31-55_697b7d6bbbbf1_1769700715_0.png','foto',NULL,'2026-01-29 15:31:55'),(13,2,'2_2026-01-29_12-49-48_697b819c84078_1769701788_0.png','boy.png','image/png',7130,'fotos/2_2026-01-29_12-49-48_697b819c84078_1769701788_0.png','foto',NULL,'2026-01-29 15:49:48'),(14,2,'2_2026-01-29_12-49-48_697b819c84c28_1769701788_1.jpg','tree.jpg','image/jpeg',4087,'fotos/2_2026-01-29_12-49-48_697b819c84c28_1769701788_1.jpg','foto',NULL,'2026-01-29 15:49:48'),(15,11,'11_2026-01-29_13-34-02_697b8bfa1900b_1769704442_0.jpg','bola.jpg','image/jpeg',3106,'fotos/11_2026-01-29_13-34-02_697b8bfa1900b_1769704442_0.jpg','foto',NULL,'2026-01-29 16:34:02'),(16,11,'11_2026-01-29_13-34-42_697b8c22a5937_1769704482_0.jpg','tree.jpg','image/jpeg',4087,'fotos/11_2026-01-29_13-34-42_697b8c22a5937_1769704482_0.jpg','foto',NULL,'2026-01-29 16:34:42');
 /*!40000 ALTER TABLE `chamado_anexo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -196,7 +196,7 @@ CREATE TABLE `chamado_historico` (
   KEY `idx_data` (`data_alteracao`),
   CONSTRAINT `chamado_historico_ibfk_1` FOREIGN KEY (`chamado_id`) REFERENCES `chamado` (`id`) ON DELETE CASCADE,
   CONSTRAINT `chamado_historico_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -205,7 +205,7 @@ CREATE TABLE `chamado_historico` (
 
 LOCK TABLES `chamado_historico` WRITE;
 /*!40000 ALTER TABLE `chamado_historico` DISABLE KEYS */;
-INSERT INTO `chamado_historico` VALUES (2,3,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-09 14:54:23'),(3,2,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-09 15:19:01'),(5,4,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-09 15:39:15'),(6,4,3,'em_andamento','concluido','Status alterado automaticamente','2026-01-12 19:54:56');
+INSERT INTO `chamado_historico` VALUES (2,3,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-09 14:54:23'),(3,2,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-09 15:19:01'),(5,4,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-09 15:39:15'),(6,4,3,'em_andamento','concluido','Status alterado automaticamente','2026-01-12 19:54:56'),(7,9,4,'pendente','em_andamento','Status alterado automaticamente','2026-01-27 20:41:24'),(8,9,4,'em_andamento','pausado','Status alterado automaticamente','2026-01-27 20:53:35'),(9,9,4,'pausado','cancelado','Status alterado automaticamente','2026-01-27 20:53:55'),(10,3,3,'em_andamento','aguardando_peca','Status alterado automaticamente','2026-01-27 21:08:44'),(11,6,4,'pendente','em_andamento','Status alterado automaticamente','2026-01-27 21:09:08'),(12,6,4,'em_andamento','pausado','Status alterado automaticamente','2026-01-27 21:09:17'),(13,6,4,'pausado','concluido','Status alterado automaticamente','2026-01-29 13:17:54'),(14,10,4,'pendente','em_andamento','Status alterado automaticamente','2026-01-29 13:23:09'),(15,10,4,'em_andamento','concluido','Status alterado automaticamente','2026-01-29 13:23:48'),(16,3,3,'aguardando_peca','concluido','Status alterado automaticamente','2026-01-29 13:36:43'),(17,7,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-29 13:40:31'),(18,7,3,'em_andamento','concluido','Status alterado automaticamente','2026-01-29 13:41:02'),(19,8,4,'pendente','em_andamento','Status alterado automaticamente','2026-01-29 13:43:24'),(20,8,4,'em_andamento','concluido','Status alterado automaticamente','2026-01-29 14:05:12'),(21,5,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-29 14:07:30'),(22,5,3,'em_andamento','concluido','Status alterado automaticamente','2026-01-29 14:07:44'),(24,2,3,'em_andamento','concluido','Status alterado automaticamente','2026-01-29 15:49:48'),(25,11,3,'pendente','em_andamento','Status alterado automaticamente','2026-01-29 16:34:09'),(26,11,3,'em_andamento','concluido','Status alterado automaticamente','2026-01-29 16:34:42');
 /*!40000 ALTER TABLE `chamado_historico` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -284,7 +284,7 @@ CREATE TABLE `maquina` (
   KEY `idx_tipo` (`tipo_equipamento`),
   KEY `idx_maquina_loja_status` (`loja_id`,`status_operacional`),
   CONSTRAINT `maquina_ibfk_1` FOREIGN KEY (`loja_id`) REFERENCES `loja` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,7 +293,7 @@ CREATE TABLE `maquina` (
 
 LOCK TABLES `maquina` WRITE;
 /*!40000 ALTER TABLE `maquina` DISABLE KEYS */;
-INSERT INTO `maquina` VALUES (1,1,'MAQ-001','SER123001','HP LaserJet Pro','HP','Impressora',NULL,NULL,'ativo',NULL,NULL,90,NULL,'2025-12-03','2025-12-02 00:55:54','2025-12-02 00:55:54'),(2,1,'MAQ-015','SER123015','Dell OptiPlex','Dell','Computador',NULL,NULL,'ativo',NULL,NULL,180,NULL,'2025-12-06','2025-12-02 00:55:54','2025-12-02 00:55:54'),(3,2,'MAQ-045','SER123045','Canon ImageRunner','Canon','Impressora',NULL,NULL,'ativo',NULL,NULL,90,NULL,'2025-12-02','2025-12-02 00:55:54','2025-12-02 00:55:54'),(4,3,'MAQ-123','SER123123','Lenovo ThinkCentre','Lenovo','Computador',NULL,NULL,'ativo',NULL,NULL,180,NULL,'2025-12-05','2025-12-02 00:55:54','2025-12-02 00:55:54');
+INSERT INTO `maquina` VALUES (1,1,'MAQ-001','SER123001','HP LaserJet Pro','HP','Impressora',NULL,NULL,'ativo',NULL,NULL,90,NULL,'2025-12-03','2025-12-02 00:55:54','2025-12-02 00:55:54'),(2,1,'MAQ-015','SER123015','Dell OptiPlex','Dell','Computador',NULL,NULL,'ativo',NULL,NULL,180,NULL,'2025-12-06','2025-12-02 00:55:54','2025-12-02 00:55:54'),(3,2,'MAQ-045','SER123045','Canon ImageRunner','Canon','Impressora',NULL,NULL,'ativo',NULL,NULL,90,NULL,NULL,'2025-12-02 00:55:54','2026-01-29 21:27:08'),(4,3,'MAQ-123','SER123123','Lenovo ThinkCentre','Lenovo','Computador',NULL,NULL,'ativo',NULL,NULL,180,NULL,'2025-12-05','2025-12-02 00:55:54','2025-12-02 00:55:54'),(5,3,'MAQ-598','YTRE987654','LASER','HP','Tablet','2026-01-26',12000.00,'ativo','','',0,NULL,NULL,'2026-01-26 19:53:24','2026-01-26 20:01:13');
 /*!40000 ALTER TABLE `maquina` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -328,7 +328,7 @@ CREATE TABLE `preventiva` (
   KEY `idx_preventiva_data_status` (`data_programada`,`status`),
   CONSTRAINT `preventiva_ibfk_1` FOREIGN KEY (`maquina_id`) REFERENCES `maquina` (`id`),
   CONSTRAINT `preventiva_ibfk_2` FOREIGN KEY (`usuario_tecnico_id`) REFERENCES `usuario` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -337,7 +337,7 @@ CREATE TABLE `preventiva` (
 
 LOCK TABLES `preventiva` WRITE;
 /*!40000 ALTER TABLE `preventiva` DISABLE KEYS */;
-INSERT INTO `preventiva` VALUES (1,1,3,'Corretiva','2025-12-03',NULL,'programada',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:10:22','2025-12-02 01:10:22'),(2,3,3,'Corretiva','2025-12-12',NULL,'programada',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:11:16','2025-12-02 01:11:16'),(3,1,3,'Corretiva','2026-02-13',NULL,'programada',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:12:27','2025-12-02 01:12:27'),(4,4,3,'Corretiva','2026-02-14',NULL,'programada',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:16:21','2025-12-02 01:16:21');
+INSERT INTO `preventiva` VALUES (1,1,3,'Corretiva','2025-12-03',NULL,'programada',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:10:22','2025-12-02 01:10:22'),(2,3,3,'Corretiva','2025-12-12',NULL,'concluida',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:11:16','2026-01-29 21:27:08'),(4,4,3,'Corretiva','2026-02-14',NULL,'programada',NULL,NULL,NULL,0.00,NULL,NULL,'2025-12-02 01:16:21','2025-12-02 01:16:21'),(5,2,4,'corretiva','2026-01-23',NULL,'programada',NULL,'ertet',NULL,0.00,NULL,NULL,'2026-01-29 21:17:45','2026-01-29 21:17:45');
 /*!40000 ALTER TABLE `preventiva` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -393,7 +393,7 @@ CREATE TABLE `usuario` (
   KEY `idx_email` (`email`),
   KEY `idx_perfil` (`perfil`),
   KEY `idx_ativo` (`ativo`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -402,7 +402,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'admin','admin@techservice.com','$2y$10$exemplo_hash_senha','Administrador Sistema',NULL,'admin',1,NULL,'2025-12-02 00:55:54','2025-12-02 00:55:54'),(2,'trevo','trevo@trevo.com.br','$2y$10$3USn4Jh7vZHWd0GNSvrGFubZIIikF51Cavv7pyO4kvc/KtEjxdTAu','trevo','61994949494','admin',1,'2026-01-22 23:25:35','2025-12-02 01:05:20','2026-01-22 23:25:35'),(3,'vento','gunter@vento.com.br','$2y$10$bdIurFauNI5bRQsFUdKxC.kZmASuc39oECi8FFOsKHU7c/2SArv7.','gunter','996666555','tecnico',1,NULL,'2025-12-02 01:09:44','2025-12-02 01:09:44');
+INSERT INTO `usuario` VALUES (1,'admin','admin@techservice.com','$2y$10$exemplo_hash_senha','Administrador Sistema',NULL,'admin',1,NULL,'2025-12-02 00:55:54','2025-12-02 00:55:54'),(2,'trevo','trevo@trevo.com.br','$2y$10$3USn4Jh7vZHWd0GNSvrGFubZIIikF51Cavv7pyO4kvc/KtEjxdTAu','trevo','61994949494','admin',1,'2026-01-29 19:08:25','2025-12-02 01:05:20','2026-01-29 19:08:25'),(3,'vento','gunter@vento.com.br','$2y$10$bdIurFauNI5bRQsFUdKxC.kZmASuc39oECi8FFOsKHU7c/2SArv7.','gunter','996666555','tecnico',1,NULL,'2025-12-02 01:09:44','2025-12-02 01:09:44'),(4,'tecnico','tecnico@tecnico.com.br','$2y$10$fmRApB/bHToTuK27E.fknunerRfNvFjYF74rUx45n8.Eu6atI1wzi','tecnico','','tecnico',1,NULL,'2026-01-26 19:14:25','2026-01-26 19:14:25');
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -571,4 +571,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-22 23:29:22
+-- Dump completed on 2026-01-29 19:21:31

@@ -412,7 +412,7 @@ FEATURES:
 
 
 
-mysqldump -u trevo -p chamado_prev > C:\xampp\htdocs\chamados_tech\api\backup2.sql
+mysqldump -u trevo -p chamado_prev > C:\xampp\htdocs\chamados_tech\api\save\backup2.sql
 
 
 GET(PEGAR) - POST(CRIAR) - PUT(EDITAR-tem outro)

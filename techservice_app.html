@@ -1077,10 +1077,7 @@
                         <i class="fas fa-list"></i>
                         Acompanhar Chamados
                     </button>
-                    <button class="btn btn-tertiary" onclick="openModal('finalizar-chamado')">
-                        <i class="fas fa-list"></i>
-                        Finalizar Chamado
-                    </button>
+                    
                 </div>
             </div>
 
@@ -1309,8 +1306,8 @@
             </div>
             <form id="form-novo-chamado" onsubmit="handleNovoChamado(event)">
                 <div class="form-group">
-                    <label for="filial">Filial</label>
-                    <select class="form-control" id="filial" required>
+                    <label for="filial-chamado">Filial</label>
+                    <select class="form-control" id="filial-chamado" required>
                         <option value="">Selecione a filial</option>
                          <!--Opções serão carregadas via API -->
                     </select>
@@ -1353,7 +1350,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Anexar Fotos</label>
+                    <label for="fotos" >Anexar Fotos</label>
                     <div class="file-upload" onclick="document.getElementById('fotos').click()">
                         <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
                         <p>Clique para adicionar fotos</p>
@@ -1362,14 +1359,6 @@
                 </div>
                 <div id="listaFotos"></div>
                 <div id="resultado"></div>
-                <div class="form-group">
-                    <label>Anexar Vídeos</label>
-                    <div class="file-upload" onclick="document.getElementById('videos').click()">
-                        <i class="fas fa-video" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
-                        <p>Clique para adicionar vídeos</p>
-                        <input type="file" id="videos" multiple accept="video/*" style="display: none;">
-                    </div>
-                </div>
                 <div class="chamado-acoes">
                     <button type="button" class="btn btn-cancelar"  onclick="closeModal('novo-chamado')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
@@ -1417,7 +1406,7 @@
                 </div>
                                 
                 <div class="form-group">
-                    <label>Anexar Fotos</label>
+                    <label for="conclusao-fotos" >Anexar Fotos</label>
                     <div class="file-upload" onclick="document.getElementById('conclusao-fotos').click()">
                         <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
                         <p>Clique para adicionar fotos</p>
@@ -1427,14 +1416,6 @@
                 <div id="listaFotos_conclusao"></div>
                 <div id="resultado_conclusao"></div>
 
-                <div class="form-group">
-                    <label>Anexar Vídeos</label>
-                    <div class="file-upload" onclick="document.getElementById('conclusao-videos').click()">
-                        <i class="fas fa-video" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
-                        <p>Clique para adicionar vídeos</p>
-                        <input type="file" id="conclusao-videos" multiple accept="video/*" style="display: none;">
-                    </div>
-                </div>
                 <div class="chamado-acoes">
                     <button type="button" class="btn btn-cancelar"  onclick="closeModal('concluir-chamado')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
@@ -1857,16 +1838,14 @@
             </div>
 
             <div class="grid-2">
-                <div class="form-group">
-                    <label for="preventiva-data_realizada">Data Realizada</label>
-                    <input type="date" class="form-control" id="preventiva-data_realizada">
-                </div>
+                
                 <div class="form-group">
                     <label for="preventiva-status">Status *</label>
                     <select class="form-control" id="preventiva-status" required>
                         <option value="">Selecione o status</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="realizada">Realizada</option>
+                        <option value="em_andamento">Em Andamento</option>
+                        <option value="programada">Programada</option>
+                        <option value="concluida">Concluida</option>
                         <option value="cancelada">Cancelada</option>
                     </select>
                 </div>
@@ -2252,7 +2231,7 @@
             <div class="modal-body">
                 <!-- Seção de Filtros -->
                 <div class="filter-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-                    <label style="font-weight: 600; color: #555; display: flex; align-items: center; gap: 5px;">
+                    <label for="filter-filial-origem" style="font-weight: 600; color: #555; display: flex; align-items: center; gap: 5px;">
                         <i class="fas fa-filter"></i> Filtros:
                     </label>
                     <select class="form-control" id="filter-filial-origem" style="width: auto; min-width: 170px;">
@@ -2350,7 +2329,8 @@ const tableFetchMap = {
     'maquinas': fetchMaquinas,
     'usuarios': fetchUsuarios,
     'patrimonios': fetchMaquinas,
-    'maquinasSemPreventivas': fetchMaquinasSemPreventivas
+    'maquinasSemPreventivas': fetchMaquinasSemPreventivas,
+    'patrimoniosSemChamados': fetchPatrimoniosSemChamados
 
     // Adicione outras tabelas conforme necessário
 };
@@ -2361,7 +2341,8 @@ const tableFieldConfig = {
     'maquinas': { label: 'modelo', value: 'id' },
     'patrimonios': { label: 'patrimonio', value: 'id' },
     'usuarios': { label: 'nome_completo', value: 'id' },
-    'maquinasSemPreventivas': { label: 'patrimonio', value: 'id' }
+    'maquinasSemPreventivas': { label: 'patrimonio', value: 'id' },
+    'patrimoniosSemChamados': { label: 'patrimonio', value: 'id' }
 };
 
 /**
@@ -2416,7 +2397,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
 
         // Filtro para patrimônio baseado na filial selecionada
         if(selectId === 'select_patrimonio'){
-            const filialSelect = document.getElementById('filial');
+            const filialSelect = document.getElementById('filial-chamado');
             const filialId = filialSelect?.value;
             
             if(filialId){
@@ -2428,7 +2409,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         }
 
         // Filtro para filial baseado no patrimônio selecionado
-        if(selectId === 'filial'){
+        if(selectId === 'filial-chamado'){
             const patrimonioSelect = document.getElementById('select_patrimonio');
             const patrimonioId = patrimonioSelect?.value;
             
@@ -3227,8 +3208,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
             if (modalId === 'novo-chamado') {
                 // loadSelectsPreventiva();
-             populateSelectFromTable('filial', 'filiais');
-             populateSelectFromTable('select_patrimonio', 'patrimonios');
+             populateSelectFromTable('filial-chamado', 'filiais');
+             populateSelectFromTable('select_patrimonio', 'patrimoniosSemChamados');
             }
 
         }
@@ -3267,7 +3248,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 const formData = new FormData();
     
                 // Campos de texto
-                formData.append('loja_id', document.getElementById('filial').value);
+                formData.append('loja_id', document.getElementById('filial-chamado').value);
                 formData.append('maquina_id', document.getElementById('select_patrimonio').value);
                 formData.append('serie', document.getElementById('serie').value);
                 formData.append('problema', document.getElementById('problema').value);
@@ -3369,7 +3350,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 formData.append('status', 'concluido');
                 formData.append('solucao', document.getElementById('conclusao-solucao').value);
                 
-                //fotos e videos
+                //fotos
                 if (arquivosSelecionados_conclusao.length > 0) {
                 
                     // Verifica se todos são imagens
@@ -3518,19 +3499,11 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         // Função para resetar uploads de arquivo
         function resetFileUploads() {
             const fotoUpload = document.querySelector('[onclick*="fotos"]');
-            const videoUpload = document.querySelector('[onclick*="videos"]');
-            
+                        
             if (fotoUpload) {
                 fotoUpload.innerHTML = `
                     <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
                     <p>Clique para adicionar fotos</p>
-                `;
-            }
-            
-            if (videoUpload) {
-                videoUpload.innerHTML = `
-                    <i class="fas fa-video" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
-                    <p>Clique para adicionar vídeos</p>
                 `;
             }
         }
@@ -3587,8 +3560,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         // Função para resetar uploads de arquivo
         function resetFileUploads_conclusao() {
             const fotoUpload = document.querySelector('[onclick*="conclusao-fotos"]');
-            const videoUpload = document.querySelector('[onclick*="conclusao-videos"]');
-            
+                        
             if (fotoUpload) {
                 fotoUpload.innerHTML = `
                     <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
@@ -3596,12 +3568,6 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 `;
             }
             
-            if (videoUpload) {
-                videoUpload.innerHTML = `
-                    <i class="fas fa-video" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
-                    <p>Clique para adicionar vídeos</p>
-                `;
-            }
         }
 
 
@@ -3681,15 +3647,6 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 }
             });
 
-            // Upload de vídeos
-            document.getElementById('videos').addEventListener('change', function(e) {
-                const files = e.target.files;
-                if (files.length > 0) {
-                    const parent = e.target.parentNode;
-                    parent.innerHTML = `<i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i><p>${files.length} vídeo(s) selecionado(s)</p>`;
-                }
-            });
-
             // Upload de fotos
             document.getElementById('conclusao-fotos').addEventListener('change', function(e) {
                 const novosArquivos = Array.from(e.target.files);
@@ -3703,14 +3660,6 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 }
             });
 
-            // Upload de vídeos
-            document.getElementById('conclusao-videos').addEventListener('change', function(e) {
-                const files = e.target.files;
-                if (files.length > 0) {
-                    const parent = e.target.parentNode;
-                    parent.innerHTML = `<i class="fas fa-check" style="color: #4CAF50; font-size: 2rem;"></i><p>${files.length} vídeo(s) selecionado(s)</p>`;
-                }
-            });
         });
 
         // Função para buscar usuários
@@ -3953,6 +3902,20 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             // Versão para API real:
             const token = sessionStorage.getItem('token');
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas/semPrev', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            
+        }
+
+        async function fetchPatrimoniosSemChamados() {
+            
+            // Versão para API real:
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/maquinas/semChamad', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -4877,7 +4840,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     usuario_tecnico_id: document.getElementById('preventiva-usuario_tecnico_id').value,
                     tipo: document.getElementById('preventiva-tipo').value,
                     data_programada: document.getElementById('preventiva-data_programada').value,
-                    data_realizada: document.getElementById('preventiva-data_realizada').value || null,
+                    // data_realizada: document.getElementById('preventiva-data_realizada').value || null,
                     status: document.getElementById('preventiva-status').value,
                     checklist: document.getElementById('preventiva-checklist').value || null,
                     observacoes: document.getElementById('preventiva-observacoes').value || null,
@@ -4899,7 +4862,8 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 if (result.success) {
                     showSuccess(result.message || 'Preventiva salva com sucesso!');
                     closeModal('preventiva-maquina');
-                    loadPreventivas(); // Recarregar lista (criar essa função)
+                    loadPreventivesData();
+                    // loadPreventivas(); // Recarregar lista (criar essa função)
                 } else {
                     showError(result.message || 'Erro ao salvar preventiva');
                 }
@@ -5057,7 +5021,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 
                 if (result.success) {
                     showSuccess(result.message || 'Preventiva excluída com sucesso!');
-                    loadPreventivas(); // Recarregar lista
+                    loadPreventivesData();
                 } else {
                     showError(result.message || 'Erro ao excluir preventiva');
                 }
@@ -5071,11 +5035,11 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // ========================================
         // FUNÇÃO - CARREGAR LISTA DE PREVENTIVAS
         // ========================================
-        async function loadPreventivas() {
-            // Implementar conforme sua estrutura de tabela/lista
-            // Similar ao loadMaquinas() que você deve ter
-            console.log('Carregar lista de preventivas...');
-        }
+        // async function loadPreventivas() {
+        //     // Implementar conforme sua estrutura de tabela/lista
+        //     // Similar ao loadMaquinas() que você deve ter
+        //     console.log('Carregar lista de preventivas...');
+        // }
 
 
 
@@ -5142,10 +5106,10 @@ async function deleteMaquina(maquinaId, patrimonio) {
           
         });
         // Event listener para quando a FILIAL for alterada
-        document.getElementById('filial').addEventListener('change', async function() {
+        document.getElementById('filial-chamado').addEventListener('change', async function() {
             const patrimonioSelect = document.getElementById('select_patrimonio');
             const selectPatrim = patrimonioSelect?.value;
-            const filialSelect = document.getElementById('filial');
+            const filialSelect = document.getElementById('filial-chamado');
             const selectFilial = filialSelect?.value;
             
             if(selectPatrim && !isNaN(selectPatrim) && selectPatrim !== ""){
@@ -5167,7 +5131,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 const serieMaq = document.getElementById('serie');
                     serieMaq.value = "";
                 // Recarregar patrimônios com o filtro
-                await populateSelectFromTable('select_patrimonio', 'patrimonios'); // ajuste o nome da tabela conforme seu projeto
+                await populateSelectFromTable('select_patrimonio', 'patrimoniosSemChamados'); // ajuste o nome da tabela conforme seu projeto
                 }
                 
             }else{
@@ -5176,7 +5140,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 
                 
                 // Recarregar patrimônios com o filtro
-                await populateSelectFromTable('select_patrimonio', 'patrimonios'); // ajuste o nome da tabela conforme seu projeto
+                await populateSelectFromTable('select_patrimonio', 'patrimoniosSemChamados'); // ajuste o nome da tabela conforme seu projeto
             }
             
         });
@@ -5184,7 +5148,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // Event listener para quando o PATRIMÔNIO for alterado
         document.getElementById('select_patrimonio').addEventListener('change', async function() {
             //const patrimonioId = this.value;
-            const filialSelect = document.getElementById('filial');
+            const filialSelect = document.getElementById('filial-chamado');
             const selectFilial = filialSelect?.value;
             const patrimonioSelect = document.getElementById('select_patrimonio');
             const selectPatrim = patrimonioSelect?.value;
@@ -5209,13 +5173,13 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 filialSelect.value = '';
                 const serieMaq = document.getElementById('serie');
                     serieMaq.value = "";
-                await populateSelectFromTable('filial', 'filiais');
+                await populateSelectFromTable('filial-chamado', 'filiais');
                 }
 
             }else{
                 // alert('Carregando filiais para filtrar!');
                 // Se filial for limpo, recarregar todas as filiais
-                await populateSelectFromTable('filial', 'filiais');
+                await populateSelectFromTable('filial-chamado', 'filiais');
 
             }            
             

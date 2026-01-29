@@ -1,0 +1,3 @@
+status de preventiva maquina ( se tiver registro de data fica programada e sem data fica em_andamento)
+
+

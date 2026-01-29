@@ -807,7 +807,11 @@ class MaquinaController extends BaseController {
                 if (isset($params[0])) {
                     if ($params[0] === 'semPrev') {
                         $this->getMaquinasSemPreventiva();
-                    } else {
+                    } 
+                    elseif ($params[0] === 'semChamad') {
+                        $this->getMaquinasSemChamado();
+                    }
+                    else {
                         $this->getById($params[0]);
                     }
                 } else {
@@ -870,20 +874,52 @@ class MaquinaController extends BaseController {
         ]);
     }
     private function getMaquinasSemPreventiva() {
-                
-        $stmt = $this->db->prepare("
-            SELECT m.id, m.patrimonio, p.data_realizada
+        try {        
+            $stmt = $this->db->prepare("
+            SELECT DISTINCT m.id, m.patrimonio
             FROM maquina m
-            INNER JOIN preventiva p ON m.id = p.maquina_id
-            WHERE p.data_realizada IS NOT NULL
+            LEFT JOIN preventiva p_ativas ON m.id = p_ativas.maquina_id 
+                AND p_ativas.status IN ('programada', 'em_andamento')
+            WHERE p_ativas.id IS NULL
             ORDER BY m.patrimonio ASC
-        ");
-        $stmt->execute();
-        
-        $this->sendResponse(200, [
-            'success' => true,
-            'data' => $stmt->fetchAll(),
-        ]);
+            ");
+            $stmt->execute();
+            
+            $this->sendResponse(200, [
+                'success' => true,
+                'data' => $stmt->fetchAll(),
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao buscar máquina sem preventiva: ' . $e->getMessage()]);
+        }
+
+    }
+    private function getMaquinasSemChamado() {
+        try {        
+            $stmt = $this->db->prepare("
+            SELECT DISTINCT 
+                m.id, 
+                m.patrimonio,
+                m.loja_id,
+                l.nome AS loja_nome,
+                l.codigo AS loja_codigo
+            FROM maquina m
+            INNER JOIN loja l ON m.loja_id = l.id
+            LEFT JOIN chamado c_ativas ON m.id = c_ativas.maquina_id 
+                AND c_ativas.status IN ('pendente','em_andamento','aguardando_peca','pausado')
+            WHERE c_ativas.id IS NULL
+            ORDER BY m.patrimonio ASC
+            ");
+            $stmt->execute();
+            
+            $this->sendResponse(200, [
+                'success' => true,
+                'data' => $stmt->fetchAll(),
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao buscar máquina sem chamado: ' . $e->getMessage()]);
+        }
+
     }
     
     private function getById($id) {
