@@ -116,13 +116,14 @@ CREATE TABLE chamado (
     -- Campos de Auditoria
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+    usuario_ultima_atualizacao INT
     -- Chaves Estrangeiras
     FOREIGN KEY (loja_id) REFERENCES loja(id) ON DELETE RESTRICT,
     FOREIGN KEY (maquina_id) REFERENCES maquina(id) ON DELETE RESTRICT,
     FOREIGN KEY (usuario_abertura_id) REFERENCES usuario(id) ON DELETE RESTRICT,
     FOREIGN KEY (usuario_tecnico_id) REFERENCES usuario(id) ON DELETE SET NULL,
-    
+    FOREIGN KEY (usuario_ultima_atualizacao) REFERENCES usuario(id) ON DELETE SET NULL,    
+
     -- Índices
     INDEX idx_numero (numero),
     INDEX idx_loja (loja_id),
@@ -319,8 +320,8 @@ BEGIN
             status_novo, 
             comentario
         ) VALUES (
-            NEW.id,
-            NEW.usuario_tecnico_id,
+            OLD.id,
+            NEW.usuario_ultima_atualizacao,
             OLD.status,
             NEW.status,
             'Status alterado automaticamente'

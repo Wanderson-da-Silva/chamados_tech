@@ -652,7 +652,7 @@
 }
 
 .btn-editar { background-color: #2196F3; }
-.btn-senha, .btn-preventiva, .btn-relatorio  { background-color: #FF9800; }
+.btn-senha, .btn-preventiva, .btn-relatorio ,.btn-status  { background-color: #FF9800; }
 .btn-excluir { background-color: #f44336; }
 .btn-chamado, .btn-maquina { background-color: #4CAF50; }
 .btn-cancelar{
@@ -1350,8 +1350,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="fotos" >Anexar Fotos</label>
-                    <div class="file-upload" onclick="document.getElementById('fotos').click()">
+                    <label >Anexar Fotos</label>
+                    <div class="file-upload" onclick="document.getElementById('fotos').click()" >
                         <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
                         <p>Clique para adicionar fotos</p>
                         <input type="file" id="fotos" multiple accept="image/*" style="display: none;">
@@ -2125,6 +2125,32 @@
         </form>    
     </div>
 </div>
+    <!-- Modal definir status chamado -->
+<div id="status-chamado" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Definir Status Chamado</h2>
+            <button class="close" onclick="closeModal('status-chamado')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-chamado-status" onsubmit="handleChamadoStatus(event)">
+            <!-- ID oculto da preventiva -->
+            <input type="hidden" id="status-chamado-id">
+            <input type="hidden" id="status-chamado-status">
+            
+                <div class="form-group" id="chamado-select_status"></div>
+
+                <div class="chamado-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('status-chamado')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Atribuir
+                    </button>
+                </div>
+        </form>    
+    </div>
+</div>
 
 <!-- Modal Nova Transferência -->
     <div id="nova-transferencia" class="modal">
@@ -2376,7 +2402,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         }
 
         if (result.data.length === 0) {
-            console.log(`Nenhum dado encontrado em '${tableName}'`);
+           // console.log(`Nenhum dado encontrado em '${tableName}'`);
             
             // Reseta o select
             const selectElement = document.getElementById(selectId);
@@ -2901,7 +2927,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             //alert('renderizando preventivas');
             const grid = document.getElementById('filiais-grid');
             grid.innerHTML = '';
-            console.log(filiais);
+            //console.log(filiais);
             filiais.forEach(filial => {
                 const filialCard = document.createElement('div');
                 filialCard.className = 'filial-card';
@@ -2985,17 +3011,24 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                         </div>
                         <div class="chamado-desctec">
                             <p>${chamado.descricao}</p>
-                            ${chamado.usuario_tecnico_id != null 
-                            ? `<p>${chamado.usuario_tecnico_id} - ${chamado.tecnico_responsavel} </p>` 
-                            : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id},'${chamado.status}')">Definir técnico</button>`
+                            ${['cancelado', 'concluido'].includes(chamado.status)
+                            ? chamado.usuario_tecnico_id != null
+                                ? `<p><strong>${chamado.usuario_tecnico_id} - ${chamado.tecnico_responsavel}</strong></p>`
+                                : `<p class="text-muted">Sem técnico</p>`
+                            : chamado.usuario_tecnico_id != null  
+                                ? `<p>${chamado.usuario_tecnico_id} - ${chamado.tecnico_responsavel}</p>` 
+                                : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${chamado.id},'${chamado.status}')">Definir técnico</button>`
                             }
                         </div>    
                         <div class="chamado-rodape">
                         
                             <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
-
-                            ${gerarSelectStatus(chamado.id, chamado.status, tipoUsuarioLogado) || '' }
-                
+                            ${chamado.status != 'concluido' && chamado.status != 'cancelado' 
+                            ? `<button class="btn btn_opcoes btn-status" onclick="atribuirStatus(${chamado.id},'${chamado.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
+                            
+                            
+                            
+                                            
                         </div> 
                     </div>
                     <div class="chamado-pdf-wrapper">
@@ -3052,10 +3085,12 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
 
         // Função para gerar o HTML do select
         function gerarSelectStatus(chamadoId, statusAtual, tipoUsuario) {
+            
             if (!deveExibirSelectStatus(statusAtual, tipoUsuario)) {
                 return;
             }
             
+            const container = document.getElementById('chamado-select_status');
             const opcoes = getOpcoesStatus(statusAtual);
             
             if (opcoes.length === 0) {
@@ -3071,9 +3106,11 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 'cancelado':'Cancelado'
             };
             
+
+            //conectar ao div com id chamado-select_status e adicionar filho com o select
+
             let selectHTML = `
-                <div >
-                    <select class="form-control" id="select-status-${chamadoId}" >
+                    <select class="form-control" id="select-status" >
                         <option value="">Alterar status...</option>
             `;
             
@@ -3083,13 +3120,10 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             
             selectHTML += `
                     </select>
-                    <button class="btn btn-primary btn-small" onclick="salvarNovoStatus(${chamadoId})" >
-                        <i class="fas fa-save"></i>
-                    </button>
-                </div>
+                    
             `;
-            
-            return selectHTML;
+            //nao retornar adicionar como filho no chamado-select_status
+            container.innerHTML = selectHTML;
         }
 
 
@@ -3186,6 +3220,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 populateSelectFromTable('filter-filial', 'filiais');
                 loadChamados();
             }
+            
             if (modalId === 'preventiva-maquina') {
                 // loadSelectsPreventiva();
                 populateSelectFromTable('preventiva-maquina_id', 'maquinasSemPreventivas');
@@ -3222,6 +3257,53 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 document.getElementById('form-novo-chamado').reset();
                 resetFileUploads();
             }
+            // Limpar formulários
+            if (modalId === 'status-chamado') {
+                document.getElementById('form-chamado-status').reset();
+                
+            }
+            // Limpar formulários
+            if (modalId === 'concluir-chamado') {
+                document.getElementById('form-concluir-chamado').reset();
+                resetFileUploads_conclusao();
+            }
+		    if (modalId === 'novo-usuario') {
+                document.getElementById('form-novo-usuario').reset();
+                
+            }
+            if (modalId === 'editar-usuario') {
+                document.getElementById('form-editar-usuario').reset();
+                
+            }
+            if (modalId === 'nova-maquina') {
+                document.getElementById('form-nova-maquina').reset();
+                
+            }
+            if (modalId === 'nova-loja') {
+                document.getElementById('form-nova-loja').reset();
+                
+            }
+            if (modalId === 'preventiva-maquina') {
+                document.getElementById('form-preventiva-maquina').reset();
+                
+            }
+            if (modalId === 'editar-maquina') {
+                document.getElementById('form-editar-maquina').reset();
+                
+            }
+            if (modalId === 'editar-loja') {
+                document.getElementById('form-editar-loja').reset();
+                
+            }
+            if (modalId === 'chamado-tecnico') {
+                document.getElementById('form-chamado-maquina').reset();
+                
+            }
+            if (modalId === 'nova-transferencia') {
+                document.getElementById('form-nova-transferencia').reset();
+                
+            }
+
         }
         let arquivosSelecionados = [];
         let arquivosSelecionados_conclusao = [];
@@ -3375,25 +3457,25 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 }
             
                 // Exibe TUDO que está no FormData
-                console.log('=== Conteúdo do FormData ===');
-                for (let [key, value] of formData.entries()) {
-                    if (value instanceof File) {
-                        console.log(key + ':', {
-                            nome: value.name,
-                            tipo: value.type,
-                            tamanho: (value.size / 1024).toFixed(2) + ' KB'
-                        });
-                    } else {
-                        console.log(key + ':', value);
-                    }
-                }
+                // console.log('=== Conteúdo do FormData ===');
+                // for (let [key, value] of formData.entries()) {
+                //     if (value instanceof File) {
+                //         console.log(key + ':', {
+                //             nome: value.name,
+                //             tipo: value.type,
+                //             tamanho: (value.size / 1024).toFixed(2) + ' KB'
+                //         });
+                //     } else {
+                //         console.log(key + ':', value);
+                //     }
+                // }
 
 
 
                 const result = await updateChamado(chamadoId, formData);
                 // console.log('Response envios:', formData.conclusao-fotos);
-                console.log('Response Conclusao:', result);
-                console.log('Response Conclusao 1:', result.message);
+                //console.log('Response Conclusao:', result);
+               // console.log('Response Conclusao 1:', result.message);
                 // console.log('Response conclusao (JSON):', JSON.stringify(result, null, 2));
 
 
@@ -3537,7 +3619,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 itemDiv.innerHTML = `
                     <i class="fas fa-image" style="color: #4CAF50; margin-right: 10px;"></i>
                     <span style="flex: 1;">${arquivo.name} (${(arquivo.size / 1024).toFixed(2)} KB)</span>
-                    <button type="button" onclick="removerFoto(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                    <button type="button" onclick="removerFoto_conclusao(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
                         <i class="fas fa-trash"></i> Remover
                     </button>
                 `;
@@ -3987,7 +4069,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         // Função para carregar lista de máquinas
         async function loadMaquinas() {
             const loadingElement = document.getElementById('maquinas-loading');
-            const listContainer = document.getElementById('maquinas-list');
+            //const listContainer = document.getElementById('maquinas-list');
             
             try {
                 loadingElement.classList.remove('hidden');
@@ -4160,7 +4242,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         // Função para filtrar máquinas por loja
         function filterMaquinas() {
             const lojaFiltro = document.getElementById('filtro-loja-maquinas').value;
-            console.log('Filtrar máquinas por loja:', lojaFiltro);
+            //console.log('Filtrar máquinas por loja:', lojaFiltro);
             // Em produção, fazer nova requisição à API com filtro
             loadMaquinas();
         }
@@ -5202,6 +5284,23 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 showError('Erro ao atribuir id chamado. Tente novamente.');
             } 
         }
+        async function atribuirStatus(chamadoId,statusChamado,tipoUser) {
+            try {
+                
+                    // Preencher formulário de edição
+                    document.getElementById('status-chamado-id').value = chamadoId;
+                    document.getElementById('status-chamado-status').value = statusChamado;
+                    gerarSelectStatus(chamadoId,statusChamado,tipoUser);
+                    // Abrir modal de edição
+                    openModal('status-chamado');
+                    
+                
+                
+            } catch (error) {
+                console.error('Erro ao atribuir status chamado: ', error);
+                showError('Erro ao atribuir status chamado. Tente novamente.');
+            } 
+        }
 
         async function gerarPDFChamado(chamadoId) {
             try {
@@ -5710,10 +5809,11 @@ async function deleteMaquina(maquinaId, patrimonio) {
 
 
 // Função para salvar o novo status
-        async function salvarNovoStatus(chamadoId){
-            const selectElement = document.getElementById(`select-status-${chamadoId}`);
+        async function handleChamadoStatus(event) {
+            event.preventDefault();
+            const selectElement = document.getElementById(`select-status`);
             const novoStatus = selectElement.value;
-
+            const chamadoId = document.getElementById(`status-chamado-id`).value;
             
             if (!novoStatus) {
                 alert('Por favor, selecione um status.');
@@ -5749,6 +5849,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                         document.getElementById('conclusao-problema').value = dados.descricao || '';
                     
                         closeModal('acompanhar-chamados');
+                        closeModal('status-chamado');
                         openModal('concluir-chamado');
                         return;
                     
@@ -5772,18 +5873,23 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 formData.append('id', chamadoId );
                 formData.append('status', novoStatus );
     
+
+                
                 // Chamar API para atualizar máquina
                 const result = await updateChamado(chamadoId, formData);
                 
+                
+
                 if (result.success) {
                     showSuccess(result.message || 'Chamado atualizada com sucesso!');
                     closeModal('chamado-tecnico');
+                    closeModal('status-chamado');
                     loadChamados(); // Recarregar lista
                     loadDashboardData();//dashboard
                 } else {
                     
                     // Converter para objeto
-                   
+                    //console.log(result.error + '. chaves '+ result.chaves + '. quantidade: ' + result.quantidade || 'Erro ao atualizar chamado 1');
                     showError(result.error + '. chaves '+ result.chaves + '. quantidade: ' + result.quantidade || 'Erro ao atualizar chamado 1');
                 }
 
@@ -5945,6 +6051,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
         async function createChamado(formData) {
             
             const token = sessionStorage.getItem('token');
+
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/chamados', {
                 method: 'POST',
                 headers: {

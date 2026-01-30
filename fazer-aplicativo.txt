@@ -1,3 +1,5 @@
-status de preventiva maquina ( se tiver registro de data fica programada e sem data fica em_andamento)
+status de preventiva maquina ( se tiver registro de data programada fica programada e sem data fica em_andamento)
 
+lista de chamados, há um botão de escolha tecnico e select de alteração de status. deixar somente botoes. onde botao alterar status abriria um modal com as opções e segue fluxo padrão de tipo usoario e destinação para outro modal se concluido.
 
+verificar preventivas , fazer alterações para fazer sentido os campos de criação e criar o de edição 

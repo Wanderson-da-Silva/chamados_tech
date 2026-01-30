@@ -1233,26 +1233,26 @@ class ChamadoController extends BaseController {
             $this->sendResponse(404, ['error' => 'Chamado não encontrado']);
         }
         
-        // Buscar anexos
-        $stmt = $this->db->prepare("
-            SELECT id, nome_original, tipo_arquivo, caminho_arquivo, tipo_anexo, descricao, data_upload
-            FROM chamado_anexo 
-            WHERE chamado_id = ?
-            ORDER BY data_upload ASC
-        ");
-        $stmt->execute([$id]);
-        $chamado['anexos'] = $stmt->fetchAll();
+        // // Buscar anexos
+        // $stmt = $this->db->prepare("
+        //     SELECT id, nome_original, tipo_arquivo, caminho_arquivo, tipo_anexo, descricao, data_upload
+        //     FROM chamado_anexo 
+        //     WHERE chamado_id = ?
+        //     ORDER BY data_upload ASC
+        // ");
+        // $stmt->execute([$id]);
+        // $chamado['anexos'] = $stmt->fetchAll();
         
-        // Buscar histórico
-        $stmt = $this->db->prepare("
-            SELECT h.*, u.nome_completo as usuario_nome
-            FROM chamado_historico h
-            INNER JOIN usuario u ON h.usuario_id = u.id
-            WHERE h.chamado_id = ?
-            ORDER BY h.data_alteracao DESC
-        ");
-        $stmt->execute([$id]);
-        $chamado['historico'] = $stmt->fetchAll();
+        // // Buscar histórico
+        // $stmt = $this->db->prepare("
+        //     SELECT h.*, u.nome_completo as usuario_nome
+        //     FROM chamado_historico h
+        //     INNER JOIN usuario u ON h.usuario_id = u.id
+        //     WHERE h.chamado_id = ?
+        //     ORDER BY h.data_alteracao DESC
+        // ");
+        // $stmt->execute([$id]);
+        // $chamado['historico'] = $stmt->fetchAll();
         
         $this->sendResponse(200, [
             'success' => true,
@@ -1412,6 +1412,10 @@ class ChamadoController extends BaseController {
             if (isset($data['custo_pecas'])) {
                 $campos[] = 'custo_pecas = ?';
                 $valores[] = $data['custo_pecas'];
+            }
+            if (isset($this->user->user_id)) {
+                $campos[] = 'usuario_ultima_atualizacao = ?';
+                $valores[] = $this->user->user_id;
             }
            
             // ✅ PROCESSAR FOTOS
