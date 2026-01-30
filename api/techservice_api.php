@@ -1672,68 +1672,58 @@ class PreventivaController extends BaseController {
         ]);
     }
     
-    private function getAll() {
-        $where = "1=1";
-        $params = [];
-        
-        if (isset($_GET['maquina_id']) && !empty($_GET['maquina_id'])) {
-            $where .= " AND p.maquina_id = ?";
-            $params[] = $_GET['maquina_id'];
-        }
-        
-        if (isset($_GET['status']) && !empty($_GET['status'])) {
-            $where .= " AND p.status = ?";
-            $params[] = $_GET['status'];
-        }
-        
+    private function getAll() {      
         try {
-        $stmt = $this->db->prepare("
-            SELECT p.*, m.patrimonio, l.nome as loja_nome,
-                   u.nome_completo as tecnico_nome
-            FROM preventiva p
-            INNER JOIN maquina m ON p.maquina_id = m.id
-            INNER JOIN loja l ON m.loja_id = l.id
-            LEFT JOIN usuario u ON p.usuario_tecnico_id = u.id
-            WHERE $where
-            ORDER BY p.data_programada DESC
-        ");
-        $stmt->execute($params);
-        
-        $this->sendResponse(200, [
-            'success' => true,
-            'data' => $stmt->fetchAll()
-        ]);
-    } catch (PDOException $e) {
-            $this->sendResponse(500, ['error' => 'Erro ao buscar preventiva: ' . $e->getMessage()]);
+            $stmt = $this->db->prepare("
+                SELECT p.*, m.patrimonio, l.nome as loja_nome,
+                    u.nome_completo as tecnico_nome
+                FROM preventiva p
+                INNER JOIN maquina m ON p.maquina_id = m.id
+                INNER JOIN loja l ON m.loja_id = l.id
+                LEFT JOIN usuario u ON p.usuario_tecnico_id = u.id
+                ORDER BY p.data_programada DESC
+            ");
+            
+            
+            $this->sendResponse(200, [
+                'success' => true,
+                'data' => $stmt->fetchAll()
+            ]);
+        } catch (PDOException $e) {
+                $this->sendResponse(500, ['error' => 'Erro ao buscar preventiva: ' . $e->getMessage()]);
         }
 
     }
     
     private function create() {
         $data = $this->getJsonInput();
-        $this->validateRequired($data, ['maquina_id', 'tipo', 'data_programada']);
+        $this->validateRequired($data, ['maquina_id', 'usuario_tecnico_id', 'status']);
         
         try {
-            $stmt = $this->db->prepare("
-                INSERT INTO preventiva (
-                    maquina_id, usuario_tecnico_id, tipo, data_programada, 
-                    observacoes, status
-                ) VALUES (?, ?, ?, ?, ?, 'programada')
-            ");
+            // Remove campos vazios/null se necessário
+            $data = array_filter($data, function($value) {
+                return $value !== null && $value !== '';
+            });
             
-            $stmt->execute([
-                $data['maquina_id'],
-                $data['usuario_tecnico_id'] ?? null,
-                $data['tipo'],
-                $data['data_programada'],
-                $data['observacoes'] ?? null
-            ]);
+            // Separa as colunas e valores
+            $colunas = array_keys($data);
+            $valores = array_values($data);
+            
+            // Monta a query dinamicamente
+            $colunasStr = implode(', ', $colunas);
+            $placeholders = implode(', ', array_fill(0, count($colunas), '?'));
+            
+            $sql = "INSERT INTO preventiva ($colunasStr) VALUES ($placeholders)";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($valores);
             
             $this->sendResponse(201, [
                 'success' => true,
                 'message' => 'Preventiva programada com sucesso',
                 'data' => ['id' => $this->db->lastInsertId()]
             ]);
+            
         } catch (PDOException $e) {
             $this->sendResponse(500, ['error' => 'Erro ao programar preventiva: ' . $e->getMessage()]);
         }

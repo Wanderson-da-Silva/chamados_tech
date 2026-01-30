@@ -1095,14 +1095,18 @@
                 </div>
 
                 <!-- Botões de Ação -->
+                
                 <div class="action-buttons">
                     <button class="btn btn-primary"  onclick="openModal('preventiva-maquina')">
                         <i class="fas fa-wrench"></i>
                         Preventivas Máquinas
                     </button>
-                </div>
                 
-
+                    <button class="btn btn-secondary" onclick="openModal('acompanhar-preventivas')">
+                        <i class="fas fa-list"></i>
+                        Acompanhar Preventivas
+                    </button>
+                </div>
                 <div class="section-divider"></div>
 
                 <!-- Seção de Preventivas -->
@@ -1447,12 +1451,44 @@
                 <select class="form-control" id="filter-status" style="width: auto;" >
                     <option value="">Todos os Status</option>
                     <option value="pendente">Pendente</option>
-                    <option value="andamento">Em Andamento</option>
+                    <option value="em_andamento">Em Andamento</option>
+                    <option value="aguardando_peca">Aguardando Peça</option>
+                    <option value="pausado">Pausado</option>
+                    <option value="cancelado">Cancelado</option>
                     <option value="concluido">Concluído</option>
                 </select>
             </div>
 
             <div style="max-height: 400px; overflow-y: auto;" id="chamados-list">
+                <!-- Lista será carregada via API -->
+            </div>
+        </div>
+    </div>
+
+    <div id="acompanhar-preventivas" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Acompanhar Preventivas</h2>
+                <button class="close" onclick="closeModal('acompanhar-preventivas')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="filter-section">
+                <select class="form-control" id="filter-filial-preventivas" style="width: auto;" >
+                    <option value="">Todas as Filiais</option>
+                    <!-- Opções serão carregadas via API -->
+                </select>
+                <select class="form-control" id="filter-status-preventivas" style="width: auto;" >
+                    <option value="">Todos os Status</option>
+                    <option value="programada">Programada</option>
+                    <option value="cancelada">Cancelada</option>
+                    <option value="em_andamento">Em Andamento</option>
+                    <option value="concluida">Concluída</option>
+                </select>
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto;" id="preventivas-list">
                 <!-- Lista será carregada via API -->
             </div>
         </div>
@@ -1807,7 +1843,7 @@
         </div>
         <form id="form-preventiva-maquina" onsubmit="handlePreventivaMaquina(event)">
             <!-- ID oculto da preventiva -->
-            <input type="hidden" id="preventiva-id">
+            
 
             <div class="grid-2">
                 <div class="form-group">
@@ -1828,32 +1864,20 @@
 
             <div class="grid-2">
                 <div class="form-group">
+                    
                     <label for="preventiva-tipo">Tipo *</label>
-                    <input type="text" class="form-control" id="preventiva-tipo" placeholder="Ex: Preventiva, Corretiva" required>
-                </div>
-                <div class="form-group">
-                    <label for="preventiva-data_programada">Data Programada *</label>
-                    <input type="date" class="form-control" id="preventiva-data_programada" required>
-                </div>
-            </div>
-
-            <div class="grid-2">
-                
-                <div class="form-group">
-                    <label for="preventiva-status">Status *</label>
-                    <select class="form-control" id="preventiva-status" required>
-                        <option value="">Selecione o status</option>
-                        <option value="em_andamento">Em Andamento</option>
-                        <option value="programada">Programada</option>
-                        <option value="concluida">Concluida</option>
-                        <option value="cancelada">Cancelada</option>
+                    <select class="form-control" id="preventiva-tipo" required>
+                        <option value="">Selecione o técnico</option>
+                        <option value="limpeza">Limpeza</option>
+                        <option value="calibragem">Calibragem</option>
+                        <option value="troca_pecas">Troca de Peças</option>
+                        <!-- Opções carregadas via API -->
                     </select>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="preventiva-checklist">Checklist</label>
-                <textarea class="form-control" id="preventiva-checklist" rows="4" placeholder="Itens verificados no checklist"></textarea>
+                <div class="form-group">
+                    <label for="preventiva-data_programada">Data Programada </label>
+                    <input type="date" class="form-control" id="preventiva-data_programada" >
+                </div>
             </div>
 
             <div class="form-group">
@@ -1867,13 +1891,8 @@
             </div>
 
             <div class="form-group">
-                <label for="preventiva-custos">Custos (R$)</label>
-                <input type="number" class="form-control" id="preventiva-custos" step="0.01" placeholder="0,00">
-            </div>
-
-            <div class="form-group">
                 <label for="preventiva-tempo_execucao">Tempo de Execução (horas)</label>
-                <input type="number" class="form-control" id="preventiva-tempo_execucao" step="0.01" placeholder="Ex: 1.5">
+                <input type="text" class="form-control" id="preventiva-tempo_execucao" placeholder="Ex: Só minutos" step="1" min="0">
             </div>
 
             <div style="margin-top: 25px;" class="preventiva-acoes">
@@ -1881,6 +1900,96 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
                     Salvar Preventiva
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Modal Preventiva Máquina -->
+<div id="preventiva-maquina-editar" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Edição de Preventiva de Máquina</h2>
+            <button class="close" onclick="closeModal('preventiva-maquina-editar')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-preventiva-maquina-editar" onsubmit="handlePreventivaMaquinaEditar(event)">
+            
+            <input type="hidden" id="preventiva-id-editar">
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="preventiva-maquina_id-editar">Máquina *</label>
+                    <select class="form-control" id="preventiva-maquina_id-editar" required>
+                        <option value="">Selecione uma máquina</option>
+                        
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="preventiva-usuario_tecnico_id-editar">Técnico Responsável *</label>
+                    <select class="form-control" id="preventiva-usuario_tecnico_id-editar" required>
+                        <option value="">Selecione o técnico</option>
+                        
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="preventiva-tipo-editar">Tipo *</label>
+                    <input type="text" class="form-control" id="preventiva-tipo-editar" placeholder="Ex: Preventiva, Corretiva" required>
+                </div>
+                <div class="form-group">
+                    <label for="preventiva-data_programada-editar">Data Programada *</label>
+                    <input type="date" class="form-control" id="preventiva-data_programada-editar" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                
+                <div class="form-group">
+                    <label for="preventiva-status-editar">Status *</label>
+                    <select class="form-control" id="preventiva-status-editar" required>
+                        <option value="">Selecione o status</option>
+                        <option value="em_andamento">Em Andamento</option>
+                        <option value="programada">Programada</option>
+                        <option value="concluida">Concluida</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-checklist-editar">Checklist</label>
+                <textarea class="form-control" id="preventiva-checklist-editar" rows="4" placeholder="Itens verificados no checklist"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-observacoes-editar">Observações</label>
+                <textarea class="form-control" id="preventiva-observacoes-editar" rows="3" placeholder="Observações adicionais"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-pecas_substituidas-editar">Peças Substituídas</label>
+                <textarea class="form-control" id="preventiva-pecas_substituidas-editar" rows="2" placeholder="Listar peças substituídas"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-custos-editar">Custos (R$)</label>
+                <input type="number" class="form-control" id="preventiva-custos-editar" step="0.01" placeholder="0,00">
+            </div>
+
+            <div class="form-group">
+                <label for="preventiva-tempo_execucao-editar">Tempo de Execução (horas)</label>
+                <input type="text" class="form-control" id="preventiva-tempo_execucao-editar" placeholder="Ex: em minutos" step="1" min="0">
+            </div>
+
+            <div style="margin-top: 25px;" class="preventiva-acoes">
+                <button type="button" class="btn btn-cancelar" onclick="closeModal('preventiva-maquina-editar')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Editar Preventiva
                 </button>
             </div>
         </form>
@@ -2789,43 +2898,20 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             });
             return await response.json();
             
-            /*
-            // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 600));
             
-            return {
-                success: true,
-                data: [
-                    {
-                        id: 1,
-                        numero: "CH-001",
-                        patrimonio: "MAQ-001",
-                        filial: "Filial Centro",
-                        problema: "Máquina não está ligando após limpeza",
-                        status: "pendente",
-                        dataAbertura: "2025-09-18T08:30:00Z"
-                    },
-                    {
-                        id: 2,
-                        numero: "CH-002",
-                        patrimonio: "MAQ-045",
-                        filial: "Filial Norte",
-                        problema: "Ruído estranho durante funcionamento",
-                        status: "andamento",
-                        dataAbertura: "2025-09-17T14:15:00Z"
-                    },
-                    {
-                        id: 3,
-                        numero: "CH-003",
-                        patrimonio: "MAQ-123",
-                        filial: "Filial Sul",
-                        problema: "Substituição de peças desgastadas",
-                        status: "concluido",
-                        dataAbertura: "2025-09-16T10:20:00Z"
-                    }
-                ]
-            };
-            */
+        }
+        async function fetchPreventivas() {
+            
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/preventivas', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+            
+            
         }
 
         // Função para buscar filiais
@@ -2875,22 +2961,34 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
 
                     // alert("Dash board com sucesso !");
                     // Atualizar os números
-                    document.getElementById('pendentes-count').textContent = result.data[0].pendente ;
-                    document.getElementById('andamento-count').textContent = result.data[0].em_andamento ;
-                    document.getElementById('concluidos-count').textContent = result.data[0].concluido ;
-                    document.getElementById('aguardando-count').textContent = result.data[0].aguardando_peca ;
-                    document.getElementById('pausados-count').textContent = result.data[0].pausado ;
-                    document.getElementById('cancelados-count').textContent = result.data[0].cancelado ;
+                    document.getElementById('pendentes-count').textContent = result.data[0].pendente || 0;
+                    document.getElementById('andamento-count').textContent = result.data[0].em_andamento || 0 ;
+                    document.getElementById('concluidos-count').textContent = result.data[0].concluido || 0 ;
+                    document.getElementById('aguardando-count').textContent = result.data[0].aguardando_peca || 0 ;
+                    document.getElementById('pausados-count').textContent = result.data[0].pausado || 0 ;
+                    document.getElementById('cancelados-count').textContent = result.data[0].cancelado || 0 ;
 
                     // alert("numero pendentes" +  result +" !");
                     // console.log(result.data[0].pendentes);
                     // Animar os cards
                     animateSummaryCards();
                 }else{
-                    
+
+                    document.getElementById('pendentes-count').textContent = 0;
+                    document.getElementById('andamento-count').textContent =  0;
+                    document.getElementById('concluidos-count').textContent =  0;
+                    document.getElementById('aguardando-count').textContent =  0;
+                    document.getElementById('pausados-count').textContent =  0;
+                    document.getElementById('cancelados-count').textContent =  0;
                     showError('Dash board retornou sem sucesso');
                 }
             } catch (error) {
+                    document.getElementById('pendentes-count').textContent = 0;
+                    document.getElementById('andamento-count').textContent =  0;
+                    document.getElementById('concluidos-count').textContent =  0;
+                    document.getElementById('aguardando-count').textContent =  0;
+                    document.getElementById('pausados-count').textContent =  0;
+                    document.getElementById('cancelados-count').textContent =  0;
                 console.error('Erro ao carregar dashboard:', error);
                 showError('Erro ao carregar dados do dashboard');
             } finally {
@@ -2902,8 +3000,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
 
         // Função para carregar dados das preventivas
         async function loadPreventivesData() {
-            const loadingElement = document.getElementById('preventivas-loading');
-            const preventivesSection = document.getElementById('preventivas-section');
+            //const loadingElement = document.getElementById('preventivas-loading');
+            //const preventivesSection = document.getElementById('preventivas-section');
             
             try {
                 const result = await fetchPreventivesData();
@@ -2943,7 +3041,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                                 <span class="patrimonio">${maquina.patrimonio}</span>
                                 <span class="dias-restantes ${isUrgente ? 'urgente' : ''} ${isAlerta ? 'alerta' : ''}">Prazo ${maquina.dias_restantes} dias</span>
                             </div>
-                                <span class="data-programada ">Data: ${maquina.data_programada? maquina.data_programada.split('-').reverse().join('/') : 'sem marcação'}</span>
+                                <span class="data-programada ">Data Prog: ${maquina.data_programada? maquina.data_programada.split('-').reverse().join('/') : 'sem marcação'}</span>
                         
                             </div>
                     `;
@@ -3040,6 +3138,71 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 `;
                 
                 container.appendChild(chamadoItem);
+            });
+        }
+        function renderPreventivasList(preventivas) {
+            const container = document.getElementById('preventivas-list');
+            container.innerHTML = '';
+            
+            if (preventivas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Nenhum chamado encontrado.</p>';
+                return;
+            }
+
+            const userSession = sessionStorage.getItem('user');
+            const user = JSON.parse(userSession); // Converte string JSON para objeto
+            const tipoUsuarioLogado = user.perfil; 
+
+            preventivas.forEach(preventiva => {
+                const statusClass = `status-${preventiva.status}`;
+                const statusText = {
+                    'programada': 'Pendente',
+                    'em_andamento': 'Em Andamento',
+                    'cancelada':'Cancelado',
+                    'concluida':'Concluída'
+                };
+                
+                const dataFormatada = new Date(preventiva.data_criacao).toLocaleString('pt-BR');
+                
+                const preventivaItem = document.createElement('div');
+                preventivaItem.className = 'preventiva-item';
+                preventivaItem.innerHTML = `
+                    <div class="preventiva-conteudo">
+                        <div class="preventiva-header">
+                            <strong>#${preventiva.numero} - ${preventiva.patrimonio} (${preventiva.loja_nome})</strong>
+                            <span class="status-badge ${statusClass}">${statusText[preventiva.status]}</span>
+                        </div>
+                        <div class="chamado-desctec">
+                            <p>${preventiva.observacoes}</p>
+                            ${['cancelada', 'concluida'].includes(chamado.status)
+                            ? preventiva.usuario_tecnico_id != null
+                                ? `<p><strong>${preventiva.usuario_tecnico_id} - ${preventiva.tecnico_nome}</strong></p>`
+                                : `<p class="text-muted">Sem técnico</p>`
+                            : preventiva.usuario_tecnico_id != null  
+                                ? `<p>${preventiva.usuario_tecnico_id} - ${preventiva.tecnico_nome}</p>` 
+                                : `<button class="btn btn_opcoes btn-chamado" onclick="atribuirTecnico(${preventiva.id},'${preventiva.status}')">Definir técnico</button>`
+                            }
+                        </div>    
+                        <div class="chamado-rodape">
+                        
+                            <small style="color: #666;">Aberto em: ${preventiva.data_criacao}</small>
+                            ${preventiva.status != 'concluida' && preventiva.status != 'cancelada' 
+                            ? `<button class="btn btn_opcoes btn-status" onclick="atribuirStatus(${preventiva.id},'${preventiva.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
+                            
+                            
+                            
+                                            
+                        </div> 
+                    </div>
+                    <div class="chamado-pdf-wrapper">
+                        <button class="btn-pdf btn-small" onclick="gerarPDFChamado(${preventiva.id})" title="Gerar PDF da preventiva">
+                            <i class="fas fa-file-pdf">
+                            </i>
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(preventivaItem);
             });
         }
 
@@ -3220,6 +3383,11 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 populateSelectFromTable('filter-filial', 'filiais');
                 loadChamados();
             }
+            // Carregar dados específicos do modal
+            if (modalId === 'acompanhar-preventivas') {
+                //populateSelectFromTable('filter-filial', 'filiais');
+                loadPreventivas();
+            }
             
             if (modalId === 'preventiva-maquina') {
                 // loadSelectsPreventiva();
@@ -3285,6 +3453,10 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
             if (modalId === 'preventiva-maquina') {
                 document.getElementById('form-preventiva-maquina').reset();
+                
+            }
+            if (modalId === 'preventiva-maquina-editar') {
+                document.getElementById('form-preventiva-maquina-editar').reset();
                 
             }
             if (modalId === 'editar-maquina') {
@@ -4903,11 +5075,11 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // PREVENTIVA DE MÁQUINA - CRUD
         // ========================================
 
-        // Função para criar/atualizar preventiva
+        // Função para criar preventiva
         async function handlePreventivaMaquina(event) {
             event.preventDefault();
             
-            const preventivaId = document.getElementById('preventiva-id').value;
+            
             const submitBtn = event.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             
@@ -4916,30 +5088,35 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
                 
-                // Coletar dados do formulário
+
+                //definir status por data
                 const formData = {
                     maquina_id: document.getElementById('preventiva-maquina_id').value,
                     usuario_tecnico_id: document.getElementById('preventiva-usuario_tecnico_id').value,
-                    tipo: document.getElementById('preventiva-tipo').value,
-                    data_programada: document.getElementById('preventiva-data_programada').value,
-                    // data_realizada: document.getElementById('preventiva-data_realizada').value || null,
-                    status: document.getElementById('preventiva-status').value,
-                    checklist: document.getElementById('preventiva-checklist').value || null,
                     observacoes: document.getElementById('preventiva-observacoes').value || null,
                     pecas_substituidas: document.getElementById('preventiva-pecas_substituidas').value || null,
-                    custos: document.getElementById('preventiva-custos').value || null,
-                    tempo_execucao: document.getElementById('preventiva-tempo_execucao').value || null
+                    tempo_execucao: document.getElementById('preventiva-tempo_execucao').value || null,
+                    tipo: document.getElementById('preventiva-tipo').value || null
                 };
-                
-                let result;
-                
-                // Se tem ID, é edição; senão é criação
-                if (preventivaId) {
-                    formData.id = preventivaId;
-                    result = await updatePreventiva(preventivaId, formData);
+
+                // Validação de data
+                const dataInput = document.getElementById('preventiva-data_programada').value;
+
+                if (dataInput && dataInput.trim() !== '') {
+                    const data = new Date(dataInput);
+                    
+                    if (!isNaN(data.getTime())) {
+                        formData.data_programada = dataInput;
+                        formData.status = 'programada';
+                    } else {
+                        formData.status = 'em_andamento';
+                    }
                 } else {
-                    result = await createPreventiva(formData);
+                    formData.status = 'em_andamento';
                 }
+
+                result = await createPreventiva(formData);
+                
                 
                 if (result.success) {
                     showSuccess(result.message || 'Preventiva salva com sucesso!');
@@ -5117,11 +5294,19 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // ========================================
         // FUNÇÃO - CARREGAR LISTA DE PREVENTIVAS
         // ========================================
-        // async function loadPreventivas() {
-        //     // Implementar conforme sua estrutura de tabela/lista
-        //     // Similar ao loadMaquinas() que você deve ter
-        //     console.log('Carregar lista de preventivas...');
-        // }
+        async function loadPreventivas() {
+            try {
+                const result = await fetchPreventivas();
+                
+                if (result.success) {
+                    renderPreventivasList(result.data);
+                    
+                }
+            } catch (error) {
+                console.error('Erro ao carregar chamados:', error);
+                showError('Erro ao carregar chamados');
+            }
+        }
 
 
 
@@ -6113,6 +6298,54 @@ async function deleteMaquina(maquinaId, patrimonio) {
             }
             e.target.value = value;
         });
+
+        document.getElementById('preventiva-tempo_execucao').addEventListener('input', function(e) {
+            // Remove tudo que não é número
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Remove zeros à esquerda
+            this.value = this.value.replace(/^0+/, '') || '0';
+        });
+
+        // Evita decimal ao colar
+        document.getElementById('preventiva-tempo_execucao').addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text');
+            const onlyNumbers = pasteData.replace(/[^0-9]/g, '');
+            this.value = onlyNumbers;
+        });
+        // Bloqueia teclas de ponto e vírgula
+        document.getElementById('preventiva-tempo_execucao').addEventListener('keypress', function(e) {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        document.getElementById('preventiva-tempo_execucao-editar').addEventListener('input', function(e) {
+            // Remove tudo que não é número
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Remove zeros à esquerda
+            this.value = this.value.replace(/^0+/, '') || '0';
+        });
+
+        // Evita decimal ao colar
+        document.getElementById('preventiva-tempo_execucao-editar').addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text');
+            const onlyNumbers = pasteData.replace(/[^0-9]/g, '');
+            this.value = onlyNumbers;
+        });
+        // Bloqueia teclas de ponto e vírgula
+        document.getElementById('preventiva-tempo_execucao-editar').addEventListener('keypress', function(e) {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+
+
+
+
         // Função de formatação reutilizável
 function formatarTelefone(valor) {
     let value = valor.replace(/\D/g, '');
