@@ -569,7 +569,17 @@ class AnexoController extends BaseController {
                         } else {
                             $this->sendResponse(400, ['error' => 'ID do chamado não fornecido']);
                         }
-                    } else {
+                    } elseif($params[0] === 'dePrevent'){
+                         // Pega o ID do próximo parâmetro
+                        $preventivaId = isset($params[1]) ? $params[1] : null;
+                        
+                        if ($preventivaId) {
+                            $this->getAnexoPreventiva($preventivaId);
+                        } else {
+                            $this->sendResponse(400, ['error' => 'ID da preventiva não fornecido']);
+                        }
+                    }
+                    else {
                         $this->getById($params[0]);
                     }
                 } 
@@ -637,6 +647,37 @@ class AnexoController extends BaseController {
         }
         
 
+    }
+    private function getAnexoPreventiva($preventivaId){
+
+        try{
+                    $stmt = $this->db->prepare("SELECT preventiva_id, nome_arquivo, caminho_arquivo, data_upload 
+                FROM preventiva_anexo 
+                WHERE preventiva_id = ? 
+                ORDER BY data_upload DESC");
+        
+            $stmt->execute([$preventivaId]);
+            $result = $stmt->fetchAll();
+                
+                    if ($result === false ) {
+                        $this->sendResponse(200, [
+                            'success' => false,
+                            'message' => 'Sem anexo para preventiva'
+                        ]);
+                    } 
+
+            
+                $this->sendResponse(200, [
+                    'success' => true,
+                    'data' => $result
+                ]);
+            
+
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            $this->sendResponse(500, ['error' => 'Erro ao encontrar anexos: ' . $e->getMessage()]);
+        }
+        
     }
 
     private function getById($id) {
@@ -1188,12 +1229,7 @@ class ChamadoController extends BaseController {
             $where .= " AND c.status = ?";
             $params[] = $_GET['status'];
         }
-        
-        // if (isset($_GET['prioridade']) && !empty($_GET['prioridade'])) {
-        //     $where .= " AND c.prioridade = ?";
-        //     $params[] = $_GET['prioridade'];
-        // }
-        
+                
         $stmt = $this->db->prepare("
             SELECT c.*, l.nome as loja_nome, m.patrimonio, ua.nome_completo as usuario_abertura,
                    ut.nome_completo as tecnico_responsavel,
@@ -1529,10 +1565,13 @@ class PreventivaController extends BaseController {
             case 'GET':
                 if (isset($params[0]) && $params[0] === 'proximas') {
                     $this->getProximas();
-                } elseif (isset($params[0])) {
+                } elseif (empty($params[0]) && empty($_GET)) {
+                    $this->getAll();
+                }elseif (isset($params[0])) {
                     $this->getById($params[0]);
                 } else {
-                    $this->getAll();
+                    // Aqui, quando há parâmetros via $_GET mas sem $params[0], pode-se usar um método para filtros
+                    $this->getAllFiltered($_GET);
                 }
                 break;
             case 'POST':
@@ -1551,9 +1590,14 @@ class PreventivaController extends BaseController {
     private function getById($id) {
         
         $stmt = $this->db->prepare("
-            SELECT id, maquina_id, usuario_tecnico_id, tipo, data_programada, data_realizada, status, checklist,
-                   observacoes, pecas_substituidas, custos, tempo_execucao
-            FROM preventiva WHERE id = ? ");
+            SELECT m.numero_serie as serie, m.loja_id, l.nome as loja_nome, m.patrimonio, m.modelo, p.id, p.maquina_id, u.nome_completo as tecnico_responsavel, p.usuario_tecnico_id, p.tipo, p.data_programada, p.data_realizada, p.data_criacao,  p.status, p.checklist,
+                   p.observacoes, p.pecas_substituidas, p.custos, p.tempo_execucao
+            FROM preventiva p
+            INNER JOIN maquina m on m.id = p.maquina_id
+            INNER JOIN loja l on l.id = m.loja_id
+            INNER JOIN usuario u on u.id = p.usuario_tecnico_id
+            WHERE p.id = ?           
+            ");
         $stmt->execute([$id]);
         $result = $stmt->fetch();
 
@@ -1683,12 +1727,16 @@ class PreventivaController extends BaseController {
                 LEFT JOIN usuario u ON p.usuario_tecnico_id = u.id
                 ORDER BY p.data_programada DESC
             ");
-            
-            
+
+            $stmt->execute();
             $this->sendResponse(200, [
                 'success' => true,
                 'data' => $stmt->fetchAll()
             ]);
+
+
+
+
         } catch (PDOException $e) {
                 $this->sendResponse(500, ['error' => 'Erro ao buscar preventiva: ' . $e->getMessage()]);
         }
@@ -1727,6 +1775,41 @@ class PreventivaController extends BaseController {
         } catch (PDOException $e) {
             $this->sendResponse(500, ['error' => 'Erro ao programar preventiva: ' . $e->getMessage()]);
         }
+    }
+    private function getAllFiltered() {
+    
+        $where = "1=1";
+        $params = [];
+        
+        // Filtros
+        if (isset($_GET['loja_id']) && !empty($_GET['loja_id'])) {
+            $where .= " AND c.loja_id = ?";
+            $params[] = $_GET['loja_id'];
+        }
+        
+        if (isset($_GET['status']) && !empty($_GET['status'])) {
+            $where .= " AND c.status = ?";
+            $params[] = $_GET['status'];
+        }
+                
+        $stmt = $this->db->prepare("
+            SELECT c.*, l.nome as loja_nome, m.patrimonio, ua.nome_completo as usuario_abertura,
+                   ut.nome_completo as tecnico_responsavel,
+                   TIMESTAMPDIFF(HOUR, c.data_abertura, COALESCE(c.data_conclusao, NOW())) as horas_em_aberto
+            FROM chamado c
+            INNER JOIN loja l ON c.loja_id = l.id
+            INNER JOIN maquina m ON c.maquina_id = m.id
+            INNER JOIN usuario ua ON p.usuario_abertura_id = ua.id
+            LEFT JOIN usuario ut ON p.usuario_tecnico_id = ut.id
+            WHERE $where
+            ORDER BY p.data_criacao DESC
+        ");
+        $stmt->execute($params);
+        
+        $this->sendResponse(200, [
+            'success' => true,
+            'data' => $stmt->fetchAll()
+        ]);
     }
 }
 

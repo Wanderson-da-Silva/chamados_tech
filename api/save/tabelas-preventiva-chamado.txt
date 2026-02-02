@@ -212,6 +212,49 @@ CREATE TABLE preventiva (
     INDEX idx_tecnico (usuario_tecnico_id)
 );
 
+-- Tabela de Anexos (Fotos e Vídeos)
+CREATE TABLE preventiva_anexo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    preventiva_id INT NOT NULL,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    nome_original VARCHAR(255) NOT NULL,
+    tipo_arquivo VARCHAR(10) NOT NULL, -- Ex: jpg, png, mp4, avi
+    tamanho_bytes BIGINT NOT NULL,
+    caminho_arquivo VARCHAR(500) NOT NULL,
+    tipo_anexo ENUM('foto', 'video', 'documento') NOT NULL,
+    descricao VARCHAR(200),
+    data_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Chave Estrangeira
+    FOREIGN KEY (preventiva_id) REFERENCES preventiva(id) ON DELETE CASCADE,
+    
+    -- Índices
+    INDEX idx_preventiva (preventiva_id),
+    INDEX idx_tipo_prev (tipo_anexo),
+    INDEX idx_data_upload_prev (data_upload)
+);
+
+-- Tabela de Histórico da preventiva
+CREATE TABLE preventiva_historico (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    preventiva_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    status_anterior VARCHAR(20),
+    status_novo VARCHAR(20) NOT NULL,
+    comentario TEXT,
+    data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Chaves Estrangeiras
+    FOREIGN KEY (preventiva_id) REFERENCES preventiva(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE RESTRICT,
+    
+    -- Índices
+    INDEX idx_preventiva (preventiva_id),
+    INDEX idx_data_prev (data_alteracao)
+);
+
+
+
 -- ========================================
 -- VIEWS ÚTEIS PARA CONSULTAS
 -- ========================================
