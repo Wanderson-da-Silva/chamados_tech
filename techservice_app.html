@@ -2260,6 +2260,32 @@
         </form>    
     </div>
 </div>
+    <!-- Modal definir status chamado -->
+<div id="status-preventiva" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Definir Status Preventiva</h2>
+            <button class="close" onclick="closeModal('status-preventiva')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-preventiva-status" onsubmit="handlePreventivaStatus(event)">
+            <!-- ID oculto da preventiva -->
+            <input type="hidden" id="status-preventiva-id">
+            <input type="hidden" id="status-preventiva-status">
+            
+                <div class="form-group" id="preventiva-select_status"></div>
+
+                <div class="preventiva-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('status-preventiva')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Atribuir
+                    </button>
+                </div>
+        </form>    
+    </div>
+</div>
 
 <!-- Modal Nova Transferência -->
     <div id="nova-transferencia" class="modal">
@@ -2413,20 +2439,7 @@
         </div>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-    
 </body>
 
-<script src="main.js"  defer></script>
+<script src="main3.js"  defer></script>
 </html>

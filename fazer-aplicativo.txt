@@ -3,3 +3,12 @@ status de preventiva maquina ( se tiver registro de data programada fica program
 lista de chamados, há um botão de escolha tecnico e select de alteração de status. deixar somente botoes. onde botao alterar status abriria um modal com as opções e segue fluxo padrão de tipo usoario e destinação para outro modal se concluido.
 
 verificar preventivas , fazer alterações para fazer sentido os campos de criação e criar o de edição 
+ 
+gerarSelectStatusPreventiva - continuar criação select opções preventivas - já duplicado modal do chamdo para "reutilizar"
+ver deveExibirSelectStatusPreventiva criar lógica de visualização opções
+no salvarstatusPrev
+opção concluir abre tela de conclusao - opção imagem,
+opção de programado abre "edição"´(é criação com id hidden - adicionar na criação) de em andamento e adiciona required na data programa
+opção cancelada pegar motivo, criar campo coluna
+
+ver edição tecnico chamado e preventiva para admin e sup_tecnico

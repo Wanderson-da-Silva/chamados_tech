@@ -710,9 +710,9 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                         </div>    
                         <div class="chamado-rodape">
                         
-                            <small style="color: #666;">Aberto em: ${chamado.data_abertura}</small>
+                            <small style="color: #666;">Aberto em: ${dataFormatada}</small>
                             ${chamado.status != 'concluido' && chamado.status != 'cancelado' 
-                            ? `<button class="btn btn_opcoes btn-status" onclick="atribuirStatus(${chamado.id},'${chamado.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
+                            ? `<button class="btn btn_opcoes btn-status" onclick="atribuirStatusChamado(${chamado.id},'${chamado.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
                             
                             
                             
@@ -775,7 +775,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                         </div>    
                         <div class="preventiva-rodape">
                         
-                            <small style="color: #666;">Aberto em: ${preventiva.data_criacao}</small>
+                            <small style="color: #666;">Aberto em: ${dataFormatada}</small>
                             ${preventiva.status != 'concluida' && preventiva.status != 'cancelada' 
                             ? `<button class="btn btn_opcoes btn-status" onclick="atribuirStatusPreventiva(${preventiva.id},'${preventiva.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
                             
@@ -797,8 +797,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         }
 
         
-    /* // Função para verificar se deve exibir o select de status
-        function deveExibirSelectStatus(status, tipoUsuario) {
+     // Função para verificar se deve exibir o select de status
+        function deveExibirSelectStatusChamado(status, tipoUsuario) {
             // Não exibe se status for cancelado ou concluído
             if (status === 'cancelado' || status === 'concluido') {
                 return false;
@@ -823,6 +823,33 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
             
             return false;
+        }
+
+        function deveExibirSelectStatusPreventiva(status, tipoUsuario) {
+          /*  // Não exibe se status for cancelado ou concluído
+            if (status === 'cancelado' || status === 'concluido') {
+                return false;
+            }
+            
+            // Se status for pendente
+            if (status === 'pendente') {
+                // Técnico não pode ver o select quando pendente
+                if (tipoUsuario === 'tecnico') {
+                    return false;
+                }
+                // Admin e supervisor_tecnico podem ver (apenas opção cancelar)
+                if (tipoUsuario === 'admin' || tipoUsuario === 'supervisor_tecnico' || tipoUsuario === 'subgerente' || tipoUsuario === 'gerente' ) {
+                    return true;
+                }
+            }
+            
+            // Para os status: em_andamento, aguardando_peca, pausado
+            // Apenas admin, supervisor_tecnico e tecnico podem ver
+            if (tipoUsuario === 'admin' || tipoUsuario === 'supervisor_tecnico' || tipoUsuario === 'tecnico') {
+                return true;
+            }
+            
+            return false;*/
         }   
 
         // Função para obter as opções do select baseado no status atual
@@ -836,11 +863,59 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             
             return opcoes[statusAtual] || [];
         }   
+        function getOpcoesStatusPreventiva(statusAtual) {
+            const opcoes = {
+                'programada': ['cancelada', 'concluida'],
+                'em_andamento': ['cancelada','concluida','programada']
+            };
+            
+            return opcoes[statusAtual] || [];
+        }   
 
         // Função para gerar o HTML do select
-        function gerarSelectStatus(chamadoId, statusAtual, tipoUsuario) {
+        function gerarSelectStatusPreventiva(statusAtual, tipoUsuario) {
             
-            if (!deveExibirSelectStatus(statusAtual, tipoUsuario)) {
+            if (!deveExibirSelectStatusPreventiva(statusAtual, tipoUsuario)) {
+                return;
+            }
+            
+            const container = document.getElementById('chamado-select_status');
+            const opcoes = getOpcoesStatusPreventiva(statusAtual);
+            
+            if (opcoes.length === 0) {
+                return;
+            }
+            
+            const statusTextOptions = {
+                'em_andamento': 'Em Andamento',
+                'concluida': 'Concluída',
+                'programada': 'Programada',
+                'cancelada':'Cancelada'
+            };
+            
+
+            //conectar ao div com id chamado-select_status e adicionar filho com o select
+
+            let selectHTML = `
+                    <select class="form-control" id="select-status-preventiva" >
+                        <option value="">Alterar status...</option>
+            `;
+            
+            opcoes.forEach(status => {
+                selectHTML += `<option value="${status}">${statusTextOptions[status]}</option>`;
+            });
+            
+            selectHTML += `
+                    </select>
+                    
+            `;
+            //nao retornar adicionar como filho no chamado-select_status
+            container.innerHTML = selectHTML;
+        }   
+        
+        function gerarSelectStatusChamado(statusAtual, tipoUsuario) {
+            
+            if (!deveExibirSelectStatusChamado(statusAtual, tipoUsuario)) {
                 return;
             }
             
@@ -864,7 +939,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             //conectar ao div com id chamado-select_status e adicionar filho com o select
 
             let selectHTML = `
-                    <select class="form-control" id="select-status" >
+                    <select class="form-control" id="select-status-chamado" >
                         <option value="">Alterar status...</option>
             `;
             
@@ -878,7 +953,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             `;
             //nao retornar adicionar como filho no chamado-select_status
             container.innerHTML = selectHTML;
-        }   */
+        }   
 
 
         // ========================================
@@ -1009,6 +1084,10 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             // Limpar formulários
             if (modalId === 'status-chamado') {
                 document.getElementById('form-chamado-status').reset();
+                
+            }
+            if (modalId === 'status-preventiva') {
+                document.getElementById('form-preventiva-status').reset();
                 
             }
             // Limpar formulários
@@ -3159,15 +3238,32 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 showError('Erro ao atribuir id chamado. Tente novamente.');
             } 
         }
-        async function atribuirStatus(chamadoId,statusChamado,tipoUser) {
+        async function atribuirStatusChamado(chamadoId,statusChamado,tipoUser) {
             try {
                 
                     // Preencher formulário de edição
                     document.getElementById('status-chamado-id').value = chamadoId;
                     document.getElementById('status-chamado-status').value = statusChamado;
-                    gerarSelectStatus(chamadoId,statusChamado,tipoUser);
+                    gerarSelectStatusChamado(statusChamado,tipoUser);
                     // Abrir modal de edição
                     openModal('status-chamado');
+                    
+                
+                
+            } catch (error) {
+                console.error('Erro ao atribuir status chamado: ', error);
+                showError('Erro ao atribuir status chamado. Tente novamente.');
+            } 
+        }
+        async function atribuirStatusPreventiva(preventivaId,statusPreventiva,tipoUser) {
+            try {
+                
+                    // Preencher formulário de edição
+                    document.getElementById('status-preventiva-id').value = preventivaId;
+                    document.getElementById('status-preventiva-status').value = statusPreventiva;
+                    gerarSelectStatusPreventiva(statusPreventiva,tipoUser);
+                    // Abrir modal de edição
+                    openModal('status-preventiva');
                     
                 
                 
@@ -3504,12 +3600,23 @@ async function deleteMaquina(maquinaId, patrimonio) {
                         doc.setFont(undefined, 'bold');
                         doc.text('Data Criação:', coluna1X, y);
                         doc.setFont(undefined, 'normal');
-                        doc.text(dados.data_criacao || '-', coluna1X + labelOffsetM, y);
+                        const dataFormatadac = new Date(dados.data_criacao).toLocaleString('pt-BR');
+                        doc.text(dataFormatadac || '-', coluna1X + labelOffsetM, y);
 
                         doc.setFont(undefined, 'bold');
                         doc.text('Técnico Responsável:', coluna2X, y);
                         doc.setFont(undefined, 'normal');
                         doc.text(dados.tecnico_responsavel || 'Não atribuído', coluna2X + labelOffsetG, y);
+                        y += 8;
+
+                        // Quinta linha: Data programada | Técnico Responsável
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Data Program:', coluna1X, y);
+                        doc.setFont(undefined, 'normal');
+                        const dataPartes = dados.data_programada.split('-');
+                        const dataFormatadap = `${dataPartes[2]}/${dataPartes[1]}/${dataPartes[0]} `;
+                        
+                        doc.text(dataFormatadap || '-', coluna1X + labelOffsetM, y);
                         y += 15;
                                                 
                         // Se houver Observacoes
@@ -3921,7 +4028,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
 // Função para salvar o novo status
         async function handleChamadoStatus(event) {
             event.preventDefault();
-            const selectElement = document.getElementById(`select-status`);
+            const selectElement = document.getElementById(`select-status-chamado`);
             const novoStatus = selectElement.value;
             const chamadoId = document.getElementById(`status-chamado-id`).value;
             
