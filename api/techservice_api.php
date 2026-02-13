@@ -710,8 +710,8 @@ class AnexoController extends BaseController {
         
         try {
         // ✅ PROCESSAR FOTOS
-            if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
-                $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos']);
+            if (isset($_FILES['fotos_chamado']) && !empty($_FILES['fotos_chamado']['name'][0])) {
+                $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos_chamado']);
                 
                 if (!$resultadoFotos['success']) {
                     $this->db->rollBack();
@@ -1330,8 +1330,8 @@ class ChamadoController extends BaseController {
             $chamadoId = $this->db->lastInsertId();
             
             // ✅ PROCESSAR FOTOS
-            if (isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
-                $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos']);
+            if (isset($_FILES['fotos_chamado']) && !empty($_FILES['fotos_chamado']['name'][0])) {
+                $resultadoFotos = $this->moverImagens($chamadoId, $_FILES['fotos_chamado']);
                 
                 if (!$resultadoFotos['success']) {
                     $this->db->rollBack();
@@ -1455,9 +1455,9 @@ class ChamadoController extends BaseController {
             }
            
             // ✅ PROCESSAR FOTOS
-            if (isset($_FILES['conclusao-fotos']) && !empty($_FILES['conclusao-fotos']['name'][0])) {
+            if (isset($_FILES['conclusao-fotos_chamado']) && !empty($_FILES['conclusao-fotos_chamado']['name'][0])) {
                 // $resultadoFotos = $this->moverImagens($chamadoAtual, $_FILES['conclusao-fotos']);
-                $resultadoFotos = $this->moverImagens($chamadoAtual['id'], $_FILES['conclusao-fotos']);
+                $resultadoFotos = $this->moverImagens($chamadoAtual['id'], $_FILES['conclusao-fotos_chamado']);
                                                         
                 if (!$resultadoFotos['success']) {
                     $this->db->rollBack();

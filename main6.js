@@ -876,10 +876,11 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         function gerarSelectStatusPreventiva(statusAtual, tipoUsuario) {
             
             if (!deveExibirSelectStatusPreventiva(statusAtual, tipoUsuario)) {
+                alert('não autorizado!');
                 return;
             }
             
-            const container = document.getElementById('chamado-select_status');
+            const container = document.getElementById('preventiva-select_status');
             const opcoes = getOpcoesStatusPreventiva(statusAtual);
             
             if (opcoes.length === 0) {
@@ -916,6 +917,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         function gerarSelectStatusChamado(statusAtual, tipoUsuario) {
             
             if (!deveExibirSelectStatusChamado(statusAtual, tipoUsuario)) {
+                
                 return;
             }
             
