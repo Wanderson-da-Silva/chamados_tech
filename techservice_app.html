@@ -1863,7 +1863,7 @@
             </div>
 
             <div class="grid-2">
-                <div class="form-group">
+                <!-- <div class="form-group">
                     
                     <label for="preventiva-tipo">Tipo *</label>
                     <select class="form-control" id="preventiva-tipo" required>
@@ -1871,9 +1871,9 @@
                         <option value="limpeza">Limpeza</option>
                         <option value="calibragem">Calibragem</option>
                         <option value="troca_pecas">Troca de Peças</option>
-                        <!-- Opções carregadas via API -->
+                         Opções carregadas via API 
                     </select>
-                </div>
+                </div> -->
                 <div class="form-group">
                     <label for="preventiva-data_programada">Data Programada </label>
                     <input type="date" class="form-control" id="preventiva-data_programada" >
@@ -1995,6 +1995,64 @@
         </form>
     </div>
 </div>
+<!-- Modal Concluir preventiva -->
+    <div id="concluir-preventiva" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Concluir Preventiva</h2>
+                <button class="close" onclick="closeModal('concluir-preventiva')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-concluir-preventiva" onsubmit="handleConcluirPreventiva(event)">
+
+                <!-- ID oculto da loja -->
+                <input type="hidden" id="id-conclusao-preventiva">
+                <div class="form-group">
+                    <label for="conclusao-filial-preventiva">Filial</label>
+                    <input type="text" class="form-control" id="conclusao-filial-preventiva" readonly required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="conclusao-patrimonio-preventiva">Patrimônio</label>
+                    <input type="text" class="form-control" id="conclusao-patrimonio-preventiva" placeholder="num patrimonio" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="conclusao-serie-preventiva">Número de Série</label>
+                    <input type="text" class="form-control" id="conclusao-serie-preventiva" placeholder="Ex: SER123456" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="conclusao-problema-preventiva">Observações</label>
+                    <textarea class="form-control" id="conclusao-problema-preventiva" rows="4" placeholder="Detalhadamente o problema encontrado..." required readonly></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="conclusao-solucao-preventiva">Solução do Problema</label>
+                    <textarea class="form-control" id="conclusao-solucao-preventiva" rows="4" placeholder="Solução do problema encontrado..." required></textarea>
+                </div>
+                                
+                <div class="form-group">
+                    <label for="conclusao-fotos-preventiva" >Anexar Fotos</label>
+                    <div class="file-upload" onclick="document.getElementById('conclusao-fotos-preventiva').click()">
+                        <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                        <p>Clique para adicionar fotos</p>
+                        <input type="file" id="conclusao-fotos-preventiva" multiple accept="image/*" style="display: none;">
+                    </div>
+                </div>
+                <div id="listaFotos_conclusao-preventiva"></div>
+                <div id="resultado_conclusao-preventiva"></div>
+
+                <div class="preventiva-acoes">
+                    <button type="button" class="btn btn-cancelar"  onclick="closeModal('concluir-preventiva')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Abrir Preventiva
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
 
 
     <!-- Modal Editar Máquina -->
@@ -2526,6 +2584,9 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             console.error(`Erro ao buscar dados de '${tableName}'`);
             return false;
         }
+        // if (selectId == "preventiva-maquina_id") {
+        //      console.log('Response Anexos (JSON):', JSON.stringify(result, null, 2));
+        // }
 
         if (result.data.length === 0) {
            // console.log(`Nenhum dado encontrado em '${tableName}'`);
@@ -3076,6 +3137,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                                 <span class="dias-restantes ${isUrgente ? 'urgente' : ''} ${isAlerta ? 'alerta' : ''}">Prazo ${maquina.dias_restantes} dias</span>
                             </div>
                                 <span class="data-programada ">Data Prog: ${maquina.data_programada? maquina.data_programada.split('-').reverse().join('/') : 'sem marcação'}</span>
+                                <span class="data-programada ">Data Prox: ${maquina.data_proxima_preventiva? maquina.data_proxima_preventiva.split('-').reverse().join('/') : 'sem marcação'}</span>
                         
                             </div>
                     `;
@@ -3737,20 +3799,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     });
 
                 }
-            
-                // Exibe TUDO que está no FormData
-                // console.log('=== Conteúdo do FormData ===');
-                // for (let [key, value] of formData.entries()) {
-                //     if (value instanceof File) {
-                //         console.log(key + ':', {
-                //             nome: value.name,
-                //             tipo: value.type,
-                //             tamanho: (value.size / 1024).toFixed(2) + ' KB'
-                //         });
-                //     } else {
-                //         console.log(key + ':', value);
-                //     }
-                // }
+                
 
 
 
@@ -4280,6 +4329,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     'Content-Type': 'application/json'
                 }
             });
+           
             return await response.json();
             
         }
@@ -5240,7 +5290,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     observacoes: document.getElementById('preventiva-observacoes').value || null,
                     pecas_substituidas: document.getElementById('preventiva-pecas_substituidas').value || null,
                     tempo_execucao: document.getElementById('preventiva-tempo_execucao').value || null,
-                    tipo: document.getElementById('preventiva-tipo').value || null
+                    // tipo: document.getElementById('preventiva-tipo').value || null
                 };
 
                 // Validação de data
@@ -5310,19 +5360,20 @@ async function deleteMaquina(maquinaId, patrimonio) {
         // ========================================
         async function updatePreventiva(preventivaId, formData) {
             try {
+                
+                formData.append('_method', 'PUT');
                 const token = sessionStorage.getItem('token');
 
                 const response = await fetch(`http://localhost/chamados_tech/api/techservice_api.php/preventivas/${preventivaId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
+                    method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
                 });
                 
                 return await response.json();
-                
+
             } catch (error) {
                 console.error('Erro na requisição:', error);
                 throw error;
@@ -6574,12 +6625,14 @@ async function deleteMaquina(maquinaId, patrimonio) {
             if (!confirm(`Confirmar alteração do status para "${statusTextConfirm[novoStatus]}"?`)) {
                 return;
             }
+            
+
             if (novoStatus === 'concluida') {
 
                 try{
                     // Buscar dados do usuário na API
                     const preventiva = await getPreventivaById(preventivaId);
-                
+                    console.log('Response Anexos (JSON):', JSON.stringify(preventiva, null, 2));
                     if (preventiva.success) {
                         const dados = preventiva.data;
                         
@@ -6588,7 +6641,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                         document.getElementById('conclusao-filial-preventiva').value = dados.loja_nome;
                         document.getElementById('conclusao-patrimonio-preventiva').value = dados.patrimonio;
                         document.getElementById('conclusao-serie-preventiva').value = dados.serie;
-                        document.getElementById('conclusao-problema-preventiva').value = dados.descricao || '';
+                        document.getElementById('conclusao-problema-preventiva').value = dados.observacoes || '';
                     
                         closeModal('acompanhar-preventivas');
                         closeModal('status-preventiva');
@@ -6614,33 +6667,50 @@ async function deleteMaquina(maquinaId, patrimonio) {
 
                 const formData = new FormData();
                 
-                formData.append('id', chamadoId );
+                formData.append('id', preventivaId );
                 formData.append('status', novoStatus );
     
 
+
+
+
+                
+                // Exibe TUDO que está no FormData
+                console.log('=== Conteúdo do FormData ===');
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        console.log(key + ':', {
+                            nome: value.name,
+                            tipo: value.type,
+                            tamanho: (value.size / 1024).toFixed(2) + ' KB'
+                        });
+                    } else {
+                        console.log(key + ':', value);
+                    }
+                }
                 
                 // Chamar API para atualizar máquina
-                const result = await updateChamado(chamadoId, formData);
+                const result = await updatePreventiva(preventivaId, formData);
                 
                 
 
                 if (result.success) {
-                    showSuccess(result.message || 'Chamado atualizada com sucesso!');
+                    showSuccess(result.message || 'preventiva atualizada com sucesso!');
                     closeModal('chamado-tecnico');
-                    closeModal('status-chamado');
-                    loadChamados(); // Recarregar lista
-                    loadDashboardData();//dashboard
+                    closeModal('status-preventiva');
+                    loadPreventivas(); // Recarregar lista
+                    loadPreventivesData();//dashboard
                 } else {
                     
                     // Converter para objeto
                     //console.log(result.error + '. chaves '+ result.chaves + '. quantidade: ' + result.quantidade || 'Erro ao atualizar chamado 1');
-                    showError(result.error + '. chaves '+ result.chaves + '. quantidade: ' + result.quantidade || 'Erro ao atualizar chamado 1');
+                    showError(result.error || 'Erro ao atualizar chamado 1');
                 }
 
                 
             } catch (error) {
-                console.error('Erro ao atualizar chamado:', error);
-                showError('Erro ao atualizar chamado. Tente novamente.');
+                console.error('Erro ao atualizar preventiva:', error);
+                showError('Erro ao atualizar preventiva. Tente novamente.');
             }
          }
 

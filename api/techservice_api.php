@@ -1575,7 +1575,17 @@ class PreventivaController extends BaseController {
                 }
                 break;
             case 'POST':
-                $this->create();
+                // ✅ Verificar se é um POST verdadeiro ou um PUT simulado
+                if (isset($_POST['_method']) && $_POST['_method'] === 'PUT') {
+                    // É um PUT simulado
+                    if (!isset($params[0])) {
+                        $this->sendResponse(400, ['error' => 'ID do chamado é obrigatório']);
+                    }
+                    $this->update($params[0]);
+                } else {
+                    // É um POST verdadeiro
+                    $this->create();
+                }
                 break;
             case 'PUT':
                 if (!isset($params[0])) {
@@ -1619,13 +1629,17 @@ class PreventivaController extends BaseController {
         }
 
     }
-    private function update($params) {
+    private function update($id) {
 
                 // 1️⃣ ID vem da URL (via Router)
-            $id = $params[0];
+            $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
             
             // 2️⃣ Dados vêm do body (mesma forma que o create)
-            $data = $this->getJsonInput();  // ← Igual ao create!
+            if (strpos($contentType, 'multipart/form-data') !== false) {
+                $data = $_POST;
+            } else {
+                $data = $this->getJsonInput();
+            }
             
             // 3️⃣ Valida
             if (empty($data)) {
@@ -1675,20 +1689,34 @@ class PreventivaController extends BaseController {
     private function getProximas() {
         $stmt = $this->db->query("
             SELECT l.nome as loja_nome,
-                   m.patrimonio, m.numero_serie, m.modelo,
-                   m.data_proxima_preventiva,
-                   DATEDIFF(m.data_proxima_preventiva, CURDATE()) as dias_restantes,
-                   CASE 
-                       WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 0 THEN 'Vencida'
-                       WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 7 THEN 'Urgente'
-                       WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 15 THEN 'Próxima'
-                       ELSE 'Normal'
-                   END as status_preventiva,
-                   p.id as preventiva_id,
-                    p.data_programada
+                m.patrimonio, m.numero_serie, m.modelo,
+                m.data_proxima_preventiva,
+                DATEDIFF(m.data_proxima_preventiva, CURDATE()) as dias_restantes,
+                CASE 
+                    WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 0 THEN 'Vencida'
+                    WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 7 THEN 'Urgente'
+                    WHEN DATEDIFF(m.data_proxima_preventiva, CURDATE()) <= 15 THEN 'Próxima'
+                    ELSE 'Normal'
+                END as status_preventiva,
+                p.id as preventiva_id,
+                p.data_programada,
+                p.status
             FROM maquina m
             INNER JOIN loja l ON m.loja_id = l.id
             LEFT JOIN preventiva p ON p.maquina_id = m.id
+                AND p.id = (
+                    SELECT p2.id
+                    FROM preventiva p2
+                    WHERE p2.maquina_id = m.id
+                    ORDER BY 
+                        CASE 
+                            WHEN p2.status IN ('programada', 'em_andamento') THEN 1
+                            WHEN p2.status = 'concluida' THEN 2
+                            WHEN p2.status = 'cancelada' THEN 3
+                        END ASC,
+                        p2.data_programada DESC
+                    LIMIT 1
+                )
             WHERE m.status_operacional = 'ativo' 
                 AND m.data_proxima_preventiva IS NOT NULL
                 AND l.ativa = 1
@@ -1725,7 +1753,7 @@ class PreventivaController extends BaseController {
                 INNER JOIN maquina m ON p.maquina_id = m.id
                 INNER JOIN loja l ON m.loja_id = l.id
                 LEFT JOIN usuario u ON p.usuario_tecnico_id = u.id
-                ORDER BY p.data_programada DESC
+                ORDER BY p.status ASC
             ");
 
             $stmt->execute();

@@ -182,7 +182,7 @@ CREATE TABLE preventiva (
     id INT PRIMARY KEY AUTO_INCREMENT,
     maquina_id INT NOT NULL,
     usuario_tecnico_id INT NULL,
-    tipo VARCHAR(50) NOT NULL, -- Ex: Limpeza, Calibragem, Troca de Peças
+    tipo VARCHAR(50) NULL, -- Ex: Limpeza, Calibragem, Troca de Peças
     data_programada DATE NOT NULL,
     data_realizada DATE NULL,
     status ENUM('programada', 'em_andamento', 'concluida', 'cancelada') DEFAULT 'programada',
