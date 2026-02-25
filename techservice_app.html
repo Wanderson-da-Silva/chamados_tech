@@ -2022,14 +2022,34 @@
                     <input type="text" class="form-control" id="conclusao-serie-preventiva" placeholder="Ex: SER123456" readonly required>
                 </div>
                 <div class="form-group">
-                    <label for="conclusao-problema-preventiva">Observações</label>
-                    <textarea class="form-control" id="conclusao-problema-preventiva" rows="4" placeholder="Detalhadamente o problema encontrado..." required readonly></textarea>
+                            <label for="conclusao-data-realizada-preventiva">Data de Realização</label>
+                            <input type="date" class="form-control" id="conclusao-data-realizada-preventiva" required>
+                        </div>
+                <div class="form-group">
+                    <label for="conclusao-observacao-preventiva">Observações</label>
+                    <textarea class="form-control" id="conclusao-observacao-preventiva" rows="4" placeholder="Detalhadamente o problema encontrado..." required ></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="conclusao-solucao-preventiva">Solução do Problema</label>
-                    <textarea class="form-control" id="conclusao-solucao-preventiva" rows="4" placeholder="Solução do problema encontrado..." required></textarea>
+                    <label for="conclusao-pecas-preventiva">Peças Substituidas</label>
+                    <textarea class="form-control" id="conclusao-pecas-preventiva" rows="4" placeholder="Detalhadamente o problema encontrado..." required ></textarea>
                 </div>
-                                
+                <div class="form-group">
+                    <label >Checklist</label>
+                    <fieldset>
+
+                        <label>
+                            <input type="radio" name="conclusao-checklist-preventiva" value="positivo" required>
+                            Positivo
+                        </label>
+
+                        <label>
+                            <input type="radio" name="conclusao-checklist-preventiva" value="negativo" required>
+                            Negativo - Gerou Chamado
+                        </label>
+
+                    </fieldset>
+                </div>
+                                                
                 <div class="form-group">
                     <label for="conclusao-fotos-preventiva" >Anexar Fotos</label>
                     <div class="file-upload" onclick="document.getElementById('conclusao-fotos-preventiva').click()">
@@ -3651,6 +3671,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         }
         let arquivosSelecionados_chamado = [];
         let arquivosSelecionados_conclusao_chamado = [];
+        let arquivosSelecionados_conclusao_preventiva = [];
 
         // Função para lidar com novo chamado
         async function handleNovoChamado(event) {
@@ -3831,6 +3852,94 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 submitBtn.innerHTML = originalText;
             }
         }
+        async function handleConcluirPreventiva(event) {
+            event.preventDefault();
+            
+            const preventivaId = document.getElementById('id-conclusao-preventiva').value;
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+
+            const resultado = document.getElementById('resultado_conclusao-preventiva');
+            const inputFoto = document.getElementById('conclusao-fotos-preventiva');
+            resultado.textContent = `Enviando ${arquivosSelecionados_conclusao_preventiva.length} foto(s)...`;
+            resultado.style.color = 'blue';
+
+
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+                
+
+                // Coletar dados do formulário
+                const formData = new FormData();
+                
+                formData.append('id', preventivaId );
+                formData.append('status', 'concluido');
+                formData.append('observacoes', document.getElementById('conclusao-observacao-preventiva').value);
+                formData.append('pecas_substituidas', document.getElementById('conclusao-pecas-preventiva').value);
+                formData.append('data_realizada', document.getElementById('conclusao-data-realizada-preventiva').value);
+                formData.append('checklist', document.querySelector('input[name="conclusao-checklist-preventiva"]:checked').value);
+
+                
+                //fotos
+                if (arquivosSelecionados_conclusao_preventiva.length > 0) {
+                
+                    // Verifica se todos são imagens
+                    for (let i = 0; i < arquivosSelecionados_conclusao_preventiva.length; i++) {
+                        if (!arquivosSelecionados_conclusao_preventiva[i].type.startsWith('image/')) {
+                            alert(`O arquivo "${arquivosSelecionados_conclusao_preventiva[i].name}" não é uma imagem válida.`);
+                            return;
+                        }
+                        
+                        // Verifica o tamanho (máx 5MB)
+                        if (arquivosSelecionados_conclusao_preventiva[i].size > 5 * 1024 * 1024) {
+                            alert(`A foto "${arquivosSelecionados_conclusao_preventiva[i].name}" excede o tamanho máximo de 5MB.`);
+                            return;
+                        }
+                    }                 
+                    
+                    // Adiciona todos os arquivos
+                    arquivosSelecionados_conclusao_preventiva.forEach((arquivo) => {
+                        formData.append('conclusao-fotos_preventiva[]', arquivo);
+                    });
+
+                }
+                
+
+
+
+                const result = await updatePreventiva(preventivaId, formData);
+                // console.log('Response envios:', formData.conclusao-fotos);
+                //console.log('Response Conclusao:', result);
+               // console.log('Response Conclusao 1:', result.message);
+                // console.log('Response conclusao (JSON):', JSON.stringify(result, null, 2));
+
+
+                if (result.success) {
+                    //showSuccess(`${result.message} Número: #${result.data.id}`);
+                    inputFoto.value = ''; // Limpa o input
+                    limparTodasFotos_conclusao_preventiva();
+                    closeModal('concluir-preventiva');
+                    loadPreventiva();
+                    // Recarregar dashboard
+                    loadPreventivesData();
+                } else {
+                    showError(result.error || 'Erro ao concluir preventiva, com sucesso consulta.');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao concluir preventiva, erro consulta:', error);
+                showError('Erro ao criar preventiva. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
 
         // Função para filtrar chamados
         // function filterChamados() {
@@ -3982,6 +4091,127 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
             
         }
+        function atualizarListaFotos_conclusao_chamado() {
+            const container = document.getElementById('listaFotos_conclusao-chamado');
+            
+            if (!container) {
+                console.error('Elemento com id "listaFotos_conclusao-chamado" não encontrado');
+                return;
+            }
+            
+            container.innerHTML = ''; // Limpa a lista atual
+            
+            if (arquivosSelecionados_conclusao_chamado.length === 0) {
+                container.innerHTML = '<p>Nenhuma foto selecionada</p>';
+                return;
+            }
+            
+            // Mostra o total de fotos
+            const titulo = document.createElement('p');
+            titulo.innerHTML = `<strong>${arquivosSelecionados_conclusao_chamado.length} foto(s) selecionada(s):</strong>`;
+            container.appendChild(titulo);
+            
+            // Lista cada foto com opção de remover
+            arquivosSelecionados_conclusao_chamado.forEach((arquivo, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; align-items: center; margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 4px;';
+                
+                itemDiv.innerHTML = `
+                    <i class="fas fa-image" style="color: #4CAF50; margin-right: 10px;"></i>
+                    <span style="flex: 1;">${arquivo.name} (${(arquivo.size / 1024).toFixed(2)} KB)</span>
+                    <button type="button" onclick="removerFoto_conclusao_chamado(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                `;
+                
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Função para remover uma foto específica
+        function removerFoto_conclusao_chamado(index) {
+            arquivosSelecionados_conclusao_chamado.splice(index, 1);
+            atualizarListaFotos_conclusao_chamado();
+        }
+
+        // Função para limpar todas as fotos
+        function limparTodasFotos_conclusao_chamado() {
+            arquivosSelecionados_conclusao_chamado = [];
+            atualizarListaFotos_conclusao_chamado();
+        }
+        // Função para resetar uploads de arquivo
+        function resetFileUploads_conclusao_chamado() {
+            const fotoUpload = document.querySelector('[onclick*="conclusao-fotos-chamado"]');
+                        
+            if (fotoUpload) {
+                fotoUpload.innerHTML = `
+                    <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                    <p>Clique para adicionar fotos</p>
+                `;
+            }
+            
+        }
+
+        function atualizarListaFotos_conclusao_preventiva() {
+            const container = document.getElementById('listaFotos_conclusao-preventiva');
+            
+            if (!container) {
+                console.error('Elemento com id "listaFotos_conclusao-preventiva" não encontrado');
+                return;
+            }
+            
+            container.innerHTML = ''; // Limpa a lista atual
+            
+            if (arquivosSelecionados_conclusao_preventiva.length === 0) {
+                container.innerHTML = '<p>Nenhuma foto selecionada</p>';
+                return;
+            }
+            
+            // Mostra o total de fotos
+            const titulo = document.createElement('p');
+            titulo.innerHTML = `<strong>${arquivosSelecionados_conclusao_preventiva.length} foto(s) selecionada(s):</strong>`;
+            container.appendChild(titulo);
+            
+            // Lista cada foto com opção de remover
+            arquivosSelecionados_conclusao_preventiva.forEach((arquivo, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; align-items: center; margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 4px;';
+                
+                itemDiv.innerHTML = `
+                    <i class="fas fa-image" style="color: #4CAF50; margin-right: 10px;"></i>
+                    <span style="flex: 1;">${arquivo.name} (${(arquivo.size / 1024).toFixed(2)} KB)</span>
+                    <button type="button" onclick="removerFoto_conclusao_preventiva(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                `;
+                
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Função para remover uma foto específica
+        function removerFoto_conclusao_preventiva(index) {
+            arquivosSelecionados_conclusao_preventiva.splice(index, 1);
+            atualizarListaFotos_conclusao_preventiva();
+        }
+
+        // Função para limpar todas as fotos
+        function limparTodasFotos_conclusao_preventiva() {
+            arquivosSelecionados_conclusao_preventiva = [];
+            atualizarListaFotos_conclusao_preventiva();
+        }
+        // Função para resetar uploads de arquivo
+        function resetFileUploads_conclusao_preventiva() {
+            const fotoUpload = document.querySelector('[onclick*="conclusao-fotos-preventiva"]');
+                        
+            if (fotoUpload) {
+                fotoUpload.innerHTML = `
+                    <i class="fas fa-camera" style="font-size: 2rem; color: #ccc; margin-bottom: 10px;"></i>
+                    <p>Clique para adicionar fotos</p>
+                `;
+            }
+            
+        }
 
 
 
@@ -4068,6 +4298,18 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     arquivosSelecionados_conclusao_chamado = arquivosSelecionados_conclusao_chamado.concat(novosArquivos);   
                     // Atualiza a exibição
                     atualizarListaFotos_conclusao_chamado(); 
+                    // Limpa o input para permitir nova seleção do mesmo arquivo
+                    e.target.value = '';
+                }
+            });
+
+            document.getElementById('conclusao-fotos-preventiva').addEventListener('change', function(e) {
+                const novosArquivos = Array.from(e.target.files);
+                if (novosArquivos.length > 0) {
+                    // Adiciona os novos arquivos ao array existente
+                    arquivosSelecionados_conclusao_preventiva = arquivosSelecionados_conclusao_preventiva.concat(novosArquivos);   
+                    // Atualiza a exibição
+                    atualizarListaFotos_conclusao_preventiva(); 
                     // Limpa o input para permitir nova seleção do mesmo arquivo
                     e.target.value = '';
                 }
@@ -6641,7 +6883,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                         document.getElementById('conclusao-filial-preventiva').value = dados.loja_nome;
                         document.getElementById('conclusao-patrimonio-preventiva').value = dados.patrimonio;
                         document.getElementById('conclusao-serie-preventiva').value = dados.serie;
-                        document.getElementById('conclusao-problema-preventiva').value = dados.observacoes || '';
+                        document.getElementById('conclusao-observacao-preventiva').value = dados.observacoes || '';
                     
                         closeModal('acompanhar-preventivas');
                         closeModal('status-preventiva');
