@@ -1921,28 +1921,13 @@
             <div class="grid-2">
                 <div class="form-group">
                     <label for="preventiva-maquina_id-editar">Máquina *</label>
-                    <select class="form-control" id="preventiva-maquina_id-editar" required>
-                        <option value="">Selecione uma máquina</option>
-                        
-                    </select>
+                    <input type="text" class="form-control" id="preventiva-maquina_id-editar" required readonly>
+                    
                 </div>
                 <div class="form-group">
                     <label for="preventiva-usuario_tecnico_id-editar">Técnico Responsável *</label>
-                    <select class="form-control" id="preventiva-usuario_tecnico_id-editar" required>
-                        <option value="">Selecione o técnico</option>
-                        
+                    <select class="form-control" id="preventiva-usuario_tecnico_id-editar" required>                        
                     </select>
-                </div>
-            </div>
-
-            <div class="grid-2">
-                <div class="form-group">
-                    <label for="preventiva-tipo-editar">Tipo *</label>
-                    <input type="text" class="form-control" id="preventiva-tipo-editar" placeholder="Ex: Preventiva, Corretiva" required>
-                </div>
-                <div class="form-group">
-                    <label for="preventiva-data_programada-editar">Data Programada *</label>
-                    <input type="date" class="form-control" id="preventiva-data_programada-editar" required>
                 </div>
             </div>
 
@@ -1950,39 +1935,17 @@
                 
                 <div class="form-group">
                     <label for="preventiva-status-editar">Status *</label>
-                    <select class="form-control" id="preventiva-status-editar" required>
-                        <option value="">Selecione o status</option>
-                        <option value="em_andamento">Em Andamento</option>
-                        <option value="programada">Programada</option>
-                        <option value="concluida">Concluida</option>
-                        <option value="cancelada">Cancelada</option>
-                    </select>
+                    <input type="text" class="form-control" id="preventiva-status-editar" required readonly>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="preventiva-checklist-editar">Checklist</label>
-                <textarea class="form-control" id="preventiva-checklist-editar" rows="4" placeholder="Itens verificados no checklist"></textarea>
+                <div class="form-group">
+                    <label for="preventiva-data_programada-editar">Data Programada *</label>
+                    <input type="date" class="form-control" id="preventiva-data_programada-editar" required>
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="preventiva-observacoes-editar">Observações</label>
                 <textarea class="form-control" id="preventiva-observacoes-editar" rows="3" placeholder="Observações adicionais"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="preventiva-pecas_substituidas-editar">Peças Substituídas</label>
-                <textarea class="form-control" id="preventiva-pecas_substituidas-editar" rows="2" placeholder="Listar peças substituídas"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="preventiva-custos-editar">Custos (R$)</label>
-                <input type="number" class="form-control" id="preventiva-custos-editar" step="0.01" placeholder="0,00">
-            </div>
-
-            <div class="form-group">
-                <label for="preventiva-tempo_execucao-editar">Tempo de Execução (horas)</label>
-                <input type="text" class="form-control" id="preventiva-tempo_execucao-editar" placeholder="Ex: em minutos" step="1" min="0">
             </div>
 
             <div style="margin-top: 25px;" class="preventiva-acoes">
@@ -2621,7 +2584,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             return false;
         }
         
-        if(selectId === 'preventiva-usuario_tecnico_id' || selectId === 'chamado-usuario_tecnico_id'){
+        if(selectId === 'preventiva-usuario_tecnico_id' || selectId === 'chamado-usuario_tecnico_id' || selectId === 'preventiva-usuario_tecnico_id-editar' ){
             // Filtrar apenas usuários com perfil "tecnico"
             result.data = result.data.filter(usuario => 
                 usuario.perfil === 'tecnico' || usuario.perfil === 'técnico'
@@ -3305,7 +3268,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                         
                             <small style="color: #666;">Aberto em: ${dataFormatada}</small>
                             ${preventiva.status != 'concluida' && preventiva.status != 'cancelada' 
-                            ? `<button class="btn btn_opcoes btn-status" onclick="atribuirStatusPreventiva(${preventiva.id},'${preventiva.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
+                            ? `<button class="btn btn_opcoes btn-editar" onclick="editarPreventiva('${preventiva.id}')">Editar</button><button class="btn btn_opcoes btn-status" onclick="atribuirStatusPreventiva(${preventiva.id},'${preventiva.status}','${tipoUsuarioLogado}')">Definir status</button>` : ''}
                             
                             
                             
@@ -3319,6 +3282,15 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                         </button>
                     </div>
                 `;
+
+                if(preventiva.status != 'concluida' && preventiva.status != 'cancelada'){
+
+
+
+
+                }
+
+
                 
                 container.appendChild(preventivaItem);
             });
@@ -5661,32 +5633,20 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 const data = preventiva.data;
                 
                 // Preencher campos do formulário
-                document.getElementById('preventiva-id').value = data.id;
-                document.getElementById('preventiva-maquina_id').value = data.maquina_id;
-                document.getElementById('preventiva-usuario_tecnico_id').value = data.usuario_tecnico_id;
-                document.getElementById('preventiva-tipo').value = data.tipo;
-                document.getElementById('preventiva-data_programada').value = data.data_programada || '';
-                document.getElementById('preventiva-data_realizada').value = data.data_realizada || '';
-                document.getElementById('preventiva-status').value = data.status;
-                document.getElementById('preventiva-checklist').value = data.checklist || '';
-                document.getElementById('preventiva-observacoes').value = data.observacoes || '';
-                document.getElementById('preventiva-pecas_substituidas').value = data.pecas_substituidas || '';
-                document.getElementById('preventiva-custos').value = data.custos || '';
-                document.getElementById('preventiva-tempo_execucao').value = data.tempo_execucao || '';
+                document.getElementById('preventiva-id-editar').value = data.id;
+                document.getElementById('preventiva-maquina_id-editar').value = data.maquina_id;
+                document.getElementById('preventiva-usuario_tecnico_id-editar').value = data.usuario_tecnico_id;
+                document.getElementById('preventiva-data_programada-editar').value = data.data_programada || '';
+                document.getElementById('preventiva-status-editar').value = data.status;
+                document.getElementById('preventiva-observacoes-editar').value = data.observacoes || '';
                 
                 // Carregar opções dos selects
-                await populateSelectFromTable('preventiva-maquina_id', 'maquinasSemPreventivas');
-                await populateSelectFromTable('preventiva-usuario_tecnico_id', 'usuarios');
+                await populateSelectFromTable('preventiva-usuario_tecnico_id-editar', 'usuarios');
                 
                 // Reselecionar valores após carregar opções
-                document.getElementById('preventiva-maquina_id').value = data.maquina_id;
-                document.getElementById('preventiva-usuario_tecnico_id').value = data.usuario_tecnico_id;
+                document.getElementById('preventiva-usuario_tecnico_id-editar').value = data.usuario_tecnico_id;
                 
-                // Alterar título do modal
-                document.querySelector('#preventiva-maquina .modal-title').textContent = 'Editar Preventiva de Máquina';
-                
-                // Abrir modal
-                document.getElementById('preventiva-maquina').style.display = 'block';
+                openModal('preventiva-maquina-editar');
                 
             } catch (error) {
                 console.error('Erro ao abrir modal de edição:', error);
