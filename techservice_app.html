@@ -5530,7 +5530,51 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     showSuccess(result.message || 'Preventiva salva com sucesso!');
                     closeModal('preventiva-maquina');
                     loadPreventivesData();
-                    // loadPreventivas(); // Recarregar lista (criar essa função)
+                    loadPreventivas(); // Recarregar lista (criar essa função)
+                } else {
+                    showError(result.message || 'Erro ao salvar preventiva');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao salvar preventiva:', error);
+                showError('Erro ao salvar preventiva. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+        // Função para criar preventiva
+        async function handlePreventivaMaquinaEditar(event) {
+
+            event.preventDefault();
+            
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                
+                const idPreventiva = document.getElementById('preventiva-id-editar').value;
+                //definir status por data
+
+                const formData = new FormData();
+                
+                formData.append('usuario_tecnico_id', document.getElementById('preventiva-usuario_tecnico_id-editar').value);
+                formData.append('observacoes', document.getElementById('preventiva-observacoes-editar').value);              
+                formData.append('data_programada',document.getElementById('preventiva-data_programada-editar').value);
+
+                result = await updatePreventiva(idPreventiva,formData);
+                
+                
+                if (result.success) {
+                    showSuccess(result.message || 'Preventiva salva com sucesso!');
+                    closeModal('preventiva-maquina-editar');
+                    loadPreventivesData();
+                    loadPreventivas(); // Recarregar lista (criar essa função)
                 } else {
                     showError(result.message || 'Erro ao salvar preventiva');
                 }
@@ -5635,7 +5679,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 // Preencher campos do formulário
                 document.getElementById('preventiva-id-editar').value = data.id;
                 document.getElementById('preventiva-maquina_id-editar').value = data.maquina_id;
-                document.getElementById('preventiva-usuario_tecnico_id-editar').value = data.usuario_tecnico_id;
+                //document.getElementById('preventiva-usuario_tecnico_id-editar').value = data.usuario_tecnico_id;
                 document.getElementById('preventiva-data_programada-editar').value = data.data_programada || '';
                 document.getElementById('preventiva-status-editar').value = data.status;
                 document.getElementById('preventiva-observacoes-editar').value = data.observacoes || '';
@@ -7151,31 +7195,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 e.preventDefault();
             }
         });
-        document.getElementById('preventiva-tempo_execucao-editar').addEventListener('input', function(e) {
-            // Remove tudo que não é número
-            this.value = this.value.replace(/[^0-9]/g, '');
-            
-            // Remove zeros à esquerda
-            this.value = this.value.replace(/^0+/, '') || '0';
-        });
-
-        // Evita decimal ao colar
-        document.getElementById('preventiva-tempo_execucao-editar').addEventListener('paste', function(e) {
-            e.preventDefault();
-            const pasteData = e.clipboardData.getData('text');
-            const onlyNumbers = pasteData.replace(/[^0-9]/g, '');
-            this.value = onlyNumbers;
-        });
-        // Bloqueia teclas de ponto e vírgula
-        document.getElementById('preventiva-tempo_execucao-editar').addEventListener('keypress', function(e) {
-            if (!/[0-9]/.test(e.key)) {
-                e.preventDefault();
-            }
-        });
-
-
-
-
+        
 
         // Função de formatação reutilizável
 function formatarTelefone(valor) {

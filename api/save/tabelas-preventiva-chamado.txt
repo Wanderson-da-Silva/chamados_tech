@@ -380,11 +380,22 @@ CREATE TRIGGER trg_atualizar_proxima_preventiva
     FOR EACH ROW
 BEGIN
     IF NEW.status = 'concluida' AND OLD.status != 'concluida' THEN
+        -- Atualiza a máquina
         UPDATE maquina 
         SET 
             data_ultima_preventiva = NEW.data_realizada,
             data_proxima_preventiva = DATE_ADD(NEW.data_realizada, INTERVAL periodicidade_preventiva DAY)
         WHERE id = NEW.maquina_id;
+
+        -- Cria a próxima preventiva automaticamente
+        INSERT INTO preventiva (maquina_id, data_programada, status)
+        SELECT 
+            NEW.maquina_id,
+            DATE_ADD(NEW.data_realizada, INTERVAL periodicidade_preventiva DAY),
+            'programada'
+        FROM maquina
+        WHERE id = NEW.maquina_id;
+
     END IF;
 END$$
 DELIMITER ;
