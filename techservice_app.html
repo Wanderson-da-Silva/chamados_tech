@@ -1696,6 +1696,10 @@
                         <input type="date" class="form-control" id="maq-data-aquisicao">
                     </div>
                     <div class="form-group">
+                        <label for="maq-quantidade">Quantidade</label>
+                        <input type="number" class="form-control" id="maq-quantidade">
+                    </div>
+                    <div class="form-group">
                         <label for="maq-valor">Valor de Aquisição (R$)</label>
                         <input type="number" class="form-control" id="maq-valor" step="0.01" placeholder="0,00">
                     </div>
@@ -2099,6 +2103,10 @@
                         <div class="form-group">
                             <label for="edit-maq-data-aquisicao">Data de Aquisição</label>
                             <input type="date" class="form-control" id="edit-maq-data-aquisicao">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-maq-quantidade">Quantidade</label>
+                            <input type="number" class="form-control" id="edit-maq-quantidade" required>
                         </div>
                         <div class="form-group">
                             <label for="edit-maq-valor">Valor de Aquisição (R$)</label>
@@ -4769,6 +4777,31 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     observacoes: document.getElementById('maq-observacoes').value
                 };
                 
+
+                const qtdInput = document.getElementById('maq-quantidade');
+                const qtd = qtdInput.value.trim();
+
+                if (qtd === '') {
+                    // Se estiver em branco, define como 1
+                    formData.quantidade = 1;
+                    
+                } else {
+                    const qtdNum = Number(qtd);
+
+                    if (!Number.isFinite(qtdNum) || qtdNum <= 0 || !Number.isInteger(qtdNum)) {
+                        // Número inválido: limpa o campo, foca e exibe erro
+                        qtdInput.value = '';
+                        qtdInput.focus();
+                        showError('maq-quantidade', 'Informe uma quantidade válida (número inteiro positivo).');
+                        return; // interrompe o fluxo
+                    }
+
+                    // Número válido: salva no formData
+                    formData.quantidade = qtdNum;
+                
+                }
+
+
                 // Chamar API para criar máquina
                 const result = await createMaquina(formData);
                 
@@ -5326,6 +5359,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     marca: document.getElementById('edit-maq-marca').value,
                     modelo: document.getElementById('edit-maq-modelo').value,
                     data_aquisicao: document.getElementById('edit-maq-data-aquisicao').value,
+                    quantidade: document.getElementById('edit-maq-quantidade').value,
                     valor_aquisicao: document.getElementById('edit-maq-valor').value,
                     status_operacional: document.getElementById('edit-maq-status').value,
                     periodicidade_preventiva: document.getElementById('edit-maq-periodicidade').value,

@@ -34,6 +34,7 @@ CREATE TABLE maquina (
     marca VARCHAR(100),
     tipo_equipamento VARCHAR(50), -- Ex: Impressora, Computador, etc
     data_aquisicao DATE,
+	quantidade INT NOT NULL,
     valor_aquisicao DECIMAL(10,2) NULL, -- Campo não obrigatório
     status_operacional ENUM('ativo', 'inativo', 'manutencao', 'descartado') DEFAULT 'ativo',
     localizacao VARCHAR(200), -- Localização dentro da loja
@@ -399,6 +400,163 @@ BEGIN
     END IF;
 END$$
 DELIMITER ;
+
+
+
+triger 2 trabsferencias
+
+DELIMITER $$
+
+CREATE TRIGGER trg_transferencia_retorno
+AFTER INSERT ON transferencias
+FOR EACH ROW
+BEGIN
+
+    DECLARE v_perdida   INT DEFAULT 0;
+    DECLARE v_retornada INT DEFAULT 0;
+
+    IF NEW.tipo = 'retorno_conserto' AND NEW.transferencia_pai_id IS NOT NULL THEN
+
+        SET v_perdida   = COALESCE(NEW.quantidade_perdida, 0);
+        SET v_retornada = COALESCE(NEW.quantidade_retornada, 0);
+
+        -- Debita da oficina tudo que foi enviado (retornado + perdido)
+        UPDATE maquinas
+        SET quantidade = quantidade - (v_retornada + v_perdida)
+        WHERE id = NEW.maquina_origem_id;
+
+        -- Credita na filial apenas o que retornou de fato
+        IF v_retornada > 0 THEN
+            UPDATE maquinas
+            SET quantidade = quantidade + v_retornada,
+                status_operacional = 'ativo'
+            WHERE id = NEW.maquina_destino_id;
+        END IF;
+
+        -- Registra status perdido na oficina se houve perda
+        IF v_perdida > 0 THEN
+            UPDATE maquinas
+            SET status_operacional = CASE
+                WHEN v_retornada = 0 THEN 'perdido'  -- perda total
+                ELSE 'ativo'                          -- perda parcial, ainda tem saldo
+            END
+            WHERE id = NEW.maquina_origem_id;
+        END IF;
+
+        -- Fecha a transferência pai
+        UPDATE transferencias
+        SET status = 'concluida',
+            data_retorno_real = NOW()
+        WHERE id = NEW.transferencia_pai_id;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+trigger 1
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_transferencia_saida
+AFTER INSERT ON transferencias
+FOR EACH ROW
+BEGIN
+
+    -- Só executa em transferências de saída (não em retornos)
+    IF NEW.tipo IN ('definitiva', 'temporaria', 'conserto', 'descarte') THEN
+
+        -- Debita quantidade na origem
+        UPDATE maquinas
+        SET quantidade = quantidade - NEW.quantidade_enviada
+        WHERE id = NEW.maquina_origem_id;
+
+        -- Atualiza status da máquina origem conforme tipo
+        UPDATE maquinas
+        SET status_operacional = CASE NEW.tipo
+            WHEN 'conserto'  THEN 'em_conserto'
+            WHEN 'descarte'  THEN 'descartado'
+            WHEN 'definitiva' THEN 'em_transito'
+            WHEN 'temporaria' THEN 'em_transito'
+        END
+        WHERE id = NEW.maquina_origem_id;
+
+        -- Credita na máquina destino (exceto descarte)
+        IF NEW.tipo != 'descarte' AND NEW.maquina_destino_id IS NOT NULL THEN
+            UPDATE maquinas
+            SET quantidade = quantidade + NEW.quantidade_enviada
+            WHERE id = NEW.maquina_destino_id;
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+
+
+tabela transferencia
+
+CREATE TABLE transferencias (
+    id                    INT PRIMARY KEY AUTO_INCREMENT,
+    transferencia_pai_id  INT NULL REFERENCES transferencias(id),
+    maquina_origem_id     INT NOT NULL REFERENCES maquinas(id),
+    maquina_destino_id    INT NULL REFERENCES maquinas(id),
+    -- NULL apenas em descarte e perda
+    usuario_id            INT NOT NULL,
+    tipo                  ENUM(
+                            'definitiva',
+                            'temporaria',
+                            'conserto',
+                            'retorno_conserto',
+                            'descarte',
+                            'perda'
+                          ) NOT NULL,
+    status                ENUM(
+                            'em_transito',
+                            'aguardando_retorno',
+                            'concluida',
+                            'cancelada'
+                          ) NOT NULL DEFAULT 'em_transito',
+    quantidade_enviada    INT NOT NULL,
+    quantidade_retornada  INT NULL,
+    quantidade_perdida    INT NULL,
+    motivo                VARCHAR(255) NULL,
+    observacoes           TEXT NULL,
+    data_transferencia    DATETIME NOT NULL,
+    data_retorno_prevista DATETIME NULL,
+    data_retorno_real     DATETIME NULL,
+    data_criacao          DATETIME DEFAULT NOW(),
+    data_atualizacao      DATETIME DEFAULT NOW() ON UPDATE NOW()
+);
+
+acrescimo tabela maquina
+
+ALTER TABLE maquina
+    ADD COLUMN equipamento_id     INT NULL REFERENCES equipamentos_tipo(id),
+    ADD COLUMN is_unico           TINYINT(1) NOT NULL DEFAULT 0,
+    -- is_unico=1 para carro/chassi, is_unico=0 para lotes como carrinhos
+    ADD COLUMN status_operacional ENUM(
+                                    'ativo',
+                                    'em_conserto',
+                                    'em_transito',
+                                    'descartado',
+                                    'perdido'
+                                  ) NOT NULL DEFAULT 'ativo';
+
+
+
+tabela tipoequipamento
+
+
+-- A tabela do select fixo (pode já existir com outro nome)
+CREATE TABLE equipamentos_tipo (
+    id       INT PRIMARY KEY AUTO_INCREMENT,
+    descricao VARCHAR(255) NOT NULL  -- "Carrinho de compras", "Empilhadeira", etc
+);
 
 -- ========================================
 -- DADOS INICIAIS DE EXEMPLO
