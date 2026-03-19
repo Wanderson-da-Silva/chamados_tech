@@ -764,7 +764,7 @@
             flex-wrap: wrap;
         }
 
-        .chamado-item, .preventiva-item  {
+        .chamado-item, .preventiva-item, .transferencia-item  {
             background: #f8f9fa;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
@@ -773,32 +773,35 @@
             transition: all 0.3s ease;
         }
 
-        .chamado-item:hover, .preventiva-item:hover  {
+        .chamado-item:hover, .preventiva-item:hover, .transferencia-item:hover  {
             background: #e3f2fd;
             border-color: #2196f3;
         }
 
-        .chamado-header, .chamado-item .chamado-desctec, .chamado-rodape, .preventiva-header, .preventiva-item .preventiva-desctec, .preventiva-rodape {
+        .chamado-header, .chamado-item .chamado-desctec, .chamado-rodape,
+        .preventiva-header, .preventiva-item .preventiva-desctec, .preventiva-rodape,
+        .transferencia-header, .transferencia-item .transferencia-desctec, .transferencia-rodape
+         {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .chamado-header, .chamado-item .chamado-desctec, .preventiva-header, .preventiva-item .preventiva-desctec {
+        .chamado-header, .chamado-item .chamado-desctec, .preventiva-header, .preventiva-item .preventiva-desctec, .transferencia-header, .transferencia-item .transferencia-desctec {
             margin-bottom: 10px;
         }
 
-        .chamado-header .status-badge, .preventiva-header .status-badge  {
+        .chamado-header .status-badge, .preventiva-header .status-badge , .transferencia-header .status-badge {
             padding: 4px 12px;
             border-radius: 15px;
             font-size: 0.8rem;
             font-weight: 600;
         }
 
-        .chamado-rodape div, .preventiva-rodape div {
+        .chamado-rodape div, .preventiva-rodape div, .transferencia-rodape div {
             display: flex;
         }
 
-        .chamado-rodape .btn, .preventiva-rodape .btn {
+        .chamado-rodape .btn, .preventiva-rodape .btn, .transferencia-rodape .btn {
             padding: 5px 10px;
             margin-left: 5px;
         }
@@ -806,12 +809,12 @@
 
 
         
-        .status-pendente {
+        .status-pendente, .status-conserto {
             background: #ffebee;
             color: #c62828;
         }
 
-        .status-em_andamento {
+        .status-em_andamento,.status-emprestimo {
             background: #fffee0;
             color: #000000;
         }
@@ -820,7 +823,7 @@
             background: #e8f5e8;
             color: #2e7d32;
         }
-
+        
         .loading {
             display: flex;
             align-items: center;
@@ -828,18 +831,18 @@
             padding: 50px;
             color: #666;
         }
-        .chamado-item, .preventiva-item  {
+        .chamado-item, .preventiva-item, .transferencia-item  {
             display: flex;
             gap: 15px;
             align-items: stretch;
         }
 
-        .chamado-conteudo, .preventiva-conteudo  {
+        .chamado-conteudo, .preventiva-conteudo, .transferencia-conteudo  {
             flex: 1;
             /* Mantém todo o conteúdo atual */
         }
 
-        .chamado-pdf-wrapper, .preventiva-pdf-wrapper  {
+        .chamado-pdf-wrapper, .preventiva-pdf-wrapper, .transferencia-pdf-wrapper  {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -862,9 +865,238 @@
             transform: scale(1.1);
         }
 
+        .select-tamanho{
+            width: auto;
+        }
 
+                /* ===== CONTAINER PRINCIPAL ===== */
+        .os-container {
+        padding: 2rem; /* p-8 */
+        }
 
+        /* ===== CABEÇALHO DA OS ===== */
+        .os-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f1f5f9; /* border-slate-100 */
+        }
 
+        .os-header__label {
+        font-size: 0.75rem;
+        color: #94a3b8; /* text-slate-400 */
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        }
+
+        .os-header__id {
+        font-size: 2.25rem;
+        font-weight: 900;
+        color: #1e293b; /* text-slate-800 */
+        letter-spacing: -0.025em;
+        }
+
+        .os-header__tipo-badge {
+        padding: 0.5rem 1rem;
+        background-color: #fee2e2; /* bg-red-100 */
+        color: #b91c1c; /* text-red-700 */
+        font-weight: 700;
+        border-radius: 0.5rem;
+        font-size: 1.125rem;
+        text-transform: uppercase;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ===== GRID DE SEÇÕES ===== */
+        .os-sections-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+        .os-sections-grid {
+            grid-template-columns: repeat(2, 1fr); /* md:grid-cols-2 */
+        }
+        }
+
+        /* ===== TÍTULOS DE SEÇÃO ===== */
+        .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #94a3b8; /* text-slate-400 */
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        }
+
+        .section-title__icon {
+        width: 1rem;
+        height: 1rem;
+        }
+
+        /* ===== SEÇÃO EQUIPAMENTO ===== */
+        .equipamento-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* space-y-4 */
+        }
+
+        .equipamento-maquina__label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        }
+
+        .equipamento-maquina__valor {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #334155; /* text-slate-700 */
+        }
+
+        .equipamento-codigos-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        }
+
+        .equipamento-codigo__label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        }
+
+        .equipamento-codigo__valor {
+        font-family: monospace;
+        background-color: #f1f5f9; /* bg-slate-100 */
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        color: #334155;
+        }
+
+        /* ===== SEÇÃO LOGÍSTICA ===== */
+        .logistica-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        }
+
+        .logistica-rota {
+        padding: 0.75rem;
+        border: 1px solid #f1f5f9;
+        border-radius: 0.5rem;
+        background-color: #f8fafc; /* bg-slate-50 */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        .logistica-rota__label {
+        display: block;
+        font-size: 0.625rem; /* text-[10px] */
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 700;
+        }
+
+        .logistica-rota__valor {
+        font-weight: 600;
+        }
+
+        .logistica-rota__destino-wrapper {
+        text-align: right;
+        }
+
+        .logistica-rota__icone {
+        color: #cbd5e1; /* text-slate-300 */
+        }
+
+        .logistica-data__label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        }
+
+        .logistica-data__valor {
+        font-weight: 600;
+        color: #334155;
+        }
+
+        /* ===== BLOCO DE OBSERVAÇÕES ===== */
+        .observacoes-bloco {
+        margin-top: 2rem;
+        padding: 1rem;
+        background-color: #fffbeb; /* bg-amber-50 */
+        border-radius: 0.75rem;
+        border-left: 4px solid #fbbf24; /* border-amber-400 */
+        }
+
+        .observacoes-bloco__titulo {
+        color: #92400e; /* text-amber-800 */
+        font-size: 0.75rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        }
+
+        .observacoes-bloco__texto {
+        color: #78350f; /* text-amber-900 */
+        font-weight: 500;
+        font-style: italic;
+        }
+
+        /* ===== BOTÕES DE AÇÃO ===== */
+        .acoes-container {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+        }
+
+        .btn-concluir {
+        flex: 1;
+        background-color: #059669; /* bg-emerald-600 */
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);
+        border: none;
+        cursor: pointer;
+        }
+
+        .btn-concluir:hover {
+        background-color: #047857; /* hover:bg-emerald-700 */
+        }
+
+        .btn-perda-total {
+        flex: 1;
+        border: 2px solid #e2e8f0; /* border-slate-200 */
+        background-color: transparent;
+        font-weight: 700;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #64748b; /* text-slate-500 */
+        cursor: pointer;
+        }
+
+        .btn-perda-total:hover {
+        background-color: #fff1f2; /* hover:bg-red-50 */
+        color: #dc2626; /* hover:text-red-600 */
+        }
 
         @media (max-width: 1200px) {
             .filiais-grid {
@@ -1130,7 +1362,7 @@
                         Nova Loja
                     </button>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <div class="modal-content">
                     <!-- Lista de Lojas -->
                     <div class="lojas-container">
                         <div class="lojas-header">
@@ -1162,7 +1394,7 @@
                         Nova Máquina
                     </button>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <div class="modal-content">
                     <!-- Filtro por loja -->
                     <div class="filter-container">
                         <select id="filtro-loja-maquinas" class="form-control" style="width: 300px;" onchange="filterMaquinas()">
@@ -1203,7 +1435,7 @@
                         Novo Usuário
                     </button>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <div class="modal-content">
                     <!-- Lista de Usuários -->
                     <div class="usuarios-container" >
                         <div class="usuarios-header">
@@ -1444,11 +1676,11 @@
             </div>
             
             <div class="filter-section">
-                <select class="form-control" id="filter-filial" style="width: auto;" >
+                <select class="form-control select-tamanho" id="filter-filial" >
                     <option value="">Todas as Filiais</option>
                     <!-- Opções serão carregadas via API -->
                 </select>
-                <select class="form-control" id="filter-status" style="width: auto;" >
+                <select class="form-control select-tamanho" id="filter-status"  >
                     <option value="">Todos os Status</option>
                     <option value="pendente">Pendente</option>
                     <option value="em_andamento">Em Andamento</option>
@@ -1475,11 +1707,11 @@
             </div>
             
             <div class="filter-section">
-                <select class="form-control" id="filter-filial-preventivas" style="width: auto;" >
+                <select class="form-control select-tamanho" id="filter-filial-preventivas" >
                     <option value="">Todas as Filiais</option>
                     <!-- Opções serão carregadas via API -->
                 </select>
-                <select class="form-control" id="filter-status-preventivas" style="width: auto;" >
+                <select class="form-control select-tamanho" id="filter-status-preventivas"  >
                     <option value="">Todos os Status</option>
                     <option value="programada">Programada</option>
                     <option value="cancelada">Cancelada</option>
@@ -2373,8 +2605,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="maquina">Máquina/Equipamento *</label>
-                        <select class="form-control" id="maquina" required>
+                        <label for="maquina_id">Máquina/Equipamento *</label>
+                        <select class="form-control" id="maquina_id" required>
                             <option value="">Selecione a máquina</option>
                             <option value="lavadora">Lavadora Industrial</option>
                             <option value="secadora">Secadora</option>
@@ -2399,7 +2631,10 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="form-row">
+                            <label for="previsao_retorno">Data Previsão Retorno</label>
+                            <input type="date" class="form-control" id="previsao_retorno">
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="patrimonio">Patrimônio</label>
@@ -2440,11 +2675,11 @@
             </div>
             <div class="modal-body">
                 <!-- Seção de Filtros -->
-                <div class="filter-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <div class="filter-section" >
                     <label for="filter-filial-origem" style="font-weight: 600; color: #555; display: flex; align-items: center; gap: 5px;">
                         <i class="fas fa-filter"></i> Filtros:
                     </label>
-                    <select class="form-control" id="filter-filial-origem" style="width: auto; min-width: 170px;">
+                    <select class="form-control select-tamanho" id="filter-filial-origem">
                         <option value="">Filial de Origem</option>
                         <option value="Filial Centro">Filial Centro</option>
                         <option value="Filial Norte">Filial Norte</option>
@@ -2452,7 +2687,7 @@
                         <option value="Filial Leste">Filial Leste</option>
                         <option value="Filial Oeste">Filial Oeste</option>
                     </select>
-                    <select class="form-control" id="filter-filial-destino" style="width: auto; min-width: 170px;">
+                    <select class="form-control select-tamanho" id="filter-filial-destino" >
                         <option value="">Filial de Destino</option>
                         <option value="Central de Manutenção">Central de Manutenção</option>
                         <option value="Filial Centro">Filial Centro</option>
@@ -2461,13 +2696,13 @@
                         <option value="Filial Leste">Filial Leste</option>
                         <option value="Filial Oeste">Filial Oeste</option>
                     </select>
-                    <select class="form-control" id="filter-tipo" style="width: auto; min-width: 170px;">
+                    <select class="form-control select-tamanho" id="filter-tipo" >
                         <option value="">Tipo de Transferência</option>
                         <option value="conserto">Conserto</option>
                         <option value="emprestimo">Empréstimo</option>
                         <option value="definitivo">Definitivo</option>
                     </select>
-                    <select class="form-control" id="filter-situacao" style="width: auto; min-width: 150px;">
+                    <select class="form-control select-tamanho" id="filter-situacao" >
                         <option value="">Todos os Status</option>
                         <option value="em-conserto">Em Conserto</option>
                         <option value="concluido">Concluído</option>
@@ -6758,29 +6993,52 @@ async function deleteMaquina(maquinaId, patrimonio) {
             document.getElementById('definitivo-count').textContent = definitivo;
         }
 // Handle nova transferência
-        function handleNovaTransferencia(event) {
-            event.preventDefault();
-            
-            const novaTransferencia = {
-                id: 'TRF' + String(transferencias.length + 1).padStart(3, '0'),
-                tipo: document.getElementById('tipo-transferencia').value,
-                filialOrigem: document.getElementById('filial-origem').options[document.getElementById('filial-origem').selectedIndex].text,
-                filialDestino: document.getElementById('filial-destino').options[document.getElementById('filial-destino').selectedIndex].text,
-                maquina: document.getElementById('maquina').options[document.getElementById('maquina').selectedIndex].text,
-                quantidade: parseInt(document.getElementById('quantidade').value),
-                patrimonio: document.getElementById('patrimonio').value || 'N/A',
-                serie: document.getElementById('serie').value || 'N/A',
-                data: new Date().toISOString().split('T')[0],
-                status: document.getElementById('tipo-transferencia').value === 'conserto' ? 'em-conserto' : 'ativo',
-                observacoes: document.getElementById('observacoes').value || 'Sem observações'
-            };
+        async function handleNovaTransferencia(event) {
+    event.preventDefault();
 
-            transferencias.unshift(novaTransferencia);
-            atualizarContadores();
-            
-            alert('Transferência registrada com sucesso!');
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    try {
+        // Mostrar loading no botão
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+
+        // Coletar dados do formulário
+        const formData = new FormData();
+
+        formData.append('loja_origem_id', document.getElementById('filial-origem').value);
+        formData.append('loja_destino_id', document.getElementById('filial-destino').value);
+        formData.append('maquina_id', document.getElementById('maquina_id').value);
+        formData.append('quantidade_enviada', document.getElementById('quantidade').value);
+        formData.append('tipo', document.getElementById('tipo-transferencia').value);
+        formData.append('status', document.getElementById('status-transferencia').value);
+        formData.append('patrimonio', document.getElementById('patrimonio').value);
+        formData.append('serie', document.getElementById('serie-transferencia').value);
+        formData.append('observacoes', document.getElementById('observacoes').value);
+        formData.append('data_transferencia', new Date().toISOString());
+        formData.append('data_retorno_prevista', document.getElementById('previsao_retorno').value);
+
+        const result = await createTransferencia(formData);
+
+        if (result.success) {
+            showSuccess(result.message);
             closeModal('nova-transferencia');
+           // loadTransferencias(); ver se faz sentido
+           // loadDashboardData(); ver resumo de transferencia
+        } else {
+            showError(result.error || 'Erro ao registrar transferência');
         }
+
+    } catch (error) {
+        console.error('Erro ao registrar transferência:', error);
+        showError('Erro ao registrar transferência. Tente novamente.');
+    } finally {
+        // Restaurar botão
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
 
         
 
@@ -7010,59 +7268,57 @@ async function deleteMaquina(maquinaId, patrimonio) {
 
             lista.innerHTML = transferenciasFiltradas.map(t => `
                 <div class="transferencia-item">
-                    <div class="transferencia-header">
-                        <span class="transferencia-id">#${t.id}</span>
-                        <span class="badge badge-${t.tipo}">${getTipoLabel(t.tipo)}</span>
+                    <div class="transferencia-conteudo">
+                        <div class="transferencia-header">
+                            <strong>#${t.id}</strong>
+                            <p><strong>Origem:</strong> ${t.filialOrigem}</p>
+                            <p><strong>Destino:</strong> ${t.filialDestino}</p>
+                            <span class="status-badge status-${t.tipo}">${getTipoLabel(t.tipo)}</span>
+                        </div>
+                        <div class="transferencia-desc">
+                            
+                            <div class="transferencia-desctec" >
+                                <p><strong>Máquina:</strong> ${t.maquina}</p>
+                                <p><strong>Patrimônio:</strong> ${t.patrimonio}</p>
+                                <p><strong>Série:</strong> ${t.serie}</p>
+                                <p><strong>Quantidade:</strong> ${t.quantidade}</p>
+                            </div>
+                            
+                            <div class="transferencia-desctec" style="grid-column: 1 / -1;">
+                                <p><strong>Data:</strong> ${formatarData(t.data)}</p>
+                            </div>
+                            <div class="transferencia-desctec" style="grid-column: 1 / -1;">
+                                <p><strong>Observações:</strong> ${t.observacoes}</p>
+                            </div>
+                        </div>
+                        <div class="transferencia-rodape">
+                            ${t.tipo === 'conserto' && t.status === 'em-conserto' ? `
+                                <div class="btn-opcoes">
+                                    <button class="btn btn-success btn-small" onclick="concluirConserto('${t.id}')">
+                                        <i class="fas fa-check"></i> Conserto Concluído
+                                    </button>
+                                    <button class="btn btn-danger btn-small" onclick="registrarPerdaTotal('${t.id}')">
+                                        <i class="fas fa-times"></i> Perda Total
+                                    </button>
+                                </div>
+                            ` : ''}
+                            ${t.tipo === 'emprestimo' && t.status === 'ativo' ? `
+                                <div class="btn-opcoes">
+                                    <button class="btn btn-success btn-small" onclick="devolverEquipamento('${t.id}')">
+                                        <i class="fas fa-undo"></i> Registrar Devolução
+                                    </button>
+                                </div>
+                            ` : ''}
+                            ${t.status === 'perda-total' ? `
+                                <div style="margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 5px; color: #842029;">
+                                    <i class="fas fa-exclamation-triangle"></i> <strong>Equipamento com perda total</strong>
+                                </div>
+                            ` : ''}
+
+                        </div>
                     </div>
-                    <div class="transferencia-info">
-                        <div class="info-item">
-                            <strong>Origem:</strong> ${t.filialOrigem}
-                        </div>
-                        <div class="info-item">
-                            <strong>Destino:</strong> ${t.filialDestino}
-                        </div>
-                        <div class="info-item">
-                            <strong>Máquina:</strong> ${t.maquina}
-                        </div>
-                        <div class="info-item">
-                            <strong>Quantidade:</strong> ${t.quantidade}
-                        </div>
-                        <div class="info-item">
-                            <strong>Patrimônio:</strong> ${t.patrimonio}
-                        </div>
-                        <div class="info-item">
-                            <strong>Série:</strong> ${t.serie}
-                        </div>
-                        <div class="info-item" style="grid-column: 1 / -1;">
-                            <strong>Data:</strong> ${formatarData(t.data)}
-                        </div>
-                        <div class="info-item" style="grid-column: 1 / -1;">
-                            <strong>Observações:</strong> ${t.observacoes}
-                        </div>
-                    </div>
-                    ${t.tipo === 'conserto' && t.status === 'em-conserto' ? `
-                        <div class="status-buttons">
-                            <button class="btn btn-success btn-small" onclick="concluirConserto('${t.id}')">
-                                <i class="fas fa-check"></i> Conserto Concluído
-                            </button>
-                            <button class="btn btn-danger btn-small" onclick="registrarPerdaTotal('${t.id}')">
-                                <i class="fas fa-times"></i> Perda Total
-                            </button>
-                        </div>
-                    ` : ''}
-                    ${t.tipo === 'emprestimo' && t.status === 'ativo' ? `
-                        <div class="status-buttons">
-                            <button class="btn btn-success btn-small" onclick="devolverEquipamento('${t.id}')">
-                                <i class="fas fa-undo"></i> Registrar Devolução
-                            </button>
-                        </div>
-                    ` : ''}
-                    ${t.status === 'perda-total' ? `
-                        <div style="margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 5px; color: #842029;">
-                            <i class="fas fa-exclamation-triangle"></i> <strong>Equipamento com perda total</strong>
-                        </div>
-                    ` : ''}
-                </div>
+                    <div class="transferencia-pdf-wrapper-"></div>
+                 </div>    
             `).join('');
         }
 
@@ -7178,7 +7434,22 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 throw error;
             }
         }
-                
+            async function createTransferencia(formData) {
+            
+            const token = sessionStorage.getItem('token');
+
+            const user = sessionStorage.getItem('user');
+
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/transferencias', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            return await response.json();
+            
+        }       
 
 // ========================================
         // FORMATAÇÃO DE CAMPOS

@@ -1840,7 +1840,325 @@ class PreventivaController extends BaseController {
         ]);
     }
 }
+// ========================================
+// CONTROLLER DE TRANSFERÊNCIAS
+// ========================================
+class TransferenciaController extends BaseController {
+    public function handleRequest($method, $params = []) {
+        switch ($method) {
+            case 'GET':
+                if (empty($params[0]) && empty($_GET)) {
+                    $this->getAll();
+                } elseif (isset($params[0])) {
+                    $this->getById($params[0]);
+                } else {
+                    $this->getAllFiltered($_GET);
+                }
+                break;
+            case 'POST':
+                if (isset($_POST['_method']) && $_POST['_method'] === 'PUT') {
+                    if (!isset($params[0])) {
+                        $this->sendResponse(400, ['error' => 'ID da transferência é obrigatório']);
+                    }
+                    $this->update($params[0]);
+                } else {
+                    $this->create();
+                }
+                break;
+            case 'PUT':
+                if (!isset($params[0])) {
+                    $this->sendResponse(400, ['error' => 'ID da transferência é obrigatório']);
+                }
+                $this->update($params[0]);
+                break;
+            default:
+                $this->sendResponse(405, ['error' => 'Método não permitido']);
+        }
+    }
 
+    private function getById($id) {
+        $stmt = $this->db->prepare("
+            SELECT
+                t.id,
+                t.transferencia_pai_id,
+                t.tipo,
+                t.status,
+                t.quantidade_enviada,
+                t.quantidade_retornada,
+                t.quantidade_perdida,
+                t.observacoes,
+                t.data_transferencia,
+                t.data_retorno_prevista,
+                t.data_retorno_real,
+                t.data_criacao,
+                t.data_atualizacao,
+                m.id AS maquina_id,
+                m.patrimonio,
+                m.numero_serie,
+                m.modelo,               
+                ld.id          AS loja_destino_id,
+                ld.nome        AS loja_destino_nome,
+                u.id           AS usuario_id,
+                u.nome_completo AS usuario_nome
+            FROM transferencias t
+            INNER JOIN maquinas m  ON m.id  = t.maquina_id
+            INNER JOIN loja lo     ON lo.id = t.loja_origem_id
+            LEFT  JOIN loja ld     ON ld.id = t.loja_destino_id
+            INNER JOIN usuario u   ON u.id  = t.usuario_id
+            WHERE t.id = ?
+        ");
+
+        try {
+            $stmt->execute([$id]);
+            $result = $stmt->fetch();
+
+            if ($result) {
+                $this->sendResponse(200, [
+                    'success' => true,
+                    'data'    => $result
+                ]);
+            } else {
+                $this->sendResponse(404, ['error' => 'Transferência não encontrada']);
+            }
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao buscar transferência: ' . $e->getMessage()]);
+        }
+    }
+
+    private function getAll() {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT
+                    t.id,
+                    t.tipo,
+                    t.status,
+                    t.quantidade_enviada,
+                    t.quantidade_retornada,
+                    t.quantidade_perdida,
+                    t.data_transferencia,
+                    t.data_retorno_prevista,
+                    t.data_retorno_real,
+                    mo.patrimonio  AS origem_patrimonio,
+                    mo.modelo      AS origem_modelo,
+                    lo.nome        AS loja_origem_nome,
+                    md.patrimonio  AS destino_patrimonio,
+                    md.modelo      AS destino_modelo,
+                    ld.nome        AS loja_destino_nome,
+                    u.nome_completo AS usuario_nome
+                FROM transferencia t
+                INNER JOIN maquinas m  ON m.id  = t.maquina_id
+                INNER JOIN loja lo     ON lo.id = t.loja_origem_id
+                LEFT  JOIN loja ld     ON ld.id = t.loja_destino_id
+                INNER JOIN usuario u   ON u.id  = t.usuario_id
+                ORDER BY t.data_criacao DESC
+            ");
+
+            $stmt->execute();
+            $this->sendResponse(200, [
+                'success' => true,
+                'data'    => $stmt->fetchAll()
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao buscar transferências: ' . $e->getMessage()]);
+        }
+    }
+
+    private function getAllFiltered($filters = []) {
+        $where  = "1=1";
+        $params = [];
+
+        if (!empty($filters['loja_origem_id'])) {
+            $where .= " AND t.loja_origem_id = ?";  
+            $params[] = $filters['loja_origem_id'];
+        }
+
+        if (!empty($filters['loja_destino_id'])) {
+            $where .= " AND t.loja_destino_id = ?";
+            $params[] = $filters['loja_destino_id'];
+        }
+
+        if (!empty($filters['maquina_id'])) {
+            $where .= " AND t.maquina_id = ?";
+            $params[] = $filters['maquina_id'];
+        }
+
+        if (!empty($filters['tipo'])) {
+            $where   .= " AND t.tipo = ?";
+            $params[] = $filters['tipo'];
+        }
+
+        if (!empty($filters['status'])) {
+            $where   .= " AND t.status = ?";
+            $params[] = $filters['status'];
+        }
+
+        if (isset($this->user->user_id)) {
+                $where   .= " AND t.usuario_id = ?";
+                $params[] = $filters['usuario_id'];
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                SELECT
+                    t.id,
+                    t.tipo,
+                    t.status,
+                    t.quantidade_enviada,
+                    t.quantidade_retornada,
+                    t.quantidade_perdida,
+                    t.data_transferencia,
+                    t.data_retorno_prevista,
+                    t.data_retorno_real,
+                    mo.patrimonio  AS origem_patrimonio,
+                    mo.modelo      AS origem_modelo,
+                    lo.nome        AS loja_origem_nome,
+                    md.patrimonio  AS destino_patrimonio,
+                    md.modelo      AS destino_modelo,
+                    ld.nome        AS loja_destino_nome,
+                    u.nome_completo AS usuario_nome
+                FROM transferencias t
+                INNER JOIN maquinas m  ON m.id  = t.maquina_id
+                INNER JOIN loja lo     ON lo.id = t.loja_origem_id
+                LEFT  JOIN loja ld     ON ld.id = t.loja_destino_id
+                INNER JOIN usuario u   ON u.id  = t.usuario_id
+                WHERE $where
+                ORDER BY t.data_criacao DESC
+            ");
+
+            $stmt->execute($params);
+            $this->sendResponse(200, [
+                'success' => true,
+                'data'    => $stmt->fetchAll()
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao filtrar transferências: ' . $e->getMessage()]);
+        }
+    }
+
+    private function create() {
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        if (strpos($contentType, 'multipart/form-data') !== false) {
+            $data = $_POST;
+        } else {
+            $data = $this->getJsonInput();
+        }
+
+        $this->validateRequired($data, [
+            'loja_origem_id',
+            'usuario_id',
+            'tipo',
+            'quantidade_enviada',
+            'data_transferencia'
+        ]);
+
+        try {
+            $data = array_filter($data, function ($value) {
+                return $value !== null && $value !== '';
+            });
+
+            $allowedFields = [
+                'transferencia_pai_id',
+                'maquina_id',
+                'loja_origem_id',
+                'loja_destino_id',
+                'usuario_id',
+                'tipo',
+                'status',
+                'quantidade_enviada',
+                'quantidade_retornada',
+                'quantidade_perdida',
+                'observacoes',
+                'data_transferencia',
+                'data_retorno_prevista',
+                'data_retorno_real'
+            ];
+
+            $insertData = array_filter(
+                $data,
+                fn($key) => in_array($key, $allowedFields),
+                ARRAY_FILTER_USE_KEY
+            );
+
+            $colunas      = array_keys($insertData);
+            $valores      = array_values($insertData);
+            $colunasStr   = implode(', ', $colunas);
+            $placeholders = implode(', ', array_fill(0, count($colunas), '?'));
+
+            $sql  = "INSERT INTO transferencias ($colunasStr) VALUES ($placeholders)";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($valores);
+
+            $this->sendResponse(201, [
+                'success' => true,
+                'message' => 'Transferência registrada com sucesso',
+                'data'    => ['id' => $this->db->lastInsertId()]
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao registrar transferência: ' . $e->getMessage()]);
+        }
+    }
+
+    private function update($id) {
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        if (strpos($contentType, 'multipart/form-data') !== false) {
+            $data = $_POST;
+        } else {
+            $data = $this->getJsonInput();
+        }
+
+        if (empty($data)) {
+            $this->sendResponse(400, ['error' => 'Nenhum dado foi enviado']);
+            return;
+        }
+
+        $allowedFields = [
+            'loja_destino_id',
+            'status',
+            'quantidade_retornada',
+            'quantidade_perdida',
+            'observacoes',
+            'data_retorno_prevista',
+            'data_retorno_real'
+        ];
+
+        $updateData = [];
+        foreach ($data as $key => $value) {
+            if (in_array($key, $allowedFields)) {
+                $updateData[$key] = $value;
+            }
+        }
+
+        if (empty($updateData)) {
+            $this->sendResponse(400, ['error' => 'Nenhum campo válido para atualizar']);
+            return;
+        }
+
+        try {
+            $fields = [];
+            $values = [];
+
+            foreach ($updateData as $key => $value) {
+                $fields[] = "$key = ?";
+                $values[] = $value;
+            }
+
+            $values[] = $id;
+
+            $sql  = "UPDATE transferencias SET " . implode(', ', $fields) . " WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($values);
+
+            $this->sendResponse(200, [
+                'success' => true,
+                'message' => 'Transferência atualizada com sucesso'
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao atualizar transferência: ' . $e->getMessage()]);
+        }
+    }
+}
 // ========================================
 // CONTROLLER DE USUÁRIOS
 // ========================================
@@ -2102,6 +2420,7 @@ class ApiRouter {
         'chamados' => ['controller' => 'ChamadoController', 'method' => 'handleRequest'],
         'anexos' => ['controller' => 'AnexoController', 'method' => 'handleRequest'],
         'preventivas' => ['controller' => 'PreventivaController', 'method' => 'handleRequest'],
+        'transferencias' => ['controller' => 'TransferenciaController', 'method' => 'handleRequest'],
         'usuarios' => ['controller' => 'UsuarioController', 'method' => 'handleRequest']
     ];
     

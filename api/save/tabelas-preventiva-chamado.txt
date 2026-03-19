@@ -408,7 +408,7 @@ triger 2 trabsferencias
 DELIMITER $$
 
 CREATE TRIGGER trg_transferencia_retorno
-AFTER INSERT ON transferencias
+AFTER INSERT ON transferencia
 FOR EACH ROW
 BEGIN
 
@@ -421,30 +421,30 @@ BEGIN
         SET v_retornada = COALESCE(NEW.quantidade_retornada, 0);
 
         -- Debita da oficina tudo que foi enviado (retornado + perdido)
-        UPDATE maquinas
+        UPDATE maquina
         SET quantidade = quantidade - (v_retornada + v_perdida)
-        WHERE id = NEW.maquina_origem_id;
+        WHERE id = NEW.maquina_id;
 
         -- Credita na filial apenas o que retornou de fato
         IF v_retornada > 0 THEN
-            UPDATE maquinas
+            UPDATE maquina
             SET quantidade = quantidade + v_retornada,
                 status_operacional = 'ativo'
-            WHERE id = NEW.maquina_destino_id;
+            WHERE id = NEW.maquina_id;
         END IF;
 
         -- Registra status perdido na oficina se houve perda
         IF v_perdida > 0 THEN
-            UPDATE maquinas
+            UPDATE maquina
             SET status_operacional = CASE
                 WHEN v_retornada = 0 THEN 'perdido'  -- perda total
                 ELSE 'ativo'                          -- perda parcial, ainda tem saldo
             END
-            WHERE id = NEW.maquina_origem_id;
+            WHERE id = NEW.maquina_id;
         END IF;
 
         -- Fecha a transferência pai
-        UPDATE transferencias
+        UPDATE transferencia
         SET status = 'concluida',
             data_retorno_real = NOW()
         WHERE id = NEW.transferencia_pai_id;
@@ -461,7 +461,7 @@ trigger 1
 DELIMITER $$
 
 CREATE TRIGGER trg_transferencia_saida
-AFTER INSERT ON transferencias
+AFTER INSERT ON transferencia
 FOR EACH ROW
 BEGIN
 
@@ -469,25 +469,25 @@ BEGIN
     IF NEW.tipo IN ('definitiva', 'temporaria', 'conserto', 'descarte') THEN
 
         -- Debita quantidade na origem
-        UPDATE maquinas
+        UPDATE maquina
         SET quantidade = quantidade - NEW.quantidade_enviada
-        WHERE id = NEW.maquina_origem_id;
+        WHERE id = NEW.maquina_id;
 
         -- Atualiza status da máquina origem conforme tipo
-        UPDATE maquinas
+        UPDATE maquina
         SET status_operacional = CASE NEW.tipo
             WHEN 'conserto'  THEN 'em_conserto'
             WHEN 'descarte'  THEN 'descartado'
             WHEN 'definitiva' THEN 'em_transito'
             WHEN 'temporaria' THEN 'em_transito'
         END
-        WHERE id = NEW.maquina_origem_id;
+        WHERE id = NEW.maquina_id;
 
         -- Credita na máquina destino (exceto descarte)
-        IF NEW.tipo != 'descarte' AND NEW.maquina_destino_id IS NOT NULL THEN
-            UPDATE maquinas
+        IF NEW.tipo != 'descarte' AND NEW.maquina_id IS NOT NULL THEN
+            UPDATE maquina
             SET quantidade = quantidade + NEW.quantidade_enviada
-            WHERE id = NEW.maquina_destino_id;
+            WHERE id = NEW.maquina_id;
         END IF;
 
     END IF;
@@ -500,13 +500,15 @@ DELIMITER ;
 
 tabela transferencia
 
-CREATE TABLE transferencias (
+CREATE TABLE transferencia (
     id                    INT PRIMARY KEY AUTO_INCREMENT,
     transferencia_pai_id  INT NULL REFERENCES transferencias(id),
-    maquina_origem_id     INT NOT NULL REFERENCES maquinas(id),
-    maquina_destino_id    INT NULL REFERENCES maquinas(id),
-    -- NULL apenas em descarte e perda
-    usuario_id            INT NOT NULL,
+
+    maquina_id            INT NOT NULL REFERENCES maquinas(id),  -- o que está sendo transferido
+    loja_origem_id        INT NOT NULL REFERENCES loja(id),      -- de onde sai
+    loja_destino_id       INT NULL REFERENCES loja(id),          -- para onde vai (NULL em descarte/perda)
+
+    usuario_id            INT NOT NULL REFERENCES usuario(id),
     tipo                  ENUM(
                             'definitiva',
                             'temporaria',
@@ -524,7 +526,6 @@ CREATE TABLE transferencias (
     quantidade_enviada    INT NOT NULL,
     quantidade_retornada  INT NULL,
     quantidade_perdida    INT NULL,
-    motivo                VARCHAR(255) NULL,
     observacoes           TEXT NULL,
     data_transferencia    DATETIME NOT NULL,
     data_retorno_prevista DATETIME NULL,
