@@ -2046,7 +2046,6 @@ class TransferenciaController extends BaseController {
 
         $this->validateRequired($data, [
             'loja_origem_id',
-            'usuario_id',
             'tipo',
             'quantidade_enviada',
             'data_transferencia'
@@ -2056,6 +2055,8 @@ class TransferenciaController extends BaseController {
             $data = array_filter($data, function ($value) {
                 return $value !== null && $value !== '';
             });
+        
+            $data['usuario_id'] = $this->user->user_id;
 
             $allowedFields = [
                 'transferencia_pai_id',
@@ -2085,7 +2086,7 @@ class TransferenciaController extends BaseController {
             $colunasStr   = implode(', ', $colunas);
             $placeholders = implode(', ', array_fill(0, count($colunas), '?'));
 
-            $sql  = "INSERT INTO transferencias ($colunasStr) VALUES ($placeholders)";
+            $sql  = "INSERT INTO transferencia ($colunasStr) VALUES ($placeholders)";
             $stmt = $this->db->prepare($sql);
             $stmt->execute($valores);
 

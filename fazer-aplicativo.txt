@@ -12,3 +12,9 @@ opção de programado abre "edição"´(é criação com id hidden - adicionar n
 opção cancelada pegar motivo, criar campo coluna
 
 ver edição tecnico chamado e preventiva para admin e sup_tecnico
+
+como registrar a conferencia na loja-destino assim que chegou na loja e foi conferido. atestado que foi enviado e recebido a quantidade certa.
+com campo conferencia. se qtd-conferencia for igual não altera lançamento qtd (quando qtd maior que um) caso tenha alteraca de qtd retornar valor registrado transferencia e retirar qtd conferencia.
+verificar logica das transferencia na parte de subtracao de quantidade quando item unico (qtd igual a zero) aonde talvez nao haveria subtracao smente realocacao de maquina no registro de loja id no cadastro maquina com alteracao do seu atatus (status maquina) 
+a maquina constaria na loja de conserto com status emprestimo/conserto e pelo registro das transferencia se saberia qual o percurso da maquina (loja de origem)e mesmo se maquina fosse pra descarte não teria subtração somente alteração de status pra perda total/descarte
+exclusao de filial de origem na listagem destino

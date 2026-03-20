@@ -511,7 +511,7 @@ CREATE TABLE transferencia (
     usuario_id            INT NOT NULL REFERENCES usuario(id),
     tipo                  ENUM(
                             'definitiva',
-                            'temporaria',
+                            'emprestimo',
                             'conserto',
                             'retorno_conserto',
                             'descarte',

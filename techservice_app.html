@@ -2583,11 +2583,6 @@
                         <label for="filial-origem">Filial de Origem *</label>
                         <select class="form-control" id="filial-origem" required>
                             <option value="">Selecione a filial de origem</option>
-                            <option value="1">Filial Centro</option>
-                            <option value="2">Filial Norte</option>
-                            <option value="3">Filial Sul</option>
-                            <option value="4">Filial Leste</option>
-                            <option value="5">Filial Oeste</option>
                         </select>
                     </div>
 
@@ -2595,23 +2590,13 @@
                         <label for="filial-destino">Filial de Destino *</label>
                         <select class="form-control" id="filial-destino" required>
                             <option value="">Selecione a filial de destino</option>
-                            <option value="central">Central de Manutenção</option>
-                            <option value="1">Filial Centro</option>
-                            <option value="2">Filial Norte</option>
-                            <option value="3">Filial Sul</option>
-                            <option value="4">Filial Leste</option>
-                            <option value="5">Filial Oeste</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="maquina_id">Máquina/Equipamento *</label>
+                        <label for="maquina_id">Modelo/Patrimônio *</label>
                         <select class="form-control" id="maquina_id" required>
                             <option value="">Selecione a máquina</option>
-                            <option value="lavadora">Lavadora Industrial</option>
-                            <option value="secadora">Secadora</option>
-                            <option value="prensa">Prensa</option>
-                            <option value="empacotadora">Empacotadora</option>
                         </select>
                     </div>
 
@@ -2627,7 +2612,8 @@
                                 <option value="">Selecione o tipo</option>
                                 <option value="conserto">Conserto</option>
                                 <option value="emprestimo">Empréstimo Temporário</option>
-                                <option value="definitivo">Definitivo</option>
+                                <option value="definitiva">Definitiva</option>
+                                <option value="descarte">Descarte</option>
                             </select>
                         </div>
                     </div>
@@ -2773,7 +2759,8 @@ const tableFetchMap = {
 // Configuração de campos por tabela (opcional - use valores padrão se não especificado)
 const tableFieldConfig = {
     'filiais': { label: 'nome', value: 'id' },
-    'maquinas': { label: 'modelo', value: 'id' },
+    // 'maquinas': { label: 'modelo', value: 'id' },
+    'maquinas': { label: (item) => `${item.modelo} - ${item.patrimonio}`, value: 'id' },
     'patrimonios': { label: 'patrimonio', value: 'id' },
     'usuarios': { label: 'nome_completo', value: 'id' },
     'preventivas': { label: 'patrimonio', value: 'id' },
@@ -2834,6 +2821,30 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
             );
         }
 
+        // Filtro para filial-destino baseado na filial-origem selecionada
+        if(selectId === 'filial-destino'){
+            const filialSelect = document.getElementById('filial-origem');
+            const filialId = filialSelect?.value;
+            
+            if(filialId){
+                // alert('A filial selecionada é' + filialId + ' !');
+                result.data = result.data.filter(filial => 
+                    filial.id != filialId
+                );
+            }
+        }
+        // Filtro para patrimônio baseado na filial selecionada
+        if(selectId === 'maquina_id'){
+            const filialSelect = document.getElementById('filial-origem');
+            const filialId = filialSelect?.value;
+            
+            if(filialId){
+                // alert('A filial selecionada é' + filialId + ' !');
+                result.data = result.data.filter(patrimonio => 
+                    patrimonio.loja_id == filialId
+                );
+            }
+        }
         // Filtro para patrimônio baseado na filial selecionada
         if(selectId === 'select_patrimonio'){
             const filialSelect = document.getElementById('filial-chamado');
@@ -2868,28 +2879,7 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
                                 );
             }
         }
-        // Filtro para filial baseado no patrimônio selecionado
-        // if(selectId === 'filter-filial'){
-        //     const statusSelect = document.getElementById('filter-status');
-        //     const statusName = statusSelect?.value;
-            
-        //     if(statusName){
-        //         // alert('O patrimonio selecionada é' + patrimonioId + ' !');
-
-        //         const status = await getMaquinaById(patrimonioId);
-
-        //         if (!maquina.success) {
-        //             showError('Erro ao carregar dados da máquina');
-        //             return;
-        //         }   
-        //         const idLojaMaq = maquina.data.loja_id;
-        //         // alert('O loja encontrada é' + idLojaMaq + ' !');
-        //         result.data = result.data.filter(filial => 
-        //                             filial.id == idLojaMaq
-        //                         );
-        //     }
-        // }
-
+        
         // Obter configuração de campos (ou usar padrão)
         const fieldConfig = tableFieldConfig[tableName] || { label: 'nome', value: 'id' };
         
@@ -2906,10 +2896,20 @@ async function populateSelectFromTable(selectId, tableName, keepFirstOption = tr
         }
         
         // Adicionar opções
+        // result.data.forEach(item => {
+        //     const option = document.createElement('option');
+        //     option.value = item[fieldConfig.value];
+        //     option.textContent = item[fieldConfig.label];
+        //     select.appendChild(option);
+        // });
+       
+        // Adicionar opções
         result.data.forEach(item => {
             const option = document.createElement('option');
             option.value = item[fieldConfig.value];
-            option.textContent = item[fieldConfig.label];
+            option.textContent = typeof fieldConfig.label === 'function'
+                ? fieldConfig.label(item)      // 👈 se for função, chama passando o item
+                : item[fieldConfig.label];     // 👈 se for string, busca a propriedade normalmente
             select.appendChild(option);
         });
         
@@ -2992,13 +2992,32 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 }
                 
                 // Adicionar opções
+                // result.data.forEach(item => {
+                //     const option = document.createElement('option');
+                //     option.value = item[fieldConfig.value];
+                //     option.textContent = item[fieldConfig.label];
+                //     select.appendChild(option);
+                // });
+                
+                // Adicionar opções
                 result.data.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item[fieldConfig.value];
-                    option.textContent = item[fieldConfig.label];
+                    option.textContent = typeof fieldConfig.label === 'function'
+                        ? fieldConfig.label(item)      // 👈 se for função, chama passando o item
+                        : item[fieldConfig.label];     // 👈 se for string, busca a propriedade normalmente
                     select.appendChild(option);
                 });
-                
+
+
+
+
+
+
+
+
+
+
 
             
             
@@ -3816,6 +3835,12 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 // loadSelectsPreventiva();
              populateSelectFromTable('filial-chamado', 'filiais');
              populateSelectFromTable('select_patrimonio', 'patrimoniosSemChamados');
+            }
+            if (modalId === 'nova-transferencia') {
+                // loadSelectsPreventiva();
+            //  populateSelectFromTable('filial-destino', 'filiais');
+             populateSelectFromTable('filial-origem', 'filiais');
+            //  populateSelectFromTable('maquina_id', 'maquinas');
             }
 
         }
@@ -6178,6 +6203,40 @@ async function deleteMaquina(maquinaId, patrimonio) {
             }
             
         });
+        // Event listener para quando a FILIAL for alterada
+        document.getElementById('filial-origem').addEventListener('change', async function() {
+
+             populateSelectFromTable('filial-destino', 'filiais');
+             populateSelectFromTable('maquina_id', 'maquinas');
+
+                    const serieMaq = document.getElementById('serie-transferencia');
+                    serieMaq.value = '';
+                    const patrimonioMaq = document.getElementById('patrimonio');
+                    patrimonioMaq.value = '';
+
+                        
+        });
+        // Event listener para quando a FILIAL for alterada
+        document.getElementById('maquina_id').addEventListener('change', async function() {
+
+            const patrimonioSelect = document.getElementById('maquina_id');
+            const selectPatrim = patrimonioSelect?.value;
+
+            const maquina = await getMaquinaById(selectPatrim);
+
+                if (!maquina.success) {
+                    showError('Erro ao carregar dados da máquina');
+                    return;
+                }   
+                const idLojaMaq = maquina.data.loja_id;
+
+                    const serieMaq = document.getElementById('serie-transferencia');
+                    serieMaq.value = maquina.data.numero_serie;
+                    const patrimonioMaq = document.getElementById('patrimonio');
+                    patrimonioMaq.value = maquina.data.patrimonio;
+                    return;
+                                        
+        });
 
         // Event listener para quando o PATRIMÔNIO for alterado
         document.getElementById('select_patrimonio').addEventListener('change', async function() {
@@ -6994,51 +7053,60 @@ async function deleteMaquina(maquinaId, patrimonio) {
         }
 // Handle nova transferência
         async function handleNovaTransferencia(event) {
-    event.preventDefault();
+            event.preventDefault();
 
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
 
-    try {
-        // Mostrar loading no botão
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+            try {
+                // Mostrar loading no botão
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
 
-        // Coletar dados do formulário
-        const formData = new FormData();
+                // Coletar dados do formulário
+                const formData = new FormData();
 
-        formData.append('loja_origem_id', document.getElementById('filial-origem').value);
-        formData.append('loja_destino_id', document.getElementById('filial-destino').value);
-        formData.append('maquina_id', document.getElementById('maquina_id').value);
-        formData.append('quantidade_enviada', document.getElementById('quantidade').value);
-        formData.append('tipo', document.getElementById('tipo-transferencia').value);
-        formData.append('status', document.getElementById('status-transferencia').value);
-        formData.append('patrimonio', document.getElementById('patrimonio').value);
-        formData.append('serie', document.getElementById('serie-transferencia').value);
-        formData.append('observacoes', document.getElementById('observacoes').value);
-        formData.append('data_transferencia', new Date().toISOString());
-        formData.append('data_retorno_prevista', document.getElementById('previsao_retorno').value);
+                formData.append('loja_origem_id', document.getElementById('filial-origem').value);
+                formData.append('loja_destino_id', document.getElementById('filial-destino').value);
+                formData.append('maquina_id', document.getElementById('maquina_id').value);
+                formData.append('quantidade_enviada', document.getElementById('quantidade').value);
+                formData.append('tipo', document.getElementById('tipo-transferencia').value);
+                formData.append('observacoes', document.getElementById('observacoes').value);
+                formData.append('data_transferencia', new Date().toISOString());
+                formData.append('data_retorno_prevista', document.getElementById('previsao_retorno').value);
+                formData.append('status','em_transito');
 
-        const result = await createTransferencia(formData);
+                // Validação de data
+                const dataInput = document.getElementById('previsao_retorno').value;
 
-        if (result.success) {
-            showSuccess(result.message);
-            closeModal('nova-transferencia');
-           // loadTransferencias(); ver se faz sentido
-           // loadDashboardData(); ver resumo de transferencia
-        } else {
-            showError(result.error || 'Erro ao registrar transferência');
+                if (dataInput && dataInput.trim() !== '') {
+                    const data = new Date(dataInput);
+                    
+                    if (!isNaN(data.getTime())) {
+                        formData.append('data_retorno_prevista', dataInput);
+                    } 
+                } 
+
+                const result = await createTransferencia(formData);
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    closeModal('nova-transferencia');
+                // loadTransferencias(); ver se faz sentido
+                // loadDashboardData(); ver resumo de transferencia
+                } else {
+                    showError(result.error || 'Erro ao registrar transferência');
+                }
+
+            } catch (error) {
+                console.error('Erro ao registrar transferência:', error);
+                showError('Erro ao registrar transferência. Tente novamente.');
+            } finally {
+                // Restaurar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
         }
-
-    } catch (error) {
-        console.error('Erro ao registrar transferência:', error);
-        showError('Erro ao registrar transferência. Tente novamente.');
-    } finally {
-        // Restaurar botão
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-    }
-}
 
         
 
@@ -7434,11 +7502,11 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 throw error;
             }
         }
-            async function createTransferencia(formData) {
+        async function createTransferencia(formData) {
             
             const token = sessionStorage.getItem('token');
 
-            const user = sessionStorage.getItem('user');
+            // const user = sessionStorage.getItem('user');
 
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/transferencias', {
                 method: 'POST',
