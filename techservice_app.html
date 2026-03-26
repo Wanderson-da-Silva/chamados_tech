@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/lucide@latest"></script><!--ver como rodar-->
     <title>TechService - Sistema Principal</title>
     <style>
         * {
@@ -764,11 +765,19 @@
             flex-wrap: wrap;
         }
 
-        .chamado-item, .preventiva-item, .transferencia-item  {
+        .chamado-item, .preventiva-item {
             background: #f8f9fa;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             padding: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .transferencia-item  {
+            padding: 1rem;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
             margin-bottom: 10px;
             transition: all 0.3s ease;
         }
@@ -831,7 +840,7 @@
             padding: 50px;
             color: #666;
         }
-        .chamado-item, .preventiva-item, .transferencia-item  {
+        .chamado-item, .preventiva-item {
             display: flex;
             gap: 15px;
             align-items: stretch;
@@ -869,234 +878,255 @@
             width: auto;
         }
 
-                /* ===== CONTAINER PRINCIPAL ===== */
-        .os-container {
-        padding: 2rem; /* p-8 */
-        }
+         /* ===== CONTAINER PRINCIPAL ===== */
+        
 
         /* ===== CABEÇALHO DA OS ===== */
         .os-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #f1f5f9; /* border-slate-100 */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            /* margin-bottom: 2rem; */
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9; /* border-slate-100 */
         }
 
         .os-header__label {
-        font-size: 0.75rem;
-        color: #94a3b8; /* text-slate-400 */
-        margin-bottom: 0.25rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-weight: 700;
+            font-size: 0.75rem;
+            color: #94a3b8; /* text-slate-400 */
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
         }
 
         .os-header__id {
-        font-size: 2.25rem;
-        font-weight: 900;
-        color: #1e293b; /* text-slate-800 */
-        letter-spacing: -0.025em;
+            font-size: 2.25rem;
+            font-weight: 900;
+            color: #1e293b; /* text-slate-800 */
+            letter-spacing: -0.025em;
+            margin: 0;
         }
 
         .os-header__tipo-badge {
-        padding: 0.5rem 1rem;
-        background-color: #fee2e2; /* bg-red-100 */
-        color: #b91c1c; /* text-red-700 */
-        font-weight: 700;
-        border-radius: 0.5rem;
-        font-size: 1.125rem;
-        text-transform: uppercase;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 0.5rem 1rem;
+            background-color: #fee2e2; /* bg-red-100 */
+            color: #b91c1c; /* text-red-700 */
+            font-weight: 700;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            text-transform: uppercase;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         /* ===== GRID DE SEÇÕES ===== */
         .os-sections-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 2rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
         }
 
         @media (min-width: 768px) {
-        .os-sections-grid {
-            grid-template-columns: repeat(2, 1fr); /* md:grid-cols-2 */
-        }
+            .os-sections-grid {
+                grid-template-columns: repeat(2, 1fr); /* md:grid-cols-2 */
+            }
         }
 
         /* ===== TÍTULOS DE SEÇÃO ===== */
         .section-title {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #94a3b8; /* text-slate-400 */
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #94a3b8; /* text-slate-400 */
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            margin-top: 0;
         }
 
         .section-title__icon {
-        width: 1rem;
-        height: 1rem;
+            width: 1rem;
+            height: 1rem;
         }
 
         /* ===== SEÇÃO EQUIPAMENTO ===== */
         .equipamento-fields {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem; /* space-y-4 */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem; /* space-y-4 */
         }
 
         .equipamento-maquina__label {
-        font-size: 0.75rem;
-        color: #94a3b8;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: block;
         }
 
         .equipamento-maquina__valor {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #334155; /* text-slate-700 */
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #334155; /* text-slate-700 */
+            margin: 0;
         }
 
         .equipamento-codigos-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
         }
 
         .equipamento-codigo__label {
-        font-size: 0.75rem;
-        color: #94a3b8;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: block;
         }
 
         .equipamento-codigo__valor {
-        font-family: monospace;
-        background-color: #f1f5f9; /* bg-slate-100 */
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        color: #334155;
+            font-family: monospace;
+            background-color: #f1f5f9; /* bg-slate-100 */
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            color: #334155;
+            margin: 0.25rem 0 0 0;
         }
 
         /* ===== SEÇÃO LOGÍSTICA ===== */
         .logistica-fields {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .logistica-rota {
-        padding: 0.75rem;
-        border: 1px solid #f1f5f9;
-        border-radius: 0.5rem;
-        background-color: #f8fafc; /* bg-slate-50 */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+            padding: 0.75rem;
+            border: 1px solid #f1f5f9;
+            border-radius: 0.5rem;
+            background-color: #f8fafc; /* bg-slate-50 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logistica-rota__label {
-        display: block;
-        font-size: 0.625rem; /* text-[10px] */
-        color: #94a3b8;
-        text-transform: uppercase;
-        font-weight: 700;
+            display: block;
+            font-size: 0.625rem; /* text-[10px] */
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 700;
         }
 
         .logistica-rota__valor {
-        font-weight: 600;
+            font-weight: 600;
         }
 
         .logistica-rota__destino-wrapper {
-        text-align: right;
+            text-align: right;
         }
 
         .logistica-rota__icone {
-        color: #cbd5e1; /* text-slate-300 */
+            color: #cbd5e1; /* text-slate-300 */
+            width: 1.25rem;
+            height: 1.25rem;
         }
 
         .logistica-data__label {
-        font-size: 0.75rem;
-        color: #94a3b8;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: block;
         }
 
         .logistica-data__valor {
-        font-weight: 600;
-        color: #334155;
+            font-weight: 600;
+            color: #334155;
+            margin: 0;
         }
 
         /* ===== BLOCO DE OBSERVAÇÕES ===== */
         .observacoes-bloco {
-        margin-top: 2rem;
-        padding: 1rem;
-        background-color: #fffbeb; /* bg-amber-50 */
-        border-radius: 0.75rem;
-        border-left: 4px solid #fbbf24; /* border-amber-400 */
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: #fffbeb; /* bg-amber-50 */
+            border-radius: 0.75rem;
+            border-left: 4px solid #fbbf24; /* border-amber-400 */
         }
 
         .observacoes-bloco__titulo {
-        color: #92400e; /* text-amber-800 */
-        font-size: 0.75rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
+            color: #92400e; /* text-amber-800 */
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .observacoes-bloco__texto {
-        color: #78350f; /* text-amber-900 */
-        font-weight: 500;
-        font-style: italic;
+            color: #78350f; /* text-amber-900 */
+            font-weight: 500;
+            font-style: italic;
+            margin: 0;
         }
 
         /* ===== BOTÕES DE AÇÃO ===== */
         .acoes-container {
-        margin-top: 2rem;
-        display: flex;
-        gap: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
         }
 
         .btn-concluir {
-        flex: 1;
-        background-color: #059669; /* bg-emerald-600 */
-        color: #ffffff;
-        font-weight: 700;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);
-        border: none;
-        cursor: pointer;
+            flex: 1;
+            background-color: #059669; /* bg-emerald-600 */
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
         }
 
         .btn-concluir:hover {
-        background-color: #047857; /* hover:bg-emerald-700 */
+            background-color: #047857; /* hover:bg-emerald-700 */
         }
 
         .btn-perda-total {
-        flex: 1;
-        border: 2px solid #e2e8f0; /* border-slate-200 */
-        background-color: transparent;
-        font-weight: 700;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        color: #64748b; /* text-slate-500 */
-        cursor: pointer;
+            flex: 1;
+            border: 2px solid #e2e8f0; /* border-slate-200 */
+            background-color: transparent;
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #64748b; /* text-slate-500 */
+            cursor: pointer;
+            font-size: 1rem;
         }
 
         .btn-perda-total:hover {
-        background-color: #fff1f2; /* hover:bg-red-50 */
-        color: #dc2626; /* hover:text-red-600 */
+            background-color: #fff1f2; /* hover:bg-red-50 */
+            color: #dc2626; /* hover:text-red-600 */
         }
+
+        .lista-trans {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+
+
 
         @media (max-width: 1200px) {
             .filiais-grid {
@@ -3829,7 +3859,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             }
             if (modalId === 'listar-transferencias') {
                 // loadSelectsPreventiva();
-                carregarTransferencias();
+                carregarTransferencias2();
             }
             if (modalId === 'novo-chamado') {
                 // loadSelectsPreventiva();
@@ -7389,6 +7419,89 @@ async function deleteMaquina(maquinaId, patrimonio) {
                  </div>    
             `).join('');
         }
+        // Carregar transferências
+        function carregarTransferencias2() {
+            const lista = document.getElementById('lista-transferencias');
+            
+            // Aplicar filtros
+            const transferenciasFiltradas = aplicarFiltros();
+            
+            if (transferenciasFiltradas.length === 0) {
+                lista.innerHTML = '<p style="lista-trans">Nenhuma transferência encontrada com os filtros aplicados</p>';
+                return;
+            }
+
+            lista.innerHTML = transferenciasFiltradas.map(data => `
+                <div class="transferencia-item ">
+                    <div class="os-header">
+                        <div>
+                            <div class="os-header__label">Ordem de Serviço</div>
+                            <h2 class="os-header__id">${data.id}</h2>
+                        </div>
+                        <div class="os-header__tipo-badge">${data.tipo}</div>
+                    </div>
+                    <div class="os-sections-grid">
+                        <section>
+                            <h3 class="section-title">
+                                <i data-lucide="wrench" class="section-title__icon"></i> Equipamento
+                            </h3>
+                            <div class="equipamento-fields">
+                                <div>
+                                    <label class="equipamento-maquina__label">Máquina</label>
+                                    <p class="equipamento-maquina__valor">${data.maquina}</p>
+                                </div>
+                                <div class="equipamento-codigos-grid">
+                                    <div>
+                                        <label class="equipamento-codigo__label">Património</label>
+                                        <p class="equipamento-codigo__valor">${data.patrimonio}</p>
+                                    </div>
+                                    <div>
+                                        <label class="equipamento-codigo__label">Nº de Série</label>
+                                        <p class="equipamento-codigo__valor">${data.serie}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section>
+                            <h3 class="section-title">
+                                <i data-lucide="map-pin" class="section-title__icon"></i> Logística
+                            </h3>
+                            <div class="logistica-fields">
+                                <div class="logistica-rota">
+                                    <div>
+                                        <span class="logistica-rota__label">Origem</span>
+                                        <span class="logistica-rota__valor">${data.origem}</span>
+                                    </div>
+                                    <i data-lucide="truck" class="logistica-rota__icone"></i>
+                                    <div class="logistica-rota__destino-wrapper">
+                                        <span class="logistica-rota__label">Destino</span>
+                                        <span class="logistica-rota__valor">${data.destino}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="logistica-data__label">Data de Entrada</label>
+                                    <p class="logistica-data__valor">${data.data}</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="observacoes-bloco">
+                        <h4 class="observacoes-bloco__titulo">
+                            <i data-lucide="info" class="section-title__icon"></i> Observações
+                        </h4>
+                        <p class="observacoes-bloco__texto">"${data.observacoes}"</p>
+                    </div>
+                    <div class="acoes-container">
+                        <button class="btn-concluir">
+                            <i data-lucide="check-circle-2"></i> Concluir Conserto
+                        </button>
+                        <button class="btn-perda-total">
+                            <i data-lucide="x-circle"></i> Perda Total
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         function getTipoLabel(tipo) {
             const labels = {
@@ -7410,7 +7523,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 transferencia.status = 'concluido';
                 alert('Conserto concluído! Equipamento pronto para retorno.');
                 atualizarContadores();
-                carregarTransferencias();
+                carregarTransferencias2();
             }
         }
 
@@ -7421,7 +7534,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     transferencia.status = 'perda-total';
                     alert('Perda total registrada.');
                     atualizarContadores();
-                    carregarTransferencias();
+                    carregarTransferencias2();
                 }
             }
         }
@@ -7433,7 +7546,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     transferencia.status = 'devolvido';
                     alert('Devolução registrada com sucesso!');
                     atualizarContadores();
-                    carregarTransferencias();
+                    carregarTransferencias2();
                 }
             }
         }
@@ -7442,25 +7555,25 @@ async function deleteMaquina(maquinaId, patrimonio) {
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filter-filial-origem').addEventListener('change', function() {
                 if (document.getElementById('listar-transferencias').classList.contains('show')) {
-                    carregarTransferencias();
+                    carregarTransferencias2();
                 }
             });
             
             document.getElementById('filter-filial-destino').addEventListener('change', function() {
                 if (document.getElementById('listar-transferencias').classList.contains('show')) {
-                    carregarTransferencias();
+                    carregarTransferencias2();
                 }
             });
             
             document.getElementById('filter-tipo').addEventListener('change', function() {
                 if (document.getElementById('listar-transferencias').classList.contains('show')) {
-                    carregarTransferencias();
+                    carregarTransferencias2();
                 }
             });
             
             document.getElementById('filter-situacao').addEventListener('change', function() {
                 if (document.getElementById('listar-transferencias').classList.contains('show')) {
-                    carregarTransferencias();
+                    carregarTransferencias2();
                 }
             });
         });
