@@ -1847,7 +1847,9 @@ class TransferenciaController extends BaseController {
     public function handleRequest($method, $params = []) {
         switch ($method) {
             case 'GET':
-                if (empty($params[0]) && empty($_GET)) {
+                if (isset($params[0]) && $params[0] === 'resumo') {
+                    $this->getResumo();
+                } elseif (empty($params[0]) && empty($_GET)) {
                     $this->getAll();
                 } elseif (isset($params[0])) {
                     $this->getById($params[0]);
@@ -1855,6 +1857,7 @@ class TransferenciaController extends BaseController {
                     $this->getAllFiltered($_GET);
                 }
                 break;
+
             case 'POST':
                 if (isset($_POST['_method']) && $_POST['_method'] === 'PUT') {
                     if (!isset($params[0])) {
@@ -1925,6 +1928,21 @@ class TransferenciaController extends BaseController {
         }
     }
 
+    private function getResumo() {
+        try {
+            $stmt = $this->db->query("
+            SELECT * FROM vw_dashboard_transferencias_por_tipo
+        ");
+
+            $stmt->execute();
+            $this->sendResponse(200, [
+                'success' => true,
+                'data'    => $stmt->fetchAll()
+            ]);
+        } catch (PDOException $e) {
+            $this->sendResponse(500, ['error' => 'Erro ao buscar transferências: ' . $e->getMessage()]);
+        }
+    }
     private function getAll() {
         try {
             $stmt = $this->db->prepare("

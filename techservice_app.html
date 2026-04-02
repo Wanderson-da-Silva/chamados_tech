@@ -1301,7 +1301,7 @@
                 </div>
 
                 <!-- Cards de Resumo -->
-                <div class="summary-cards" id="summary-section">
+                <div class="summary-cards" id="summary-section-chamados">
                     <div class="summary-card">
                         <h3 class="pendente" id="pendentes-count"></h3>
                         <p>Pendentes</p>
@@ -1498,7 +1498,7 @@
                 </div>
 
                 <!-- Cards de Resumo -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;" id="summary-section-transferencias">
                     <!-- Seção Consertos -->
                     <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                         <h3 style="color: #333; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
@@ -2641,7 +2641,7 @@
                             <select class="form-control" id="tipo-transferencia" required>
                                 <option value="">Selecione o tipo</option>
                                 <option value="conserto">Conserto</option>
-                                <option value="emprestimo">Empréstimo Temporário</option>
+                                <option value="temporario">Empréstimo Temporário</option>
                                 <option value="definitiva">Definitiva</option>
                                 <option value="descarte">Descarte</option>
                             </select>
@@ -2654,12 +2654,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="patrimonio">Patrimônio</label>
-                            <input type="text" class="form-control" id="patrimonio" placeholder="Ex: PAT123456">
+                            <input type="text" class="form-control" id="patrimonio" placeholder="Ex: PAT123456" readonly>
                         </div>
 
                         <div class="form-group">
                             <label for="serie-transferencia">Número de Série</label>
-                            <input type="text" class="form-control" id="serie-transferencia" placeholder="Ex: SER123456">
+                            <input type="text" class="form-control" id="serie-transferencia" placeholder="Ex: SER123456" readonly>
                         </div>
                     </div>
 
@@ -2732,7 +2732,7 @@
                     </button>
                 </div>
 
-                <div class="transferencias-lista" id="lista-transferencias">
+                <div class="transferencias-lista" id="transferencias-list">
                     <!-- Transferências serão carregadas aqui -->
                 </div>
             </div>
@@ -2770,7 +2770,142 @@
             return true;
         }
 
+let transferencias = [
+            {
+                id: 'TRF001',
+                tipo: 'conserto',
+                filialOrigem: 'Filial Centro',
+                filialDestino: 'Central de Manutenção',
+                maquina: 'Lavadora Industrial',
+                quantidade: 1,
+                patrimonio: 'PAT001234',
+                serie: 'SER789456',
+                data: '2024-12-15',
+                status: 'em-conserto',
+                observacoes: 'Problema no motor principal'
+            },
+            {
+                id: 'TRF002',
+                tipo: 'emprestimo',
+                filialOrigem: 'Filial Norte',
+                filialDestino: 'Filial Sul',
+                maquina: 'Secadora',
+                quantidade: 2,
+                patrimonio: 'PAT005678',
+                serie: 'SER123789',
+                data: '2024-12-16',
+                status: 'ativo',
+                observacoes: 'Empréstimo temporário por 30 dias'
+            },
+            {
+                id: 'TRF003',
+                tipo: 'conserto',
+                filialOrigem: 'Filial Leste',
+                filialDestino: 'Central de Manutenção',
+                maquina: 'Prensa',
+                quantidade: 1,
+                patrimonio: 'PAT009876',
+                serie: 'SER456123',
+                data: '2024-12-10',
+                status: 'perda-total',
+                observacoes: 'Danos irreversíveis após análise técnica'
+            },
+            {
+                id: 'TRF004',
+                tipo: 'conserto',
+                filialOrigem: 'Filial Oeste',
+                filialDestino: 'Central de Manutenção',
+                maquina: 'Empacotadora',
+                quantidade: 1,
+                patrimonio: 'PAT112233',
+                serie: 'SER998877',
+                data: '2024-12-12',
+                status: 'concluido',
+                observacoes: 'Substituição de peças concluída'
+            },
+            {
+                id: 'TRF005',
+                tipo: 'emprestimo',
+                filialOrigem: 'Filial Centro',
+                filialDestino: 'Filial Norte',
+                maquina: 'Lavadora Industrial',
+                quantidade: 1,
+                patrimonio: 'PAT445566',
+                serie: 'SER334455',
+                data: '2024-12-14',
+                status: 'devolvido',
+                observacoes: 'Equipamento devolvido em perfeito estado'
+            },
+            {
+                id: 'TRF006',
+                tipo: 'definitivo',
+                filialOrigem: 'Filial Sul',
+                filialDestino: 'Filial Leste',
+                maquina: 'Secadora',
+                quantidade: 3,
+                patrimonio: 'PAT778899',
+                serie: 'SER667788',
+                data: '2024-12-17',
+                status: 'ativo',
+                observacoes: 'Transferência permanente devido a reestruturação'
+            }
+        ];
 
+        // Limpar filtros
+        function limparFiltros() {
+            document.getElementById('filter-filial-origem').value = '';
+            document.getElementById('filter-filial-destino').value = '';
+            document.getElementById('filter-tipo').value = '';
+            document.getElementById('filter-situacao').value = '';
+        }
+
+        // Aplicar filtros (para uso futuro quando integrado com API)
+        function aplicarFiltros() {
+            const filialOrigem = document.getElementById('filter-filial-origem').value;
+            const filialDestino = document.getElementById('filter-filial-destino').value;
+            const tipo = document.getElementById('filter-tipo').value;
+            const status = document.getElementById('filter-situacao').value;
+
+            let filtradas = transferencias;
+
+            if (filialOrigem) {
+                filtradas = filtradas.filter(t => t.filialOrigem === filialOrigem);
+            }
+            if (filialDestino) {
+                filtradas = filtradas.filter(t => t.filialDestino === filialDestino);
+            }
+            if (tipo) {
+                filtradas = filtradas.filter(t => t.tipo === tipo);
+            }
+            if (status) {
+                filtradas = filtradas.filter(t => t.status === status);
+            }
+
+            return filtradas;
+        }
+
+        // Atualizar contadores
+        // function atualizarContadores() {
+        //     // Consertos
+        //     const consertoAndamento = transferencias.filter(t => t.tipo === 'conserto' && t.status === 'em-conserto').length;
+        //     const consertoConcluido = transferencias.filter(t => t.tipo === 'conserto' && t.status === 'concluido').length;
+        //     const perdaTotal = transferencias.filter(t => t.status === 'perda-total').length;
+
+        //     // Empréstimos
+        //     const emprestimoAtivo = transferencias.filter(t => t.tipo === 'emprestimo' && t.status === 'ativo').length;
+        //     const emprestimoDevolvido = transferencias.filter(t => t.tipo === 'emprestimo' && t.status === 'devolvido').length;
+        //     const definitivo = transferencias.filter(t => t.tipo === 'definitivo').length;
+
+        //     // Atualizar Consertos
+        //     document.getElementById('conserto-andamento-count').textContent = consertoAndamento;
+        //     document.getElementById('conserto-concluido-count').textContent = consertoConcluido;
+        //     document.getElementById('perda-total-count').textContent = perdaTotal;
+
+        //     // Atualizar Empréstimos
+        //     document.getElementById('emprestimo-ativo-count').textContent = emprestimoAtivo;
+        //     document.getElementById('emprestimo-devolvido-count').textContent = emprestimoDevolvido;
+        //     document.getElementById('definitivo-count').textContent = definitivo;
+        // }
 
         
 // Mapeamento de tabelas para suas funções de fetch
@@ -3106,7 +3241,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             loadDashboardData();
             
             // Carregar dados das preventivas
-            // loadPreventivesData();
+            // loadResumoPreventivas();
             
             // Carregar opções dos formulários
             // loadFormOptions();
@@ -3199,7 +3334,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         }
 
         // Função para buscar dados das preventivas
-        async function fetchPreventivesData() {
+        async function fetchPreventivasData() {
             
             const token = sessionStorage.getItem('token');
             const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/preventivas/proximas', {
@@ -3208,52 +3343,19 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     'Content-Type': 'application/json'
                 }
             });
-            return await response.json();
+            return await response.json();           
+        }
+        // Função para buscar dados das preventivas
+        async function fetchTransferenciasData() {
             
-            /*
-            // Simular delay da API
-            await new Promise(resolve => setTimeout(resolve, 800));
-            
-            return {
-                success: true,
-                data: {
-                    filiais: [
-                        {
-                            nome: "Filial Centro",
-                            maquinas: [
-                                { patrimonio: "MAQ-001", diasRestantes: 2 },
-                                { patrimonio: "MAQ-015", diasRestantes: 5 },
-                                { patrimonio: "MAQ-032", diasRestantes: 8 }
-                            ]
-                        },
-                        {
-                            nome: "Filial Norte",
-                            maquinas: [
-                                { patrimonio: "MAQ-045", diasRestantes: 1 },
-                                { patrimonio: "MAQ-067", diasRestantes: 7 },
-                                { patrimonio: "MAQ-089", diasRestantes: 12 }
-                            ]
-                        },
-                        {
-                            nome: "Filial Sul",
-                            maquinas: [
-                                { patrimonio: "MAQ-123", diasRestantes: 4 },
-                                { patrimonio: "MAQ-145", diasRestantes: 9 },
-                                { patrimonio: "MAQ-167", diasRestantes: 15 }
-                            ]
-                        },
-                        {
-                            nome: "Filial Oeste",
-                            maquinas: [
-                                { patrimonio: "MAQ-234", diasRestantes: 3 },
-                                { patrimonio: "MAQ-256", diasRestantes: 6 },
-                                { patrimonio: "MAQ-278", diasRestantes: 11 }
-                            ]
-                        }
-                    ]
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('http://localhost/chamados_tech/api/techservice_api.php/transferencias/resumo', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-            };
-            */
+            });
+            return await response.json();           
         }
 
         // Função para buscar chamados
@@ -3318,7 +3420,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         // Função para carregar dados do dashboard
         async function loadDashboardData() {
             const loadingElement = document.getElementById('chamados-loading');
-            const summarySection = document.getElementById('summary-section');
+            const summarySection = document.getElementById('summary-section-chamados');
             
             try {
                 // Mostrar loading
@@ -3369,12 +3471,12 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
         }
 
         // Função para carregar dados das preventivas
-        async function loadPreventivesData() {
+        async function loadResumoPreventivas() {
             //const loadingElement = document.getElementById('preventivas-loading');
             //const preventivesSection = document.getElementById('preventivas-section');
             
             try {
-                const result = await fetchPreventivesData();
+                const result = await fetchPreventivasData();
                 
                 if (result.success) {
                     renderPreventivasGrid(result.data);
@@ -3425,6 +3527,63 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 
                 grid.appendChild(filialCard);
             });
+        }
+        // Função para renderizar grid de preventivas
+        async function loadDashTransferencias() {
+            //alert('renderizando preventivas');
+            
+
+            const loadingElement = document.getElementById('transferencias-loading');
+            const summarySection = document.getElementById('summary-section-transferencias');
+            
+            try {
+                // Mostrar loading
+                loadingElement.classList.remove('hidden');
+                summarySection.style.opacity = '0.5';
+                
+                const result = await fetchTransferenciasData();
+                
+                if (result.success) {
+                
+                    document.getElementById('conserto-andamento-count').textContent = result.data[0].em_andamento || 0;
+                    document.getElementById('conserto-concluido-count').textContent = result.data[0].concluido || 0;
+                    document.getElementById('perda-total-count').textContent = result.data[0].perda_total || 0;
+
+                    // Atualizar Empréstimos
+                    document.getElementById('emprestimo-ativo-count').textContent = result.data[0].ativo || 0;
+                    document.getElementById('emprestimo-devolvido-count').textContent = result.data[0].devolvido || 0;
+                    document.getElementById('definitivo-count').textContent = result.data[0].definitivo || 0;
+
+                    // alert("numero pendentes" +  result +" !");
+                    // console.log(result.data[0].pendentes);
+                    // Animar os cards
+                    //animateSummaryCards();
+                }else{
+
+                    document.getElementById('conserto-andamento-count').textContent = 0;
+                    document.getElementById('conserto-concluido-count').textContent =  0;
+                    document.getElementById('perda-total-count').textContent =  0;
+                    document.getElementById('emprestimo-ativo-count').textContent =  0;
+                    document.getElementById('emprestimo-devolvido-count').textContent =  0;
+                    document.getElementById('definitivo-count').textContent =  0;
+                    showError('Dash board retornou sem sucesso');
+                }
+            } catch (error) {
+                    document.getElementById('conserto-andamento-count').textContent = 0;
+                    document.getElementById('conserto-concluido-count').textContent =  0;
+                    document.getElementById('perda-total-count').textContent =  0;
+                    document.getElementById('emprestimo-ativo-count').textContent =  0;
+                    document.getElementById('emprestimo-devolvido-count').textContent =  0;
+                    document.getElementById('definitivo-count').textContent =  0;
+                console.error('Erro ao carregar dashboard:', error);
+                showError('Erro ao carregar dados do dashboard');
+            } finally {
+                // Esconder loading
+                loadingElement.classList.add('hidden');
+                summarySection.style.opacity = '1';
+            }
+            
+
         }
 
         
@@ -3790,7 +3949,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
             document.getElementById(page + '-page').classList.remove('hidden');
             
             // Atualizar menu ativo (apenas para itens principais)
-            if (['chamados', 'preventivas'].includes(page)) {
+            if (['chamados', 'preventivas' , 'transferencias'].includes(page)) {
                 document.querySelectorAll('.menu-item').forEach(item => {
                     item.classList.remove('active');
                 });
@@ -3802,7 +3961,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 // Mostrar loading se necessário
                 const loadingElement = document.getElementById('preventivas-loading');
 
-                loadPreventivesData();
+                loadResumoPreventivas();
 
                 if (document.getElementById('filiais-grid').children.length === 0) {
                     loadingElement.classList.remove('hidden');
@@ -3818,7 +3977,8 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                 loadLojas();
             }
             if (page === 'transferencias'){
-                atualizarContadores();
+                //atualizarContadores();
+                loadDashTransferencias();
             }
             if(page === 'maquinas')
              {
@@ -4196,7 +4356,7 @@ async function populateSelectFromReturnSelect(selectId,tableName,listId, formDat
                     closeModal('concluir-preventiva');
                     loadPreventiva();
                     // Recarregar dashboard
-                    loadPreventivesData();
+                    loadResumoPreventivas();
                 } else {
                     showError(result.error || 'Erro ao concluir preventiva, com sucesso consulta.');
                 }
@@ -5853,7 +6013,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 if (result.success) {
                     showSuccess(result.message || 'Preventiva salva com sucesso!');
                     closeModal('preventiva-maquina');
-                    loadPreventivesData();
+                    loadResumoPreventivas();
                     loadPreventivas(); // Recarregar lista (criar essa função)
                 } else {
                     showError(result.message || 'Erro ao salvar preventiva');
@@ -5897,7 +6057,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 if (result.success) {
                     showSuccess(result.message || 'Preventiva salva com sucesso!');
                     closeModal('preventiva-maquina-editar');
-                    loadPreventivesData();
+                    loadResumoPreventivas();
                     loadPreventivas(); // Recarregar lista (criar essa função)
                 } else {
                     showError(result.message || 'Erro ao salvar preventiva');
@@ -6045,7 +6205,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 
                 if (result.success) {
                     showSuccess(result.message || 'Preventiva excluída com sucesso!');
-                    loadPreventivesData();
+                    loadResumoPreventivas();
                 } else {
                     showError(result.message || 'Erro ao excluir preventiva');
                 }
@@ -6945,142 +7105,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
 
         
         // Dados simulados
-        let transferencias = [
-            {
-                id: 'TRF001',
-                tipo: 'conserto',
-                filialOrigem: 'Filial Centro',
-                filialDestino: 'Central de Manutenção',
-                maquina: 'Lavadora Industrial',
-                quantidade: 1,
-                patrimonio: 'PAT001234',
-                serie: 'SER789456',
-                data: '2024-12-15',
-                status: 'em-conserto',
-                observacoes: 'Problema no motor principal'
-            },
-            {
-                id: 'TRF002',
-                tipo: 'emprestimo',
-                filialOrigem: 'Filial Norte',
-                filialDestino: 'Filial Sul',
-                maquina: 'Secadora',
-                quantidade: 2,
-                patrimonio: 'PAT005678',
-                serie: 'SER123789',
-                data: '2024-12-16',
-                status: 'ativo',
-                observacoes: 'Empréstimo temporário por 30 dias'
-            },
-            {
-                id: 'TRF003',
-                tipo: 'conserto',
-                filialOrigem: 'Filial Leste',
-                filialDestino: 'Central de Manutenção',
-                maquina: 'Prensa',
-                quantidade: 1,
-                patrimonio: 'PAT009876',
-                serie: 'SER456123',
-                data: '2024-12-10',
-                status: 'perda-total',
-                observacoes: 'Danos irreversíveis após análise técnica'
-            },
-            {
-                id: 'TRF004',
-                tipo: 'conserto',
-                filialOrigem: 'Filial Oeste',
-                filialDestino: 'Central de Manutenção',
-                maquina: 'Empacotadora',
-                quantidade: 1,
-                patrimonio: 'PAT112233',
-                serie: 'SER998877',
-                data: '2024-12-12',
-                status: 'concluido',
-                observacoes: 'Substituição de peças concluída'
-            },
-            {
-                id: 'TRF005',
-                tipo: 'emprestimo',
-                filialOrigem: 'Filial Centro',
-                filialDestino: 'Filial Norte',
-                maquina: 'Lavadora Industrial',
-                quantidade: 1,
-                patrimonio: 'PAT445566',
-                serie: 'SER334455',
-                data: '2024-12-14',
-                status: 'devolvido',
-                observacoes: 'Equipamento devolvido em perfeito estado'
-            },
-            {
-                id: 'TRF006',
-                tipo: 'definitivo',
-                filialOrigem: 'Filial Sul',
-                filialDestino: 'Filial Leste',
-                maquina: 'Secadora',
-                quantidade: 3,
-                patrimonio: 'PAT778899',
-                serie: 'SER667788',
-                data: '2024-12-17',
-                status: 'ativo',
-                observacoes: 'Transferência permanente devido a reestruturação'
-            }
-        ];
-
-        // Limpar filtros
-        function limparFiltros() {
-            document.getElementById('filter-filial-origem').value = '';
-            document.getElementById('filter-filial-destino').value = '';
-            document.getElementById('filter-tipo').value = '';
-            document.getElementById('filter-situacao').value = '';
-        }
-
-        // Aplicar filtros (para uso futuro quando integrado com API)
-        function aplicarFiltros() {
-            const filialOrigem = document.getElementById('filter-filial-origem').value;
-            const filialDestino = document.getElementById('filter-filial-destino').value;
-            const tipo = document.getElementById('filter-tipo').value;
-            const status = document.getElementById('filter-situacao').value;
-
-            let filtradas = transferencias;
-
-            if (filialOrigem) {
-                filtradas = filtradas.filter(t => t.filialOrigem === filialOrigem);
-            }
-            if (filialDestino) {
-                filtradas = filtradas.filter(t => t.filialDestino === filialDestino);
-            }
-            if (tipo) {
-                filtradas = filtradas.filter(t => t.tipo === tipo);
-            }
-            if (status) {
-                filtradas = filtradas.filter(t => t.status === status);
-            }
-
-            return filtradas;
-        }
-
-        // Atualizar contadores
-        function atualizarContadores() {
-            // Consertos
-            const consertoAndamento = transferencias.filter(t => t.tipo === 'conserto' && t.status === 'em-conserto').length;
-            const consertoConcluido = transferencias.filter(t => t.tipo === 'conserto' && t.status === 'concluido').length;
-            const perdaTotal = transferencias.filter(t => t.status === 'perda-total').length;
-
-            // Empréstimos
-            const emprestimoAtivo = transferencias.filter(t => t.tipo === 'emprestimo' && t.status === 'ativo').length;
-            const emprestimoDevolvido = transferencias.filter(t => t.tipo === 'emprestimo' && t.status === 'devolvido').length;
-            const definitivo = transferencias.filter(t => t.tipo === 'definitivo').length;
-
-            // Atualizar Consertos
-            document.getElementById('conserto-andamento-count').textContent = consertoAndamento;
-            document.getElementById('conserto-concluido-count').textContent = consertoConcluido;
-            document.getElementById('perda-total-count').textContent = perdaTotal;
-
-            // Atualizar Empréstimos
-            document.getElementById('emprestimo-ativo-count').textContent = emprestimoAtivo;
-            document.getElementById('emprestimo-devolvido-count').textContent = emprestimoDevolvido;
-            document.getElementById('definitivo-count').textContent = definitivo;
-        }
+        
 // Handle nova transferência
         async function handleNovaTransferencia(event) {
             event.preventDefault();
@@ -7122,6 +7147,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                 if (result.success) {
                     showSuccess(result.message);
                     closeModal('nova-transferencia');
+                    loadDashTransferencias();
                 // loadTransferencias(); ver se faz sentido
                 // loadDashboardData(); ver resumo de transferencia
                 } else {
@@ -7335,7 +7361,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
                     closeModal('chamado-tecnico');
                     closeModal('status-preventiva');
                     loadPreventivas(); // Recarregar lista
-                    loadPreventivesData();//dashboard
+                    loadResumoPreventivas();//dashboard
                 } else {
                     
                     // Converter para objeto
@@ -7354,7 +7380,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
 
         // Carregar transferências
         function carregarTransferencias() {
-            const lista = document.getElementById('lista-transferencias');
+            const lista = document.getElementById('transferencias-list');
             
             // Aplicar filtros
             const transferenciasFiltradas = aplicarFiltros();
@@ -7421,7 +7447,7 @@ async function deleteMaquina(maquinaId, patrimonio) {
         }
         // Carregar transferências
         function carregarTransferencias2() {
-            const lista = document.getElementById('lista-transferencias');
+            const lista = document.getElementById('transferencias-list');
             
             // Aplicar filtros
             const transferenciasFiltradas = aplicarFiltros();

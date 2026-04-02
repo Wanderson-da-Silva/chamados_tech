@@ -319,7 +319,7 @@ CREATE TABLE `maquina` (
 
 LOCK TABLES `maquina` WRITE;
 /*!40000 ALTER TABLE `maquina` DISABLE KEYS */;
-INSERT INTO `maquina` VALUES (1,1,'MAQ-001','SER123001','HP LaserJet Pro','HP','Impressora',NULL,1,NULL,NULL,NULL,365,'2026-02-23','2027-02-23','2025-12-02 00:55:54','2026-03-20 01:18:10',NULL,0,'em_conserto'),(2,1,'MAQ-015','SER123015','Dell OptiPlex','Dell','Computador',NULL,1,NULL,NULL,NULL,180,'2026-02-23','2026-08-22','2025-12-02 00:55:54','2026-03-12 22:58:50',NULL,0,'ativo'),(3,2,'MAQ-045','SER123045','Canon ImageRunner','Canon','Impressora',NULL,1,NULL,NULL,NULL,365,'2026-02-23','2027-02-23','2025-12-02 00:55:54','2026-03-12 22:59:23',NULL,0,'ativo'),(4,3,'MAQ-123','SER123123','Lenovo ThinkCentre','Lenovo','Computador',NULL,1,NULL,NULL,NULL,180,'2026-02-24','2026-08-23','2025-12-02 00:55:54','2026-03-12 22:59:35',NULL,0,'ativo'),(5,3,'MAQ-598','YTRE987654','LASER','HP','Tablet','2026-01-26',1,12000.00,'','',210,'2026-02-23','2026-09-21','2026-01-26 19:53:24','2026-03-12 22:59:51',NULL,0,'ativo');
+INSERT INTO `maquina` VALUES (1,1,'MAQ-001','SER123001','HP LaserJet Pro','HP','Impressora',NULL,1,NULL,NULL,NULL,365,'2026-02-23','2027-02-23','2025-12-02 00:55:54','2026-04-02 01:06:51',NULL,0,'em_conserto'),(2,1,'MAQ-015','SER123015','Dell OptiPlex','Dell','Computador',NULL,1,NULL,NULL,NULL,180,'2026-02-23','2026-08-22','2025-12-02 00:55:54','2026-03-12 22:58:50',NULL,0,'ativo'),(3,2,'MAQ-045','SER123045','Canon ImageRunner','Canon','Impressora',NULL,1,NULL,NULL,NULL,365,'2026-02-23','2027-02-23','2025-12-02 00:55:54','2026-03-12 22:59:23',NULL,0,'ativo'),(4,3,'MAQ-123','SER123123','Lenovo ThinkCentre','Lenovo','Computador',NULL,1,NULL,NULL,NULL,180,'2026-02-24','2026-08-23','2025-12-02 00:55:54','2026-03-12 22:59:35',NULL,0,'ativo'),(5,3,'MAQ-598','YTRE987654','LASER','HP','Tablet','2026-01-26',1,12000.00,'','',210,'2026-02-23','2026-09-21','2026-01-26 19:53:24','2026-03-12 22:59:51',NULL,0,'ativo');
 /*!40000 ALTER TABLE `maquina` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -483,6 +483,7 @@ CREATE TABLE `transferencia` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `transferencia_pai_id` int(11) DEFAULT NULL,
   `maquina_id` int(11) NOT NULL,
+  `numero` varchar(20) DEFAULT NULL,
   `loja_origem_id` int(11) NOT NULL,
   `loja_destino_id` int(11) DEFAULT NULL,
   `usuario_id` int(11) NOT NULL,
@@ -497,8 +498,9 @@ CREATE TABLE `transferencia` (
   `data_retorno_real` datetime DEFAULT NULL,
   `data_criacao` datetime DEFAULT current_timestamp(),
   `data_atualizacao` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `numero` (`numero`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -507,9 +509,36 @@ CREATE TABLE `transferencia` (
 
 LOCK TABLES `transferencia` WRITE;
 /*!40000 ALTER TABLE `transferencia` DISABLE KEYS */;
-INSERT INTO `transferencia` VALUES (1,NULL,1,1,4,2,'conserto','em_transito',1,NULL,NULL,NULL,'2026-03-20 01:18:10',NULL,NULL,'2026-03-19 22:18:10','2026-03-19 22:18:10');
+INSERT INTO `transferencia` VALUES (1,NULL,1,NULL,1,4,2,'conserto','em_transito',1,NULL,NULL,NULL,'2026-03-20 01:18:10',NULL,NULL,'2026-03-19 22:18:10','2026-03-19 22:18:10'),(2,NULL,1,NULL,1,4,2,'conserto','em_transito',1,NULL,NULL,'teste emprestimo','2026-04-02 00:51:02','2026-04-09 00:00:00',NULL,'2026-04-01 21:51:02','2026-04-01 22:28:50'),(3,NULL,1,'TR-2026-001',1,2,2,'conserto','em_transito',1,NULL,NULL,'teste conserto','2026-04-02 01:06:51','2026-04-03 00:00:00',NULL,'2026-04-01 22:06:51','2026-04-01 22:06:51');
 /*!40000 ALTER TABLE `transferencia` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_gerar_numero_transferencia 
+    BEFORE INSERT ON transferencia
+    FOR EACH ROW
+BEGIN
+    IF NEW.numero IS NULL OR NEW.numero = '' THEN
+        SET NEW.numero = CONCAT('TR-', YEAR(NOW()), '-', LPAD(
+            (SELECT COALESCE(MAX(CAST(SUBSTRING(numero, -3) AS UNSIGNED)), 0) + 1
+             FROM transferencia 
+             WHERE numero LIKE CONCAT('TR-', YEAR(NOW()), '-%')), 
+            3, '0'
+        ));
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -616,6 +645,85 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_transferencia_historico
+AFTER UPDATE ON transferencia
+FOR EACH ROW
+BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO transferencia_historico (
+            transferencia_id,
+            usuario_id,
+            status_anterior,
+            status_novo,
+            quantidade_anterior,
+            quantidade_nova,
+            tipo_transferencia,
+            comentario
+        ) VALUES (
+            NEW.id,
+            NEW.usuario_id,
+            OLD.status,
+            NEW.status,
+            OLD.quantidade_enviada,
+            NEW.quantidade_enviada,
+            NEW.tipo,
+            CONCAT(
+                'Status alterado automaticamente de ',
+                OLD.status, ' para ', NEW.status
+            )
+        );
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `transferencia_historico`
+--
+
+DROP TABLE IF EXISTS `transferencia_historico`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `transferencia_historico` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `transferencia_id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `status_anterior` varchar(30) DEFAULT NULL,
+  `status_novo` varchar(30) NOT NULL,
+  `quantidade_anterior` int(11) DEFAULT NULL,
+  `quantidade_nova` int(11) DEFAULT NULL,
+  `tipo_transferencia` varchar(30) DEFAULT NULL,
+  `comentario` text DEFAULT NULL,
+  `data_alteracao` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `usuario_id` (`usuario_id`),
+  KEY `idx_transferencia` (`transferencia_id`),
+  KEY `idx_data` (`data_alteracao`),
+  CONSTRAINT `transferencia_historico_ibfk_1` FOREIGN KEY (`transferencia_id`) REFERENCES `transferencia` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `transferencia_historico_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `transferencia_historico`
+--
+
+LOCK TABLES `transferencia_historico` WRITE;
+/*!40000 ALTER TABLE `transferencia_historico` DISABLE KEYS */;
+/*!40000 ALTER TABLE `transferencia_historico` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `usuario`
@@ -652,7 +760,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'admin','admin@techservice.com','$2y$10$exemplo_hash_senha','Administrador Sistema',NULL,'admin',1,NULL,'2025-12-02 00:55:54','2025-12-02 00:55:54'),(2,'trevo','trevo@trevo.com.br','$2y$10$3USn4Jh7vZHWd0GNSvrGFubZIIikF51Cavv7pyO4kvc/KtEjxdTAu','trevo','61994949494','admin',1,'2026-03-26 00:01:46','2025-12-02 01:05:20','2026-03-26 00:01:46'),(3,'vento','gunter@vento.com.br','$2y$10$bdIurFauNI5bRQsFUdKxC.kZmASuc39oECi8FFOsKHU7c/2SArv7.','gunter','996666555','tecnico',1,NULL,'2025-12-02 01:09:44','2025-12-02 01:09:44'),(4,'tecnico','tecnico@tecnico.com.br','$2y$10$fmRApB/bHToTuK27E.fknunerRfNvFjYF74rUx45n8.Eu6atI1wzi','tecnico','','tecnico',1,NULL,'2026-01-26 19:14:25','2026-01-26 19:14:25');
+INSERT INTO `usuario` VALUES (1,'admin','admin@techservice.com','$2y$10$exemplo_hash_senha','Administrador Sistema',NULL,'admin',1,NULL,'2025-12-02 00:55:54','2025-12-02 00:55:54'),(2,'trevo','trevo@trevo.com.br','$2y$10$3USn4Jh7vZHWd0GNSvrGFubZIIikF51Cavv7pyO4kvc/KtEjxdTAu','trevo','61994949494','admin',1,'2026-04-02 00:02:28','2025-12-02 01:05:20','2026-04-02 00:02:28'),(3,'vento','gunter@vento.com.br','$2y$10$bdIurFauNI5bRQsFUdKxC.kZmASuc39oECi8FFOsKHU7c/2SArv7.','gunter','996666555','tecnico',1,NULL,'2025-12-02 01:09:44','2025-12-02 01:09:44'),(4,'tecnico','tecnico@tecnico.com.br','$2y$10$fmRApB/bHToTuK27E.fknunerRfNvFjYF74rUx45n8.Eu6atI1wzi','tecnico','','tecnico',1,NULL,'2026-01-26 19:14:25','2026-01-26 19:14:25');
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -719,6 +827,21 @@ SET character_set_client = utf8;
   1 AS `aguardando_peca`,
   1 AS `pausado`,
   1 AS `cancelado`,
+  1 AS `total` */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `vw_dashboard_transferencias_por_tipo`
+--
+
+DROP TABLE IF EXISTS `vw_dashboard_transferencias_por_tipo`;
+/*!50001 DROP VIEW IF EXISTS `vw_dashboard_transferencias_por_tipo`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `vw_dashboard_transferencias_por_tipo` AS SELECT
+ 1 AS `em_andamento`,
+  1 AS `concluido`,
+  1 AS `perda`,
   1 AS `total` */;
 SET character_set_client = @saved_cs_client;
 
@@ -795,6 +918,24 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `vw_dashboard_transferencias_por_tipo`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vw_dashboard_transferencias_por_tipo`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vw_dashboard_transferencias_por_tipo` AS select sum(case when `transferencia`.`tipo` = 'conserto' and `transferencia`.`status` = 'em_transito' then coalesce(`transferencia`.`quantidade_enviada`,0) else 0 end + case when `transferencia`.`tipo` = 'conserto' and `transferencia`.`status` = 'aguardando_retorno' then coalesce(`transferencia`.`quantidade_retornada`,0) else 0 end) AS `em_andamento`,sum(case when `transferencia`.`tipo` = 'retorno_conserto' and `transferencia`.`status` = 'concluida' then coalesce(`transferencia`.`quantidade_retornada`,0) else 0 end) AS `concluido`,sum(case when `transferencia`.`tipo` = 'conserto' and `transferencia`.`status` = 'concluida' then coalesce(`transferencia`.`quantidade_perdida`,0) else 0 end) AS `perda`,sum(case when `transferencia`.`tipo` = 'conserto' then coalesce(`transferencia`.`quantidade_enviada`,0) else 0 end) AS `total` from `transferencia` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `vw_preventivas_proximas`
 --
 
@@ -821,4 +962,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-25 22:38:18
+-- Dump completed on 2026-04-01 22:37:05

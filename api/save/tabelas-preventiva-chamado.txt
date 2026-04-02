@@ -256,6 +256,76 @@ CREATE TABLE preventiva_historico (
 
 
 
+CREATE TABLE transferencia_historico (
+    id                   INT PRIMARY KEY AUTO_INCREMENT,
+    transferencia_id     INT NOT NULL,
+    usuario_id           INT NOT NULL,
+    status_anterior      VARCHAR(30),
+    status_novo          VARCHAR(30) NOT NULL,
+
+    -- Campos específicos de transferência
+    quantidade_anterior  INT NULL,
+    quantidade_nova      INT NULL,
+    tipo_transferencia   VARCHAR(30) NULL,
+    comentario           TEXT,
+
+    data_alteracao       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    -- Chaves Estrangeiras
+    FOREIGN KEY (transferencia_id) REFERENCES transferencia(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id)       REFERENCES usuario(id)       ON DELETE RESTRICT,
+
+    -- Índices
+    INDEX idx_transferencia (transferencia_id),
+    INDEX idx_data          (data_alteracao)
+);
+
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_transferencia_historico
+AFTER UPDATE ON transferencia
+FOR EACH ROW
+BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO transferencia_historico (
+            transferencia_id,
+            usuario_id,
+            status_anterior,
+            status_novo,
+            quantidade_anterior,
+            quantidade_nova,
+            tipo_transferencia,
+            comentario
+        ) VALUES (
+            NEW.id,
+            NEW.usuario_id,
+            OLD.status,
+            NEW.status,
+            OLD.quantidade_enviada,
+            NEW.quantidade_enviada,
+            NEW.tipo,
+            CONCAT(
+                'Status alterado automaticamente de ',
+                OLD.status, ' para ', NEW.status
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+```
+
+---
+
+### Como ficaria o histórico de um conserto com perda
+```
+transferencia_id=10 | status_anterior=NULL        | status_novo=em_transito        | qtd_anterior=NULL | qtd_nova=10
+transferencia_id=10 | status_anterior=em_transito  | status_novo=aguardando_retorno | qtd_anterior=10   | qtd_nova=10
+transferencia_id=10 | status_anterior=aguardando_retorno | status_novo=concluida   | qtd_anterior=10   | qtd_nova=8
+
+
 -- ========================================
 -- VIEWS ÚTEIS PARA CONSULTAS
 -- ========================================
@@ -349,6 +419,31 @@ BEGIN
     END IF;
 END$$
 DELIMITER ;
+
+
+
+-- Trigger para gerar número do chamado automaticamente
+DELIMITER $$
+CREATE TRIGGER trg_gerar_numero_transferencia 
+    BEFORE INSERT ON transferencia
+    FOR EACH ROW
+BEGIN
+    IF NEW.numero IS NULL OR NEW.numero = '' THEN
+        SET NEW.numero = CONCAT('TR-', YEAR(NOW()), '-', LPAD(
+            (SELECT COALESCE(MAX(CAST(SUBSTRING(numero, -3) AS UNSIGNED)), 0) + 1
+             FROM transferencia 
+             WHERE numero LIKE CONCAT('TR-', YEAR(NOW()), '-%')), 
+            3, '0'
+        ));
+    END IF;
+END$$
+DELIMITER ;
+
+
+
+
+
+
 
 -- Trigger para atualizar histórico quando status muda
 DELIMITER $$
@@ -633,6 +728,56 @@ mysqldump -u root -p chamado_prev > C:\xampp\htdocs\chamados_tech\api\save\backu
 GET(PEGAR) - POST(CRIAR) - PUT(EDITAR-tem outro)
 
 
+CREATE OR REPLACE VIEW vw_dashboard_transferencias_por_tipo AS
+
+SELECT
+    -- Em andamento: soma do que foi enviado ainda em trânsito
+    -- mais o que já chegou na oficina e aguarda retorno
+    SUM(
+        CASE
+            WHEN tipo = 'conserto' AND status = 'em_transito'
+            THEN COALESCE(quantidade_enviada, 0)
+            ELSE 0
+        END
+        +
+        CASE
+            WHEN tipo = 'conserto' AND status = 'aguardando_retorno'
+            THEN COALESCE(quantidade_retornada, 0)
+            ELSE 0
+        END
+    ) AS em_andamento,
+
+    -- Concluído: soma do que retornou efetivamente
+    SUM(
+        CASE
+            WHEN tipo = 'retorno_conserto' AND status = 'concluida'
+            THEN COALESCE(quantidade_retornada, 0)
+            ELSE 0
+        END
+    ) AS concluido,
+
+    -- Perda: soma do que foi perdido em consertos concluídos
+    SUM(
+        CASE
+            WHEN tipo = 'conserto' AND status = 'concluida'
+            THEN COALESCE(quantidade_perdida, 0)
+            ELSE 0
+        END
+    ) AS perda,
+
+    -- Total: soma de tudo que foi enviado para conserto
+    SUM(
+        CASE
+            WHEN tipo = 'conserto'
+            THEN COALESCE(quantidade_enviada, 0)
+            ELSE 0
+        END
+    ) AS total
+
+FROM transferencias
+
+
+
 CREATE OR REPLACE VIEW vw_dashboard_chamados_por_tipo AS
 
 select sum(case when `c`.`status` = 'pendente' then 1 else 0 end) AS `pendente`,
@@ -642,4 +787,60 @@ sum(case when `c`.`status` = 'aguardando_peca' then 1 else 0 end) AS `aguardando
 sum(case when `c`.`status` = 'pausado' then 1 else 0 end) AS `pausado`,
 sum(case when `c`.`status` = 'cancelado' then 1 else 0 end) AS `cancelado`,
 count(0) AS `total` from `chamado` `c`
+
+
+
+
+
+SELECT
+    -- Em andamento: soma do que foi enviado ainda em trânsito
+    -- mais o que já chegou na oficina e aguarda retorno
+    SUM(
+        CASE
+            WHEN tipo = 'conserto' AND status = 'em_transito'
+            THEN COALESCE(quantidade_enviada, 0)
+            ELSE 0
+        END
+        +
+        CASE
+            WHEN tipo = 'conserto' AND status = 'aguardando_retorno'
+            THEN COALESCE(quantidade_recebida, 0)
+            ELSE 0
+        END
+    ) AS em_andamento,
+
+    -- Concluído: soma do que retornou efetivamente
+    SUM(
+        CASE
+            WHEN tipo = 'retorno_conserto' AND status = 'concluida'
+            THEN COALESCE(quantidade_retornada, 0)
+            ELSE 0
+        END
+    ) AS concluido,
+
+    -- Perda: soma do que foi perdido em consertos concluídos
+    SUM(
+        CASE
+            WHEN tipo = 'conserto' AND status = 'concluida'
+            THEN COALESCE(quantidade_perdida, 0)
+            ELSE 0
+        END
+    ) AS perda,
+
+    -- Total: soma de tudo que foi enviado para conserto
+    SUM(
+        CASE
+            WHEN tipo = 'conserto'
+            THEN COALESCE(quantidade_enviada, 0)
+            ELSE 0
+        END
+    ) AS total
+
+FROM transferencias;
+
+
+
+
+
+
 
